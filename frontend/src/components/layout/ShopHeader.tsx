@@ -1,7 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect, type FormEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { Location } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import type { AuthUser } from '../../types/auth';
+import { FiSearch, FiHeart, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi';
+import ProductSearchBox from '../catalog/ProductSearchBox';
 
 const PRIMARY = '#004AC6';
 const TEXT_BODY = '#434655';
@@ -14,22 +17,10 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
     { label: 'Home', to: '/' },
-    { label: 'Products', to: '/categories', matchPath: true },
-    { label: 'Study Tools', to: '/categories?category=study-tools' },
-    { label: 'Technology', to: '/categories?category=technology' },
-    { label: 'Merchandise', to: '/categories?category=merchandise' },
+    { label: 'Product', to: '/categories', matchPath: true },
     { label: 'Student Life', to: '/categories?category=student-life' },
-    { label: 'Second-hand', to: '/categories?category=second-hand' },
-    { label: 'Support', to: '/#support' }
+    { label: 'Support / Contact', to: '/#support' }
 ];
-
-function profileLabel(user: AuthUser | null | undefined): string {
-    return user?.fullName || user?.username || user?.email || 'Account';
-}
-
-function profileInitial(user: AuthUser | null | undefined): string {
-    return profileLabel(user).charAt(0).toUpperCase();
-}
 
 function isNavActive(location: Location, link: NavLink): boolean {
     if (link.matchPath) {
@@ -49,96 +40,151 @@ function isNavActive(location: Location, link: NavLink): boolean {
 
 export default function ShopHeader() {
     const location = useLocation();
+    const navigate = useNavigate();
     const user = useAppSelector((state) => state.auth.user);
+    const [search, setSearch] = useState('');
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+                setIsSearchOpen(false);
+            }
+        }
+        if (isSearchOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            // Focus input smoothly after opening
+            setTimeout(() => {
+                if (searchInputRef.current) searchInputRef.current.focus();
+            }, 50);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSearchOpen]);
+
+    // Close search when navigating
+    useEffect(() => {
+        setIsSearchOpen(false);
+    }, [location.pathname, location.search]);
+
+    const handleSearchSubmit = (term: string) => {
+        const q = term.trim();
+        if (q) {
+            navigate(`/categories?q=${encodeURIComponent(q)}`);
+        } else {
+            navigate('/categories');
+        }
+        setIsSearchOpen(false);
+    };
 
     return (
-        <header
-            className="fixed top-0 z-50 w-full border-b border-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-            style={{ backgroundColor: 'rgba(250, 248, 255, 0.8)', backdropFilter: 'blur(24px)' }}
-        >
-            <div className="mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between gap-4 px-6 lg:gap-8 lg:px-8">
-                <div className="flex min-w-0 flex-1 items-center gap-4 lg:gap-8">
-                    <Link
-                        to="/"
-                        className="shrink-0 font-inter text-2xl font-semibold"
-                        style={{ color: PRIMARY }}
-                    >
-                        UTEShop
-                    </Link>
-                    <nav className="hidden items-center gap-6 xl:flex" aria-label="Main">
-                        {NAV_LINKS.map((link) => {
-                            const active = isNavActive(location, link);
-                            return (
-                                <Link
-                                    key={link.label}
-                                    to={link.to}
-                                    className="font-inter text-sm font-medium leading-5 transition-colors"
-                                    style={{
-                                        color: active ? PRIMARY : TEXT_BODY,
-                                        borderBottom: active
-                                            ? `2px solid ${PRIMARY}`
-                                            : '2px solid transparent',
-                                        paddingBottom: active ? '2px' : '0',
-                                        fontWeight: active ? 700 : 500
-                                    }}
-                                >
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </div>
+        <header className="fixed top-0 z-50 w-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            {/* Main Header (Logo, Nav, Icons on one row) */}
+            <div className="relative mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between gap-4 px-6 lg:gap-8 lg:px-8">
+                {/* Left: Logo */}
+                <Link
+                    to="/"
+                    className="shrink-0 font-inter text-2xl font-bold transition hover:opacity-80"
+                    style={{ color: PRIMARY }}
+                >
+                    UTEShop
+                </Link>
 
-                <div className="flex shrink-0 items-center gap-2 sm:gap-[18px]">
+                {/* Center: Navigation Bar */}
+                <nav className="hidden items-center gap-8 md:flex">
+                    {NAV_LINKS.map((link) => {
+                        const active = isNavActive(location, link);
+                        return (
+                            <Link
+                                key={link.label}
+                                to={link.to}
+                                className="font-inter text-[15px] font-medium transition-colors hover:text-primary"
+                                style={{
+                                    color: active ? PRIMARY : TEXT_BODY,
+                                    fontWeight: active ? 600 : 500
+                                }}
+                            >
+                                {link.label}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Right: Icons */}
+                <div className="flex shrink-0 items-center gap-5 sm:gap-6">
+                    {/* Search Icon Toggle */}
                     <button
-                        type="button"
-                        className="relative rounded-lg p-2 transition hover:bg-black/5 active:scale-95"
-                        style={{ color: PRIMARY }}
-                        aria-label="Cart, 2 items"
+                        onClick={() => setIsSearchOpen(true)}
+                        className="text-gray-600 transition hover:text-primary"
+                        aria-label="Mở tìm kiếm"
                     >
-                        <span className="material-symbols-outlined">shopping_cart</span>
-                        <span
-                            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-inter text-[10px] font-bold text-on-tertiary"
-                            style={{ backgroundColor: '#943700' }}
-                        >
-                            2
-                        </span>
+                        <FiSearch className="h-[22px] w-[22px]" strokeWidth={1.5} />
                     </button>
 
+                    {/* User */}
                     <Link
-                        to="/categories"
-                        className="rounded-lg p-2 text-primary xl:hidden"
-                        aria-label="Browse categories"
+                        to={user ? "/profile" : "/login"}
+                        className="text-gray-600 transition hover:text-primary"
+                        aria-label="Tài khoản"
                     >
-                        <span className="material-symbols-outlined">menu</span>
+                        <FiUser className="h-[22px] w-[22px]" strokeWidth={1.5} />
                     </Link>
 
-                    {user ? (
-                        <Link
-                            to="/profile"
-                            className="flex h-10 w-10 items-center justify-center rounded-full font-inter text-sm font-semibold text-white shadow-sm ring-2 ring-primary/20 transition hover:ring-primary/40"
-                            style={{
-                                backgroundColor: PRIMARY,
-                                boxShadow:
-                                    location.pathname === '/profile'
-                                        ? '0 0 0 2px rgba(0,74,198,0.35)'
-                                        : undefined
-                            }}
-                            aria-label={`Profile, ${profileLabel(user)}`}
-                            title={profileLabel(user)}
-                        >
-                            {profileInitial(user)}
-                        </Link>
-                    ) : (
-                        <Link
-                            to="/login"
-                            className="rounded-full px-4 py-2 font-inter text-sm font-semibold text-white transition hover:opacity-90"
-                            style={{ backgroundColor: PRIMARY }}
-                        >
-                            Đăng nhập
-                        </Link>
-                    )}
+                    {/* Wishlist */}
+                    <Link
+                        to="/"
+                        className="text-gray-600 transition hover:text-primary"
+                        aria-label="Yêu thích"
+                    >
+                        <FiHeart className="h-[22px] w-[22px]" strokeWidth={1.5} />
+                    </Link>
+
+                    {/* Cart */}
+                    <Link
+                        to="/"
+                        className="relative text-gray-600 transition hover:text-primary"
+                        aria-label="Giỏ hàng"
+                    >
+                        <FiShoppingCart className="h-[22px] w-[22px]" strokeWidth={1.5} />
+                        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[10px] font-bold text-white">
+                            2
+                        </span>
+                    </Link>
+
+                    {/* Mobile Menu Toggle (Visible only on small screens) */}
+                    <button className="text-gray-600 transition hover:text-primary md:hidden" aria-label="Menu">
+                        <FiMenu className="h-6 w-6" strokeWidth={1.5} />
+                    </button>
                 </div>
+
+                {/* Expandable Search Overlay (Covers the Nav row when open) */}
+                {isSearchOpen && (
+                    <div 
+                        ref={searchContainerRef}
+                        className="absolute inset-x-0 top-0 z-10 flex h-20 items-center bg-white px-6 shadow-sm lg:px-8"
+                    >
+                        <div className="flex w-full items-center gap-4">
+                            <div className="flex-1">
+                                <ProductSearchBox
+                                    value={search}
+                                    onChange={setSearch}
+                                    onSearch={handleSearchSubmit}
+                                    placeholder="Tìm kiếm sản phẩm, thiết bị, giáo trình..."
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsSearchOpen(false)}
+                                className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
+                                aria-label="Đóng tìm kiếm"
+                            >
+                                <FiX className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </header>
     );
