@@ -14,7 +14,7 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
     { label: 'Home', to: '/' },
-    { label: 'Categories', to: '/categories', matchPath: true },
+    { label: 'Products', to: '/categories', matchPath: true },
     { label: 'Study Tools', to: '/categories?category=study-tools' },
     { label: 'Technology', to: '/categories?category=technology' },
     { label: 'Merchandise', to: '/categories?category=merchandise' },
