@@ -13,6 +13,12 @@ import {
     FiRefreshCw
 } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
 import axiosInstance from '../services/axiosConfig';
 import { useAppSelector } from '../store/hooks';
 import { formatPrice } from '../utils/formatPrice';
@@ -330,6 +336,63 @@ function ProductSection({
     );
 }
 
+function ProductCarouselSection({
+    id,
+    title,
+    products,
+    viewAllTo,
+    background
+}: {
+    id: string;
+    title: string;
+    products: CatalogProduct[];
+    viewAllTo: string;
+    background?: string;
+}) {
+    if (products.length === 0) return null;
+
+    return (
+        <section
+            id={id}
+            className="scroll-mt-24 w-full px-6 py-20 lg:px-8"
+            style={background ? { backgroundColor: background } : undefined}
+        >
+            <div className="mx-auto max-w-[1280px]">
+                <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
+                    <h2 className="font-inter text-3xl font-semibold" style={{ color: TEXT }}>
+                        {title}
+                    </h2>
+                    <Link
+                        to={viewAllTo}
+                        className="font-inter text-sm font-medium transition hover:underline"
+                        style={{ color: PRIMARY }}
+                    >
+                        View all
+                    </Link>
+                </div>
+                <Swiper
+                    modules={[Navigation, Pagination]}
+                    spaceBetween={32}
+                    slidesPerView={1.2}
+                    navigation
+                    pagination={{ clickable: true }}
+                    breakpoints={{
+                        640: { slidesPerView: 2.2 },
+                        1024: { slidesPerView: 4 }
+                    }}
+                    className="!pb-14"
+                >
+                    {products.map((p) => (
+                        <SwiperSlide key={p.id} className="h-auto">
+                            <ProductCard product={p} />
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </div>
+        </section>
+    );
+}
+
 function PromoBanners({ banners }: { banners: PromoBanner[] }) {
     const left =
         banners.find((b) => b.placement === 'promo_left') ||
@@ -627,6 +690,7 @@ export default function HomePage() {
     const featured = data?.featured?.length ? data.featured : (data?.newest?.slice(0, 3) ?? []);
     const newest = data?.newest ?? [];
     const bestSellers = data?.bestSellers ?? [];
+    const mostViewed = data?.mostViewed ?? [];
     const categories = data?.categories ?? [];
     const banners = data?.banners ?? [];
     const majors = data?.majors ?? [];
@@ -648,25 +712,18 @@ export default function HomePage() {
                     <>
                         <CategorySection categories={categories} />
                         <PromoBanners banners={banners} />
-                        <ProductSection
-                            id="featured"
-                            title="Featured Essentials"
-                            products={featured}
-                            viewAllTo="/categories?sort=popular"
-                            background={SURFACE}
-                        />
-                        <ProductSection
-                            id="newest"
-                            title="Newest Arrivals"
-                            products={newest}
-                            viewAllTo="/categories?sort=newest"
-                        />
-                        <ProductSection
+                        <ProductCarouselSection
                             id="bestsellers"
                             title="Best Sellers"
                             products={bestSellers}
                             viewAllTo="/categories?sort=popular"
                             background={SURFACE}
+                        />
+                        <ProductCarouselSection
+                            id="mostviewed"
+                            title="Most Viewed"
+                            products={mostViewed}
+                            viewAllTo="/categories?sort=popular"
                         />
                         <MajorFilterSection majors={majors} />
                     </>

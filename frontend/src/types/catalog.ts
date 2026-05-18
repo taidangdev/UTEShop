@@ -85,5 +85,6 @@ export interface HomePageData {
     featured: CatalogProduct[];
     newest: CatalogProduct[];
     bestSellers: CatalogProduct[];
+    mostViewed: CatalogProduct[];
     majors: Major[];
 }

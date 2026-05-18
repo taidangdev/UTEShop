@@ -6,15 +6,35 @@
     "categorySlug": "merchandise-uniform",
     "shortDescription": "Áo hoodie cotton 100%, in logo UTE phiên bản kỹ thuật.",
     "description": "Áo Hoodie UTE Limited — thiết kế dành cho sinh viên kỹ thuật, cotton 100%, form unisex.",
-    "price": 45.0,
-    "compareAtPrice": 55.0,
+    "price": 45,
+    "compareAtPrice": 55,
     "stockQuantity": 120,
     "condition": "new",
     "isFeatured": true,
     "image": "/OHoodieUteLimited.png",
-    "majorCodes": ["GENERAL", "IT", "MECH", "EE"],
-    "tags": ["hoodie", "merchandise", "ute"],
-    "attributes": { "sizes": ["S", "M", "L", "XL"], "colors": ["Navy", "Black"] }
+    "majorCodes": [
+      "GENERAL",
+      "IT",
+      "MECH",
+      "EE"
+    ],
+    "tags": [
+      "hoodie",
+      "merchandise",
+      "ute"
+    ],
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Navy",
+        "Black"
+      ]
+    }
   },
   {
     "sku": "ARD-KIT-001",
@@ -23,13 +43,21 @@
     "categorySlug": "study-electronics",
     "shortDescription": "Arduino Uno R3, cảm biến, LED và điện trở cho thực hành.",
     "description": "Bộ kit hoàn chỉnh cho các môn thực hành điện tử và nhúng.",
-    "price": 89.0,
+    "price": 89,
     "stockQuantity": 45,
     "condition": "new",
     "isFeatured": true,
     "image": "/ArduinoKitStarterPro.png",
-    "majorCodes": ["IT", "EE", "GENERAL"],
-    "tags": ["arduino", "kit", "electronics"]
+    "majorCodes": [
+      "IT",
+      "EE",
+      "GENERAL"
+    ],
+    "tags": [
+      "arduino",
+      "kit",
+      "electronics"
+    ]
   },
   {
     "sku": "LAMP-LED-001",
@@ -38,13 +66,19 @@
     "categorySlug": "life-dorm",
     "shortDescription": "Đèn học chống cận, 3 chế độ ánh sáng.",
     "description": "Đèn bàn LED tối giản, phù hợp phòng trọ và bàn học.",
-    "price": 32.0,
+    "price": 32,
     "stockQuantity": 80,
     "condition": "new",
     "isFeatured": true,
     "image": "/NHcChngCnLed.png",
-    "majorCodes": ["GENERAL"],
-    "tags": ["lamp", "dorm", "study"]
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "lamp",
+      "dorm",
+      "study"
+    ]
   },
   {
     "sku": "MOUSE-RGB-001",
@@ -52,13 +86,19 @@
     "name": "Chuột Gaming RGB",
     "categorySlug": "tech-peripherals",
     "shortDescription": "DPI 3200, LED RGB 7 màu, ergonomic.",
-    "price": 25.0,
+    "price": 25,
     "stockQuantity": 60,
     "condition": "new",
     "isFeatured": false,
     "image": "/ChutGamingRgb.png",
-    "majorCodes": ["IT", "GENERAL"],
-    "tags": ["mouse", "gaming"]
+    "majorCodes": [
+      "IT",
+      "GENERAL"
+    ],
+    "tags": [
+      "mouse",
+      "gaming"
+    ]
   },
   {
     "sku": "KB-BT-001",
@@ -66,13 +106,18 @@
     "name": "Bàn phím cơ Bluetooth",
     "categorySlug": "tech-peripherals",
     "shortDescription": "Switch xanh, kết nối đa thiết bị.",
-    "price": 55.0,
+    "price": 55,
     "stockQuantity": 35,
     "condition": "new",
     "isFeatured": false,
     "image": "/BnPhmCBluetooth.png",
-    "majorCodes": ["IT"],
-    "tags": ["keyboard", "bluetooth"]
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "keyboard",
+      "bluetooth"
+    ]
   },
   {
     "sku": "NOTEBOOK-UTE-001",
@@ -85,8 +130,13 @@
     "condition": "new",
     "isFeatured": false,
     "image": "/STayUteEngineering.png",
-    "majorCodes": ["GENERAL"],
-    "tags": ["notebook", "stationery"]
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "notebook",
+      "stationery"
+    ]
   },
   {
     "sku": "COMPASS-MECH-001",
@@ -94,13 +144,19 @@
     "name": "Bộ compa & thước kẹp Cơ khí",
     "categorySlug": "study-drafting",
     "shortDescription": "Compa kim loại, thước kẹp cho sinh viên Cơ khí.",
-    "price": 18.0,
+    "price": 18,
     "stockQuantity": 40,
     "condition": "new",
     "isFeatured": false,
     "image": "/PremiumLaptop.png",
-    "majorCodes": ["MECH", "CIVIL"],
-    "tags": ["drafting", "mechanical"]
+    "majorCodes": [
+      "MECH",
+      "CIVIL"
+    ],
+    "tags": [
+      "drafting",
+      "mechanical"
+    ]
   },
   {
     "sku": "USED-CALC-001",
@@ -108,13 +164,590 @@
     "name": "Máy tính Casio fx-580VN X (đã qua sử dụng)",
     "categorySlug": "second-hand-consignment",
     "shortDescription": "Ký gửi từ sinh viên khóa trước, còn tốt.",
-    "price": 12.0,
+    "price": 12,
     "stockQuantity": 3,
     "condition": "used",
     "productType": "consignment",
     "isFeatured": false,
     "image": "/ArduinoKitStarterPro.png",
-    "majorCodes": ["GENERAL", "EE", "CIVIL"],
-    "tags": ["second-hand", "calculator"]
+    "majorCodes": [
+      "GENERAL",
+      "EE",
+      "CIVIL"
+    ],
+    "tags": [
+      "second-hand",
+      "calculator"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-001",
+    "slug": "dummy-product-1",
+    "name": "Sản phẩm mẫu 1",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đây là sản phẩm mẫu số 1 dùng để test phân trang và UI trượt ngang.",
+    "price": 12.5,
+    "stockQuantity": 101,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-002",
+    "slug": "dummy-product-2",
+    "name": "Sản phẩm mẫu 2",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Đây là sản phẩm mẫu số 2 dùng để test phân trang và UI trượt ngang.",
+    "price": 15,
+    "stockQuantity": 102,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-003",
+    "slug": "dummy-product-3",
+    "name": "Sản phẩm mẫu 3",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Đây là sản phẩm mẫu số 3 dùng để test phân trang và UI trượt ngang.",
+    "price": 17.5,
+    "stockQuantity": 103,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-004",
+    "slug": "dummy-product-4",
+    "name": "Sản phẩm mẫu 4",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Đây là sản phẩm mẫu số 4 dùng để test phân trang và UI trượt ngang.",
+    "price": 20,
+    "stockQuantity": 104,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-005",
+    "slug": "dummy-product-5",
+    "name": "Sản phẩm mẫu 5",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Đây là sản phẩm mẫu số 5 dùng để test phân trang và UI trượt ngang.",
+    "price": 22.5,
+    "stockQuantity": 105,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-006",
+    "slug": "dummy-product-6",
+    "name": "Sản phẩm mẫu 6",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Đây là sản phẩm mẫu số 6 dùng để test phân trang và UI trượt ngang.",
+    "price": 25,
+    "stockQuantity": 106,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-007",
+    "slug": "dummy-product-7",
+    "name": "Sản phẩm mẫu 7",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đây là sản phẩm mẫu số 7 dùng để test phân trang và UI trượt ngang.",
+    "price": 27.5,
+    "stockQuantity": 107,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-008",
+    "slug": "dummy-product-8",
+    "name": "Sản phẩm mẫu 8",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Đây là sản phẩm mẫu số 8 dùng để test phân trang và UI trượt ngang.",
+    "price": 30,
+    "stockQuantity": 108,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-009",
+    "slug": "dummy-product-9",
+    "name": "Sản phẩm mẫu 9",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Đây là sản phẩm mẫu số 9 dùng để test phân trang và UI trượt ngang.",
+    "price": 32.5,
+    "stockQuantity": 109,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-010",
+    "slug": "dummy-product-10",
+    "name": "Sản phẩm mẫu 10",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Đây là sản phẩm mẫu số 10 dùng để test phân trang và UI trượt ngang.",
+    "price": 35,
+    "stockQuantity": 110,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-011",
+    "slug": "dummy-product-11",
+    "name": "Sản phẩm mẫu 11",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Đây là sản phẩm mẫu số 11 dùng để test phân trang và UI trượt ngang.",
+    "price": 37.5,
+    "stockQuantity": 111,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-012",
+    "slug": "dummy-product-12",
+    "name": "Sản phẩm mẫu 12",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Đây là sản phẩm mẫu số 12 dùng để test phân trang và UI trượt ngang.",
+    "price": 40,
+    "stockQuantity": 112,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-013",
+    "slug": "dummy-product-13",
+    "name": "Sản phẩm mẫu 13",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đây là sản phẩm mẫu số 13 dùng để test phân trang và UI trượt ngang.",
+    "price": 42.5,
+    "stockQuantity": 113,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-014",
+    "slug": "dummy-product-14",
+    "name": "Sản phẩm mẫu 14",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Đây là sản phẩm mẫu số 14 dùng để test phân trang và UI trượt ngang.",
+    "price": 45,
+    "stockQuantity": 114,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-015",
+    "slug": "dummy-product-15",
+    "name": "Sản phẩm mẫu 15",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Đây là sản phẩm mẫu số 15 dùng để test phân trang và UI trượt ngang.",
+    "price": 47.5,
+    "stockQuantity": 115,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-016",
+    "slug": "dummy-product-16",
+    "name": "Sản phẩm mẫu 16",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Đây là sản phẩm mẫu số 16 dùng để test phân trang và UI trượt ngang.",
+    "price": 50,
+    "stockQuantity": 116,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-017",
+    "slug": "dummy-product-17",
+    "name": "Sản phẩm mẫu 17",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Đây là sản phẩm mẫu số 17 dùng để test phân trang và UI trượt ngang.",
+    "price": 52.5,
+    "stockQuantity": 117,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-018",
+    "slug": "dummy-product-18",
+    "name": "Sản phẩm mẫu 18",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Đây là sản phẩm mẫu số 18 dùng để test phân trang và UI trượt ngang.",
+    "price": 55,
+    "stockQuantity": 118,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-019",
+    "slug": "dummy-product-19",
+    "name": "Sản phẩm mẫu 19",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đây là sản phẩm mẫu số 19 dùng để test phân trang và UI trượt ngang.",
+    "price": 57.5,
+    "stockQuantity": 119,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-020",
+    "slug": "dummy-product-20",
+    "name": "Sản phẩm mẫu 20",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Đây là sản phẩm mẫu số 20 dùng để test phân trang và UI trượt ngang.",
+    "price": 60,
+    "stockQuantity": 120,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-021",
+    "slug": "dummy-product-21",
+    "name": "Sản phẩm mẫu 21",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Đây là sản phẩm mẫu số 21 dùng để test phân trang và UI trượt ngang.",
+    "price": 62.5,
+    "stockQuantity": 121,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-022",
+    "slug": "dummy-product-22",
+    "name": "Sản phẩm mẫu 22",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Đây là sản phẩm mẫu số 22 dùng để test phân trang và UI trượt ngang.",
+    "price": 65,
+    "stockQuantity": 122,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-023",
+    "slug": "dummy-product-23",
+    "name": "Sản phẩm mẫu 23",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Đây là sản phẩm mẫu số 23 dùng để test phân trang và UI trượt ngang.",
+    "price": 67.5,
+    "stockQuantity": 123,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-024",
+    "slug": "dummy-product-24",
+    "name": "Sản phẩm mẫu 24",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Đây là sản phẩm mẫu số 24 dùng để test phân trang và UI trượt ngang.",
+    "price": 70,
+    "stockQuantity": 124,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-025",
+    "slug": "dummy-product-25",
+    "name": "Sản phẩm mẫu 25",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đây là sản phẩm mẫu số 25 dùng để test phân trang và UI trượt ngang.",
+    "price": 72.5,
+    "stockQuantity": 125,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-026",
+    "slug": "dummy-product-26",
+    "name": "Sản phẩm mẫu 26",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Đây là sản phẩm mẫu số 26 dùng để test phân trang và UI trượt ngang.",
+    "price": 75,
+    "stockQuantity": 126,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-027",
+    "slug": "dummy-product-27",
+    "name": "Sản phẩm mẫu 27",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Đây là sản phẩm mẫu số 27 dùng để test phân trang và UI trượt ngang.",
+    "price": 77.5,
+    "stockQuantity": 127,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-028",
+    "slug": "dummy-product-28",
+    "name": "Sản phẩm mẫu 28",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Đây là sản phẩm mẫu số 28 dùng để test phân trang và UI trượt ngang.",
+    "price": 80,
+    "stockQuantity": 128,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-029",
+    "slug": "dummy-product-29",
+    "name": "Sản phẩm mẫu 29",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Đây là sản phẩm mẫu số 29 dùng để test phân trang và UI trượt ngang.",
+    "price": 82.5,
+    "stockQuantity": 129,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
+  },
+  {
+    "sku": "DUMMY-PROD-030",
+    "slug": "dummy-product-30",
+    "name": "Sản phẩm mẫu 30",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Đây là sản phẩm mẫu số 30 dùng để test phân trang và UI trượt ngang.",
+    "price": 85,
+    "stockQuantity": 130,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "test",
+      "dummy"
+    ]
   }
 ]
