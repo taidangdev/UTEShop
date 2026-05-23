@@ -16,14 +16,16 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    timeout: 10000
+    timeout: 10000,
+    withCredentials: true
 });
 
 /** Raw client for refresh — avoids running the 401 retry interceptor on itself. */
 const refreshClient = axios.create({
     baseURL: API_BASE_URL,
     headers: { 'Content-Type': 'application/json' },
-    timeout: 10000
+    timeout: 10000,
+    withCredentials: true
 });
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {

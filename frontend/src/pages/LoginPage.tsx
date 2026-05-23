@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { mergeLocalCartToServer } from '../services/cartApi';
 import { loginUser, clearAuthError } from '../store/authSlice';
 import AuthShell from '../components/auth/AuthShell';
 
@@ -32,6 +33,7 @@ const LoginPage = () => {
         const trimmedEmail = email.trim();
         const result = await dispatch(loginUser({ email: trimmedEmail, password }));
         if (loginUser.fulfilled.match(result)) {
+            mergeLocalCartToServer().catch(() => {});
             if (rememberMe) {
                 localStorage.setItem(REMEMBER_KEY, trimmedEmail);
             } else {

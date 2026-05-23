@@ -3,6 +3,9 @@ import ShopLayout from './components/layout/ShopLayout';
 import HomePage from './pages/HomePage';
 import CategoriesPage from './pages/CategoriesPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutInformationPage from './pages/CheckoutInformationPage';
+import CheckoutPaymentPage from './pages/CheckoutPaymentPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -18,6 +21,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/categories" element={<CategoriesPage />} />
                     <Route path="/products/:slug" element={<ProductDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/activate" element={<ActivateAccountPage />} />
@@ -31,6 +35,8 @@ function App() {
                         }
                     />
                 </Route>
+                <Route path="/checkout" element={<CheckoutInformationPage />} />
+                <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
             </Routes>
         </Router>
     );

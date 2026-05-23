@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosConfig';
 import { formatPrice } from '../utils/formatPrice';
+import { addItemToServerCart } from '../services/cartApi';
 import { addToCart } from '../utils/cartStorage';
 import ProductImageGallery from '../components/catalog/ProductImageGallery';
 import QuantitySelector from '../components/catalog/QuantitySelector';
@@ -261,16 +262,20 @@ export default function ProductDetailPage() {
         );
     }
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!inStock) return;
-        addToCart({
-            productId: product.id,
-            slug: product.slug,
-            name: product.name,
-            price: product.price,
-            imageUrl: product.imageUrl ?? images[0]?.url ?? null,
-            quantity
-        });
+        try {
+            await addItemToServerCart({ productId: product.id, quantity });
+        } catch {
+            addToCart({
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                imageUrl: product.imageUrl ?? images[0]?.url ?? null,
+                quantity
+            });
+        }
         setCartMessage(`Added ${quantity} × ${product.name} to cart`);
         window.setTimeout(() => setCartMessage(null), 3500);
     };
@@ -408,13 +413,6 @@ export default function ProductDetailPage() {
                             >
                                 <span className="material-symbols-outlined">shopping_cart</span>
                                 {inStock ? 'Add to Cart' : 'Out of Stock'}
-                            </button>
-                            <button
-                                type="button"
-                                className="flex h-14 w-full items-center justify-center gap-2 rounded-[24px] bg-surface-container-low text-sm font-bold text-on-surface transition hover:bg-surface-container-high active:scale-95"
-                            >
-                                <span className="material-symbols-outlined">favorite</span>
-                                Save to Wishlist
                             </button>
                         </div>
 
