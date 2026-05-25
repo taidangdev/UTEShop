@@ -47,8 +47,19 @@ const getOrder = async (req, res, next) => {
     }
 };
 
+const cancelOrder = async (req, res, next) => {
+    try {
+        const { orderNumber } = req.params;
+        const data = await checkoutService.cancelOrderForUser(orderNumber, req.user.id);
+        return successResponse(res, 200, 'Order cancelled successfully', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     preview,
     placeOrder,
-    getOrder
+    getOrder,
+    cancelOrder
 };

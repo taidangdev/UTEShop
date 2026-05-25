@@ -420,9 +420,169 @@ async function getOrderForUser(orderNumber, userId) {
     return { order: mapOrderResponse(order, order.items, order.payment) };
 }
 
+async function incrementStock(line, transaction) {
+    if (line.variantId) {
+        const variant = await ProductVariant.findByPk(line.variantId, { transaction });
+        if (!variant) return;
+        await variant.update(
+            { stockQuantity: variant.stockQuantity + line.quantity },
+            { transaction }
+        );
+        return;
+    }
+
+    const product = await Product.findByPk(line.productId, { transaction });
+    if (!product) return;
+
+    const nextStock = product.stockQuantity + line.quantity;
+    const updates = { stockQuantity: nextStock };
+    if (product.status === 'out_of_stock' && nextStock > 0) {
+        updates.status = 'active';
+    }
+    await product.update(updates, { transaction });
+}
+
+async function cancelOrderForUser(orderNumber, userId) {
+    const transaction = await sequelize.transaction();
+    try {
+        const order = await Order.findOne({
+            where: { orderNumber },
+            include: [
+                { model: OrderItem, as: 'items' },
+                { model: Payment, as: 'payment' }
+            ],
+            transaction
+        });
+
+        if (!order) {
+            const err = new Error('Order not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        if (order.userId && order.userId !== userId) {
+            const err = new Error('Forbidden');
+            err.statusCode = 403;
+            throw err;
+        }
+
+        const cancellableStatuses = ['pending', 'confirmed'];
+        if (!cancellableStatuses.includes(order.status)) {
+            const err = new Error('Order cannot be cancelled in its current state');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const originalStatus = order.status;
+        const now = new Date();
+
+        if (originalStatus === 'pending') {
+            await order.update({
+                status: 'cancelled',
+                cancelledAt: now
+            }, { transaction });
+
+            if (order.payment) {
+                await order.payment.update({
+                    status: 'failed'
+                }, { transaction });
+            }
+        } else if (originalStatus === 'confirmed') {
+            await order.update({
+                status: 'refunded',
+                cancelledAt: now
+            }, { transaction });
+
+            if (order.payment) {
+                await order.payment.update({
+                    status: 'refunded'
+                }, { transaction });
+            }
+        }
+
+        for (const item of order.items) {
+            await incrementStock(
+                {
+                    productId: item.productId,
+                    variantId: item.variantId,
+                    quantity: item.quantity
+                },
+                transaction
+            );
+        }
+
+        await transaction.commit();
+
+        const updatedOrder = await Order.findOne({
+            where: { orderNumber },
+            include: [
+                { model: OrderItem, as: 'items' },
+                { model: Payment, as: 'payment' }
+            ]
+        });
+
+        return { order: mapOrderResponse(updatedOrder, updatedOrder.items, updatedOrder.payment) };
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
+async function autoConfirmPendingOrders() {
+    const { Op } = require('sequelize');
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    const ordersToConfirm = await Order.findAll({
+        where: {
+            status: 'pending',
+            placedAt: {
+                [Op.lte]: fiveMinutesAgo
+            }
+        },
+        include: [{ model: Payment, as: 'payment' }]
+    });
+
+    if (ordersToConfirm.length === 0) return 0;
+
+    let count = 0;
+    for (const order of ordersToConfirm) {
+        const transaction = await sequelize.transaction();
+        try {
+            await order.update({
+                status: 'confirmed'
+            }, { transaction });
+
+            if (order.payment) {
+                const nonCodMethods = ['bank_transfer', 'momo', 'vnpay'];
+                if (nonCodMethods.includes(order.payment.method)) {
+                    await order.payment.update({
+                        status: 'paid',
+                        paidAt: new Date()
+                    }, { transaction });
+
+                    await order.update({
+                        paidAt: new Date()
+                    }, { transaction });
+                }
+            }
+
+            await transaction.commit();
+            count++;
+            console.log(`[AutoConfirm] Successfully confirmed order: ${order.orderNumber}`);
+        } catch (err) {
+            await transaction.rollback();
+            console.error(`[AutoConfirm] Failed to confirm order ${order.orderNumber}:`, err);
+        }
+    }
+
+    return count;
+}
+
 module.exports = {
     previewCheckout,
     placeOrder,
     getOrderForUser,
+    cancelOrderForUser,
+    autoConfirmPendingOrders,
     normalizeInformation
 };

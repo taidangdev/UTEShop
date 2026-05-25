@@ -24,6 +24,14 @@ const ensureUserColumns = async (sequelize) => {
     await addIfMissing('studentId', { type: DataTypes.STRING(20), allowNull: true });
     await addIfMissing('avatarUrl', { type: DataTypes.STRING(500), allowNull: true });
     await addIfMissing('emailVerifiedAt', { type: DataTypes.DATE, allowNull: true });
+
+    // Ensure users.role column has ENUM('admin', 'customer', 'user')
+    try {
+        await sequelize.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'customer', 'user') DEFAULT 'customer'");
+        console.log('  + Verified users.role ENUM values');
+    } catch (err) {
+        console.warn('  ! Warning updating users.role ENUM:', err.message);
+    }
 };
 
 module.exports = { ensureUserColumns };

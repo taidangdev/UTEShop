@@ -7,6 +7,7 @@ const { seedProducts } = require('./seedProducts');
 const { seedBanners } = require('./seedBanners');
 const { seedPromotions } = require('./seedPromotions');
 const { seedUsers } = require('./seedUsers');
+const { seedOrders } = require('./seedOrders');
 
 const run = async () => {
     try {
@@ -36,6 +37,9 @@ const run = async () => {
 
         console.log('Seeding users...');
         await seedUsers();
+
+        console.log('Seeding orders...');
+        await seedOrders();
 
         console.log('Done.');
     } catch (err) {

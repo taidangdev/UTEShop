@@ -130,8 +130,11 @@ const ProfilePage = () => {
     };
 
     const scrollTo = (id: string) => {
-        setActiveSection(id);
-        document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (id === 'orders') {
+            navigate('/profile/orders');
+        } else {
+            setActiveSection(id);
+        }
     };
 
     const name = displayName(user, authUser);
@@ -249,287 +252,293 @@ const ProfilePage = () => {
                                         <span className="text-sm font-medium">Sign Out</span>
                                     </button>
                                 </nav>
-                            </aside>
-
-                            {/* Main content */}
-                            <div className="flex flex-col gap-20 lg:col-span-9">
+                            </aside>                            {/* Main content */}
+                            <div className="lg:col-span-9">
                                 {/* Overview / mobile nav */}
-                                <section id="section-overview">
-                                    <div className="mb-6 flex gap-2 overflow-x-auto lg:hidden">
-                                        {SIDEBAR_ITEMS.map((item) => (
-                                            <button
-                                                key={item.id}
-                                                type="button"
-                                                onClick={() => scrollTo(item.id)}
-                                                className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-                                                    activeSection === item.id
-                                                        ? 'bg-primary text-on-primary'
-                                                        : 'bg-surface-container-high text-on-surface-variant'
-                                                }`}
-                                            >
-                                                {item.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                        <div className="rounded-[24px] bg-surface-container-low p-6">
-                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                Account
-                                            </p>
-                                            <p className="mt-2 text-sm text-on-surface">{user?.email}</p>
-                                            <p className="mt-1 text-sm text-on-surface-variant">
-                                                {user?.phone || 'No phone on file'}
-                                            </p>
+                                {activeSection === 'overview' && (
+                                    <section id="section-overview" className="flex flex-col gap-8">
+                                        <div className="mb-6 flex gap-2 overflow-x-auto lg:hidden">
+                                            {SIDEBAR_ITEMS.map((item) => (
+                                                <button
+                                                    key={item.id}
+                                                    type="button"
+                                                    onClick={() => scrollTo(item.id)}
+                                                    className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
+                                                        activeSection === item.id
+                                                            ? 'bg-primary text-on-primary'
+                                                            : 'bg-surface-container-high text-on-surface-variant'
+                                                    }`}
+                                                >
+                                                    {item.label}
+                                                </button>
+                                            ))}
                                         </div>
-                                        <div className="rounded-[24px] bg-surface-container-low p-6">
-                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                Orders
-                                            </p>
-                                            <p className="mt-2 text-3xl font-semibold text-primary">
-                                                {stats?.orderCount ?? 0}
-                                            </p>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                            <div className="rounded-[24px] bg-surface-container-low p-6">
+                                                <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                    Account
+                                                </p>
+                                                <p className="mt-2 text-sm text-on-surface">{user?.email}</p>
+                                                <p className="mt-1 text-sm text-on-surface-variant">
+                                                    {user?.phone || 'No phone on file'}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-[24px] bg-surface-container-low p-6">
+                                                <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                    Orders
+                                                </p>
+                                                <p className="mt-2 text-3xl font-semibold text-primary">
+                                                    {stats?.orderCount ?? 0}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-[24px] bg-surface-container-low p-6">
+                                                <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                    Reviews
+                                                </p>
+                                                <p className="mt-2 text-3xl font-semibold text-primary">
+                                                    {stats?.reviewCount ?? 0}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="rounded-[24px] bg-surface-container-low p-6">
-                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                Reviews
+                                        {user?.address && (
+                                            <p className="mt-4 text-sm text-on-surface-variant">
+                                                <span className="font-semibold text-on-surface">Address:</span>{' '}
+                                                {user.address}
                                             </p>
-                                            <p className="mt-2 text-3xl font-semibold text-primary">
-                                                {stats?.reviewCount ?? 0}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {user?.address && (
-                                        <p className="mt-4 text-sm text-on-surface-variant">
-                                            <span className="font-semibold text-on-surface">Address:</span>{' '}
-                                            {user.address}
-                                        </p>
-                                    )}
-                                </section>
+                                        )}
+                                    </section>
+                                )}
 
                                 {/* Orders */}
-                                <section id="section-orders">
-                                    <div className="mb-8 flex items-center justify-between">
-                                        <h2 className="text-2xl font-semibold text-on-surface">Order History</h2>
-                                        <button
-                                            type="button"
-                                            className="text-sm font-medium text-primary hover:underline"
-                                        >
-                                            View All Orders
-                                        </button>
-                                    </div>
-                                    {ordersError && (
-                                        <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
-                                            {ordersError}
-                                        </p>
-                                    )}
-                                    <div className="flex flex-col gap-2">
-                                        {ordersLoading && (
+                                {activeSection === 'orders' && (
+                                    <section id="section-orders">
+                                        <div className="mb-8 flex items-center justify-between">
+                                            <h2 className="text-2xl font-semibold text-on-surface">Order History</h2>
+                                            <Link
+                                                to="/profile/orders"
+                                                className="text-sm font-medium text-primary hover:underline"
+                                            >
+                                                View All Orders
+                                            </Link>
+                                        </div>
+                                        {ordersError && (
+                                            <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
+                                                {ordersError}
+                                            </p>
+                                        )}
+                                        <div className="flex flex-col gap-4">
+                                            {ordersLoading && (
+                                                <div className="flex justify-center py-12">
+                                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                                                </div>
+                                            )}
+                                            {!ordersLoading && orders.length === 0 && (
+                                                <p className="rounded-[24px] bg-surface-container-low p-8 text-center text-on-surface-variant">
+                                                    You have not placed any orders yet.{' '}
+                                                    <Link to="/categories" className="text-primary hover:underline">
+                                                        Browse products
+                                                    </Link>
+                                                </p>
+                                            )}
+                                            {!ordersLoading &&
+                                                orders.map((order) => (
+                                                <div
+                                                    key={order.orderNumber}
+                                                    className="soft-shadow rounded-[24px] border border-transparent bg-surface-container-lowest p-6 transition-all hover:border-primary/20"
+                                                >
+                                                    <div className="flex flex-col justify-between gap-4 md:flex-row">
+                                                        <div className="flex gap-4">
+                                                            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-container">
+                                                                <img
+                                                                    src={order.image}
+                                                                    alt=""
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <div className="mb-1 flex items-center gap-2">
+                                                                    <span
+                                                                        className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${order.statusClass}`}
+                                                                    >
+                                                                        {order.statusLabel}
+                                                                    </span>
+                                                                    <span className="text-xs text-on-surface-variant">
+                                                                        #{order.orderNumber}
+                                                                    </span>
+                                                                </div>
+                                                                <h3 className="text-sm font-medium text-on-surface">
+                                                                    {order.title}
+                                                                </h3>
+                                                                <p className="text-sm text-on-surface-variant">
+                                                                    {order.detail}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-end justify-between md:flex-col md:items-end">
+                                                            <span
+                                                                className={`text-2xl font-semibold ${order.priceClass}`}
+                                                            >
+                                                                {order.price}
+                                                            </span>
+                                                            <Link
+                                                                to={`/profile/orders/${order.orderNumber}`}
+                                                                className={`mt-2 inline-flex items-center justify-center rounded-full px-6 py-2 text-xs font-semibold transition-colors ${order.actionClass}`}
+                                                            >
+                                                                {order.action}
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                    {order.progress > 0 && (
+                                                        <OrderProgress filled={order.progress} />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* Reviews */}
+                                {activeSection === 'reviews' && (
+                                    <section id="section-reviews">
+                                        <h2 className="mb-8 text-2xl font-semibold text-on-surface">My Reviews</h2>
+                                        {reviewsError && (
+                                            <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
+                                                {reviewsError}
+                                            </p>
+                                        )}
+                                        {reviewsLoading && (
                                             <div className="flex justify-center py-12">
                                                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
                                             </div>
                                         )}
-                                        {!ordersLoading && orders.length === 0 && (
-                                            <p className="rounded-[24px] bg-surface-container-low p-8 text-center text-on-surface-variant">
-                                                You have not placed any orders yet.{' '}
-                                                <Link to="/categories" className="text-primary hover:underline">
-                                                    Browse products
-                                                </Link>
-                                            </p>
-                                        )}
-                                        {!ordersLoading &&
-                                            orders.map((order) => (
-                                            <div
-                                                key={order.orderNumber}
-                                                className="soft-shadow rounded-[24px] border border-transparent bg-surface-container-lowest p-6 transition-all hover:border-primary/20"
-                                            >
-                                                <div className="flex flex-col justify-between gap-4 md:flex-row">
-                                                    <div className="flex gap-4">
-                                                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-container">
-                                                            <img
-                                                                src={order.image}
-                                                                alt=""
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <div className="mb-1 flex items-center gap-2">
-                                                                <span
-                                                                    className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${order.statusClass}`}
-                                                                >
-                                                                    {order.statusLabel}
-                                                                </span>
-                                                                <span className="text-xs text-on-surface-variant">
-                                                                    #{order.orderNumber}
-                                                                </span>
-                                                            </div>
-                                                            <h3 className="text-sm font-medium text-on-surface">
-                                                                {order.title}
-                                                            </h3>
-                                                            <p className="text-sm text-on-surface-variant">
-                                                                {order.detail}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-end justify-between md:flex-col md:items-end">
-                                                        <span
-                                                            className={`text-2xl font-semibold ${order.priceClass}`}
-                                                        >
-                                                            {order.price}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            className={`mt-2 rounded-full px-6 py-2 text-xs font-semibold transition-colors ${order.actionClass}`}
-                                                        >
-                                                            {order.action}
-                                                        </button>
-                                                    </div>
+                                        {!reviewsLoading && reviews.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
+                                                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                                    <span className="material-symbols-outlined text-[32px]">
+                                                        rate_review
+                                                    </span>
                                                 </div>
-                                                {order.progress > 0 && (
-                                                    <OrderProgress filled={order.progress} />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-
-                                {/* Reviews */}
-                                <section id="section-reviews">
-                                    <h2 className="mb-8 text-2xl font-semibold text-on-surface">My Reviews</h2>
-                                    {reviewsError && (
-                                        <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
-                                            {reviewsError}
-                                        </p>
-                                    )}
-                                    {reviewsLoading && (
-                                        <div className="flex justify-center py-12">
-                                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-                                        </div>
-                                    )}
-                                    {!reviewsLoading && reviews.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
-                                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                                <span className="material-symbols-outlined text-[32px]">
-                                                    rate_review
-                                                </span>
-                                            </div>
-                                            <h3 className="mb-2 text-2xl font-semibold text-on-surface">
-                                                No reviews yet
-                                            </h3>
-                                            <p className="mb-6 text-sm text-on-surface-variant">
-                                                After you purchase and receive products, your reviews will appear
-                                                here.
-                                            </p>
-                                            <Link
-                                                to="/categories"
-                                                className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-on-primary transition active:scale-95"
-                                            >
-                                                Browse Products
-                                            </Link>
-                                        </div>
-                                    )}
-                                    {!reviewsLoading && reviews.length > 0 && (
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                            {reviews.map((review) => (
-                                                <div
-                                                    key={review.id}
-                                                    className="soft-shadow rounded-[24px] bg-surface-container-lowest p-8"
+                                                <h3 className="mb-2 text-2xl font-semibold text-on-surface">
+                                                    No reviews yet
+                                                </h3>
+                                                <p className="mb-6 text-sm text-on-surface-variant">
+                                                    After you purchase and receive products, your reviews will appear
+                                                    here.
+                                                </p>
+                                                <Link
+                                                    to="/categories"
+                                                    className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-on-primary transition active:scale-95"
                                                 >
-                                                    <div className="mb-4 flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-1">
-                                                            {[1, 2, 3, 4, 5].map((n) => (
-                                                                <span
-                                                                    key={n}
-                                                                    className={`material-symbols-outlined ${
-                                                                        n <= review.rating
-                                                                            ? 'material-symbols-filled text-primary'
-                                                                            : 'text-outline-variant'
-                                                                    }`}
-                                                                >
-                                                                    star
-                                                                </span>
-                                                            ))}
+                                                    Browse Products
+                                                </Link>
+                                            </div>
+                                        )}
+                                        {!reviewsLoading && reviews.length > 0 && (
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                {reviews.map((review) => (
+                                                    <div
+                                                        key={review.id}
+                                                        className="soft-shadow rounded-[24px] bg-surface-container-lowest p-8"
+                                                    >
+                                                        <div className="mb-4 flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-1">
+                                                                {[1, 2, 3, 4, 5].map((n) => (
+                                                                    <span
+                                                                        key={n}
+                                                                        className={`material-symbols-outlined ${
+                                                                            n <= review.rating
+                                                                                ? 'material-symbols-filled text-primary'
+                                                                                : 'text-outline-variant'
+                                                                        }`}
+                                                                    >
+                                                                        star
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                            <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-[10px] font-bold uppercase text-on-surface-variant">
+                                                                {review.status}
+                                                            </span>
                                                         </div>
-                                                        <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-[10px] font-bold uppercase text-on-surface-variant">
-                                                            {review.status}
-                                                        </span>
+                                                        {review.productSlug ? (
+                                                            <Link
+                                                                to={`/products/${review.productSlug}`}
+                                                                className="mb-2 block text-sm font-medium text-on-surface hover:text-primary"
+                                                            >
+                                                                {review.productName}
+                                                            </Link>
+                                                        ) : (
+                                                            <h3 className="mb-2 text-sm font-medium text-on-surface">
+                                                                {review.productName}
+                                                            </h3>
+                                                        )}
+                                                        {review.comment ? (
+                                                            <p className="text-base italic text-on-surface-variant">
+                                                                &quot;{review.comment}&quot;
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-sm text-on-surface-variant">
+                                                                No written comment.
+                                                            </p>
+                                                        )}
+                                                        <p className="mt-4 text-xs text-on-surface-variant">
+                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                        </p>
                                                     </div>
-                                                    {review.productSlug ? (
-                                                        <Link
-                                                            to={`/products/${review.productSlug}`}
-                                                            className="mb-2 block text-sm font-medium text-on-surface hover:text-primary"
-                                                        >
-                                                            {review.productName}
-                                                        </Link>
-                                                    ) : (
-                                                        <h3 className="mb-2 text-sm font-medium text-on-surface">
-                                                            {review.productName}
-                                                        </h3>
-                                                    )}
-                                                    {review.comment ? (
-                                                        <p className="text-base italic text-on-surface-variant">
-                                                            &quot;{review.comment}&quot;
-                                                        </p>
-                                                    ) : (
-                                                        <p className="text-sm text-on-surface-variant">
-                                                            No written comment.
-                                                        </p>
-                                                    )}
-                                                    <p className="mt-4 text-xs text-on-surface-variant">
-                                                        {new Date(review.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </section>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </section>
+                                )}
 
                                 {/* Settings */}
-                                <section id="section-settings">
-                                    <h2 className="mb-8 text-2xl font-semibold text-on-surface">
-                                        Account Settings
-                                    </h2>
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                                        {[
-                                            {
-                                                icon: 'lock',
-                                                title: 'Security',
-                                                desc: 'Passwords, 2FA, Devices'
-                                            },
-                                            {
-                                                icon: 'credit_card',
-                                                title: 'Payments',
-                                                desc: 'Student loans, Cards, Billing'
-                                            },
-                                            {
-                                                icon: 'notifications',
-                                                title: 'Notifications',
-                                                desc: 'Order alerts, Price drops'
-                                            }
-                                        ].map((card) => (
-                                            <button
-                                                key={card.title}
-                                                type="button"
-                                                className="group cursor-pointer rounded-2xl bg-surface-container-low p-6 text-left transition-colors hover:bg-surface-container-high"
-                                            >
-                                                <span className="material-symbols-outlined mb-3 text-primary transition-transform group-hover:scale-110">
-                                                    {card.icon}
-                                                </span>
-                                                <h4 className="text-sm font-medium text-on-surface">
-                                                    {card.title}
-                                                </h4>
-                                                <p className="mt-1 text-xs text-on-surface-variant">{card.desc}</p>
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleLogout}
-                                        className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-error/20 py-4 text-error transition hover:bg-error/10 lg:hidden"
-                                    >
-                                        <span className="material-symbols-outlined">logout</span>
-                                        Sign Out
-                                    </button>
-                                </section>
+                                {activeSection === 'settings' && (
+                                    <section id="section-settings">
+                                        <h2 className="mb-8 text-2xl font-semibold text-on-surface">
+                                            Account Settings
+                                        </h2>
+                                        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                                            {[
+                                                {
+                                                    icon: 'lock',
+                                                    title: 'Security',
+                                                    desc: 'Passwords, 2FA, Devices'
+                                                },
+                                                {
+                                                    icon: 'credit_card',
+                                                    title: 'Payments',
+                                                    desc: 'Student loans, Cards, Billing'
+                                                },
+                                                {
+                                                    icon: 'notifications',
+                                                    title: 'Notifications',
+                                                    desc: 'Order alerts, Price drops'
+                                                }
+                                            ].map((card) => (
+                                                <button
+                                                    key={card.title}
+                                                    type="button"
+                                                    className="group cursor-pointer rounded-2xl bg-surface-container-low p-6 text-left transition-colors hover:bg-surface-container-high"
+                                                >
+                                                    <span className="material-symbols-outlined mb-3 text-primary transition-transform group-hover:scale-110">
+                                                        {card.icon}
+                                                    </span>
+                                                    <h4 className="text-sm font-medium text-on-surface">
+                                                        {card.title}
+                                                    </h4>
+                                                    <p className="mt-1 text-xs text-on-surface-variant">{card.desc}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-error/20 py-4 text-error transition hover:bg-error/10 lg:hidden"
+                                        >
+                                            <span className="material-symbols-outlined">logout</span>
+                                            Sign Out
+                                        </button>
+                                    </section>
+                                )}
                             </div>
                         </div>
                     </>
