@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchUserProfile } from '../store/profileSlice';
+import { fetchMyOrders, fetchMyReviews, fetchUserProfile } from '../store/profileSlice';
 import { logout } from '../store/authSlice';
 import ProfileEditModal from '../components/profile/ProfileEditModal';
 import type { AuthUser } from '../types/auth';
@@ -14,37 +14,7 @@ const SIDEBAR_ITEMS = [
     { id: 'overview', label: 'Overview', icon: 'dashboard', filled: true },
     { id: 'orders', label: 'Order History', icon: 'shopping_bag' },
     { id: 'reviews', label: 'My Reviews', icon: 'reviews' },
-    { id: 'wishlist', label: 'Wishlist', icon: 'favorite' },
     { id: 'settings', label: 'Account Settings', icon: 'settings' }
-];
-
-const MOCK_ORDERS = [
-    {
-        id: 'UTE-82741',
-        status: 'In Transit',
-        statusClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant',
-        title: 'Precision Workstation Laptop 16"',
-        detail: 'Arriving by Thursday, Oct 24',
-        price: '$1,899.00',
-        priceClass: 'text-primary',
-        image: '/ArduinoKitStarterPro.png',
-        action: 'Track Order',
-        actionClass: 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high',
-        progress: 2
-    },
-    {
-        id: 'UTE-81920',
-        status: 'Delivered Sep 12',
-        statusClass: 'bg-surface-container-highest text-on-surface-variant',
-        title: 'Calculus for Engineers: 5th Edition',
-        detail: 'Package left with residential advisor',
-        price: '$112.50',
-        priceClass: 'text-on-surface',
-        image: '/OHoodieUteLimited.png',
-        action: 'Reorder',
-        actionClass: 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-high',
-        progress: 0
-    }
 ];
 
 function displayName(user: ProfileUser | null, authUser: AuthUser | null) {
@@ -131,7 +101,18 @@ function ProfileFooter() {
 const ProfilePage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const { user, isLoading, error } = useAppSelector((state) => state.profile);
+    const {
+        user,
+        stats,
+        orders,
+        reviews,
+        isLoading,
+        ordersLoading,
+        reviewsLoading,
+        error,
+        ordersError,
+        reviewsError
+    } = useAppSelector((state) => state.profile);
     const authUser = useAppSelector((state) => state.auth.user);
 
     const [activeSection, setActiveSection] = useState('overview');
@@ -139,6 +120,8 @@ const ProfilePage = () => {
 
     useEffect(() => {
         dispatch(fetchUserProfile());
+        dispatch(fetchMyOrders());
+        dispatch(fetchMyReviews());
     }, [dispatch]);
 
     const handleLogout = () => {
@@ -288,6 +271,39 @@ const ProfilePage = () => {
                                             </button>
                                         ))}
                                     </div>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        <div className="rounded-[24px] bg-surface-container-low p-6">
+                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                Account
+                                            </p>
+                                            <p className="mt-2 text-sm text-on-surface">{user?.email}</p>
+                                            <p className="mt-1 text-sm text-on-surface-variant">
+                                                {user?.phone || 'No phone on file'}
+                                            </p>
+                                        </div>
+                                        <div className="rounded-[24px] bg-surface-container-low p-6">
+                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                Orders
+                                            </p>
+                                            <p className="mt-2 text-3xl font-semibold text-primary">
+                                                {stats?.orderCount ?? 0}
+                                            </p>
+                                        </div>
+                                        <div className="rounded-[24px] bg-surface-container-low p-6">
+                                            <p className="text-xs font-semibold uppercase text-on-surface-variant">
+                                                Reviews
+                                            </p>
+                                            <p className="mt-2 text-3xl font-semibold text-primary">
+                                                {stats?.reviewCount ?? 0}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {user?.address && (
+                                        <p className="mt-4 text-sm text-on-surface-variant">
+                                            <span className="font-semibold text-on-surface">Address:</span>{' '}
+                                            {user.address}
+                                        </p>
+                                    )}
                                 </section>
 
                                 {/* Orders */}
@@ -301,10 +317,29 @@ const ProfilePage = () => {
                                             View All Orders
                                         </button>
                                     </div>
+                                    {ordersError && (
+                                        <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
+                                            {ordersError}
+                                        </p>
+                                    )}
                                     <div className="flex flex-col gap-2">
-                                        {MOCK_ORDERS.map((order) => (
+                                        {ordersLoading && (
+                                            <div className="flex justify-center py-12">
+                                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                                            </div>
+                                        )}
+                                        {!ordersLoading && orders.length === 0 && (
+                                            <p className="rounded-[24px] bg-surface-container-low p-8 text-center text-on-surface-variant">
+                                                You have not placed any orders yet.{' '}
+                                                <Link to="/categories" className="text-primary hover:underline">
+                                                    Browse products
+                                                </Link>
+                                            </p>
+                                        )}
+                                        {!ordersLoading &&
+                                            orders.map((order) => (
                                             <div
-                                                key={order.id}
+                                                key={order.orderNumber}
                                                 className="soft-shadow rounded-[24px] border border-transparent bg-surface-container-lowest p-6 transition-all hover:border-primary/20"
                                             >
                                                 <div className="flex flex-col justify-between gap-4 md:flex-row">
@@ -321,10 +356,10 @@ const ProfilePage = () => {
                                                                 <span
                                                                     className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${order.statusClass}`}
                                                                 >
-                                                                    {order.status}
+                                                                    {order.statusLabel}
                                                                 </span>
                                                                 <span className="text-xs text-on-surface-variant">
-                                                                    #{order.id}
+                                                                    #{order.orderNumber}
                                                                 </span>
                                                             </div>
                                                             <h3 className="text-sm font-medium text-on-surface">
@@ -357,18 +392,20 @@ const ProfilePage = () => {
                                     </div>
                                 </section>
 
-                                {/* Wishlist placeholder */}
-                                <section id="section-wishlist">
-                                    <h2 className="mb-4 text-2xl font-semibold text-on-surface">Wishlist</h2>
-                                    <p className="rounded-[24px] bg-surface-container-low p-8 text-center text-on-surface-variant">
-                                        Your saved items will appear here.
-                                    </p>
-                                </section>
-
                                 {/* Reviews */}
                                 <section id="section-reviews">
                                     <h2 className="mb-8 text-2xl font-semibold text-on-surface">My Reviews</h2>
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    {reviewsError && (
+                                        <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
+                                            {reviewsError}
+                                        </p>
+                                    )}
+                                    {reviewsLoading && (
+                                        <div className="flex justify-center py-12">
+                                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                                        </div>
+                                    )}
+                                    {!reviewsLoading && reviews.length === 0 && (
                                         <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
                                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                                                 <span className="material-symbols-outlined text-[32px]">
@@ -376,47 +413,74 @@ const ProfilePage = () => {
                                                 </span>
                                             </div>
                                             <h3 className="mb-2 text-2xl font-semibold text-on-surface">
-                                                Share your thoughts
+                                                No reviews yet
                                             </h3>
                                             <p className="mb-6 text-sm text-on-surface-variant">
-                                                You haven&apos;t reviewed your last purchase. Help your fellow
-                                                engineers!
+                                                After you purchase and receive products, your reviews will appear
+                                                here.
                                             </p>
-                                            <button
-                                                type="button"
+                                            <Link
+                                                to="/categories"
                                                 className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-on-primary transition active:scale-95"
                                             >
-                                                Write Review
-                                            </button>
+                                                Browse Products
+                                            </Link>
                                         </div>
-                                        <div className="soft-shadow rounded-[24px] bg-surface-container-lowest p-8">
-                                            <div className="mb-4 flex items-center gap-1">
-                                                {[1, 2, 3, 4, 5].map((n) => (
-                                                    <span
-                                                        key={n}
-                                                        className="material-symbols-outlined material-symbols-filled text-primary"
-                                                    >
-                                                        star
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <h3 className="mb-2 text-sm font-medium text-on-surface">
-                                                Graphing Calculator TI-84 Plus
-                                            </h3>
-                                            <p className="mb-4 text-base italic text-on-surface-variant">
-                                                &quot;Essential for my thermodynamics class. High build quality and
-                                                the battery life is impressive for a student budget.&quot;
-                                            </p>
-                                            <div className="flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-sm text-on-surface-variant">
-                                                    thumb_up
-                                                </span>
-                                                <span className="text-xs text-on-surface-variant">
-                                                    12 people found this helpful
-                                                </span>
-                                            </div>
+                                    )}
+                                    {!reviewsLoading && reviews.length > 0 && (
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            {reviews.map((review) => (
+                                                <div
+                                                    key={review.id}
+                                                    className="soft-shadow rounded-[24px] bg-surface-container-lowest p-8"
+                                                >
+                                                    <div className="mb-4 flex items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-1">
+                                                            {[1, 2, 3, 4, 5].map((n) => (
+                                                                <span
+                                                                    key={n}
+                                                                    className={`material-symbols-outlined ${
+                                                                        n <= review.rating
+                                                                            ? 'material-symbols-filled text-primary'
+                                                                            : 'text-outline-variant'
+                                                                    }`}
+                                                                >
+                                                                    star
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-[10px] font-bold uppercase text-on-surface-variant">
+                                                            {review.status}
+                                                        </span>
+                                                    </div>
+                                                    {review.productSlug ? (
+                                                        <Link
+                                                            to={`/products/${review.productSlug}`}
+                                                            className="mb-2 block text-sm font-medium text-on-surface hover:text-primary"
+                                                        >
+                                                            {review.productName}
+                                                        </Link>
+                                                    ) : (
+                                                        <h3 className="mb-2 text-sm font-medium text-on-surface">
+                                                            {review.productName}
+                                                        </h3>
+                                                    )}
+                                                    {review.comment ? (
+                                                        <p className="text-base italic text-on-surface-variant">
+                                                            &quot;{review.comment}&quot;
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-sm text-on-surface-variant">
+                                                            No written comment.
+                                                        </p>
+                                                    )}
+                                                    <p className="mt-4 text-xs text-on-surface-variant">
+                                                        {new Date(review.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            ))}
                                         </div>
-                                    </div>
+                                    )}
                                 </section>
 
                                 {/* Settings */}

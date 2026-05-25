@@ -8,6 +8,8 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const catalogRoutes = require('./routes/catalog.routes');
+const cartRoutes = require('./routes/cart.routes');
+const checkoutRoutes = require('./routes/checkout.routes');
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/catalog', catalogRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/checkout', checkoutRoutes);
 
 // Xử lý Route không tồn tại
 app.all('*', (req, res, next) => {

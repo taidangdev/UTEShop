@@ -19,6 +19,10 @@ const editProfileValidation = [
 
 router.get('/me', requirePermission('profile:read'), userController.getMe);
 
+router.get('/me/orders', requirePermission('orders:read'), userController.getMyOrders);
+
+router.get('/me/reviews', requirePermission('profile:read'), userController.getMyReviews);
+
 router.post(
     '/profile/request-otp',
     requirePermission('profile:update'),

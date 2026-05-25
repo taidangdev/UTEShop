@@ -1,10 +1,35 @@
 const userService = require('../services/user.service');
+const profileService = require('../services/profile.service');
 const { successResponse } = require('../utils/responseHandler');
 
 const getMe = async (req, res, next) => {
     try {
         const user = await userService.getUserPublicById(req.user.id);
-        return successResponse(res, 200, 'OK', { user });
+        const stats = await profileService.getUserStats(req.user.id);
+        return successResponse(res, 200, 'OK', {
+            user: profileService.serializeUser(user),
+            stats
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getMyOrders = async (req, res, next) => {
+    try {
+        const { page, limit } = req.query;
+        const data = await profileService.listUserOrders(req.user.id, { page, limit });
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getMyReviews = async (req, res, next) => {
+    try {
+        const { page, limit } = req.query;
+        const data = await profileService.listUserReviews(req.user.id, { page, limit });
+        return successResponse(res, 200, 'OK', data);
     } catch (error) {
         next(error);
     }
@@ -42,20 +67,13 @@ const editProfile = async (req, res, next) => {
         delete updateData.username; // Không cho đổi username
 
         // Gọi service xử lý nghiệp vụ
-        const updatedUser = await userService.updateUserProfile(userId, updateData, otp);
+        await userService.updateUserProfile(userId, updateData, otp);
+        const user = await userService.getUserPublicById(userId);
+        const stats = await profileService.getUserStats(userId);
 
-        // Trả về response thành công
         return successResponse(res, 200, 'Profile updated successfully', {
-            user: {
-                id: updatedUser.id,
-                username: updatedUser.username,
-                email: updatedUser.email,
-                fullName: updatedUser.fullName,
-                phone: updatedUser.phone,
-                address: updatedUser.address,
-                role: updatedUser.role,
-                status: updatedUser.status
-            }
+            user: profileService.serializeUser(user),
+            stats
         });
     } catch (error) {
         next(error); // Đẩy lỗi cho Error Middleware xử lý
@@ -64,6 +82,8 @@ const editProfile = async (req, res, next) => {
 
 module.exports = {
     getMe,
+    getMyOrders,
+    getMyReviews,
     requestEditProfileOtp,
     editProfile
 };
