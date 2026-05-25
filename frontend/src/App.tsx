@@ -7,6 +7,8 @@ import CartPage from './pages/CartPage';
 import CheckoutInformationPage from './pages/CheckoutInformationPage';
 import CheckoutPaymentPage from './pages/CheckoutPaymentPage';
 import ProfilePage from './pages/ProfilePage';
+import OrderTrackingPage from './pages/OrderTrackingPage';
+import MyOrdersPage from './pages/MyOrdersPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
@@ -31,6 +33,22 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <ProfilePage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile/orders"
+                        element={
+                            <ProtectedRoute>
+                                <MyOrdersPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile/orders/:orderNumber"
+                        element={
+                            <ProtectedRoute>
+                                <OrderTrackingPage />
                             </ProtectedRoute>
                         }
                     />

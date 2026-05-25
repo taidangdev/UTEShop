@@ -1,0 +1,382 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { fetchOrder, cancelOrder } from '../services/checkoutApi';
+import type { OrderDto } from '../types/checkout';
+
+const STATUS_CONFIG: Record<string, { label: string; icon: string; colorClass: string; step: number }> = {
+    pending: { label: 'Đơn hàng mới', icon: 'pending_actions', colorClass: 'bg-surface-container-highest text-on-surface-variant', step: 1 },
+    confirmed: { label: 'Đã xác nhận đơn hàng', icon: 'check_circle', colorClass: 'bg-primary/10 text-primary', step: 2 },
+    processing: { label: 'Đang chuẩn bị hàng', icon: 'inventory_2', colorClass: 'bg-secondary-container text-on-secondary-container', step: 3 },
+    shipping: { label: 'Đang giao hàng', icon: 'local_shipping', colorClass: 'bg-tertiary-container text-on-tertiary-container', step: 4 },
+    delivered: { label: 'Đã giao thành công', icon: 'task_alt', colorClass: 'bg-success/10 text-success', step: 5 },
+    cancelled: { label: 'Đã hủy đơn hàng', icon: 'cancel', colorClass: 'bg-error-container text-on-error-container', step: 0 },
+    refunded: { label: 'Đã hoàn tiền', icon: 'keyboard_return', colorClass: 'bg-error-container text-on-error-container', step: 0 }
+};
+
+const PAYMENT_METHODS: Record<string, string> = {
+    cod: 'Thanh toán tiền mặt (COD)',
+    bank_transfer: 'Chuyển khoản ngân hàng',
+    momo: 'Ví điện tử MoMo',
+    vnpay: 'Cổng thanh toán VNPAY'
+};
+
+const PAYMENT_STATUSES: Record<string, { label: string; class: string }> = {
+    pending: { label: 'Chờ thanh toán', class: 'bg-surface-container-high text-on-surface-variant' },
+    paid: { label: 'Đã thanh toán', class: 'bg-primary/10 text-primary' },
+    failed: { label: 'Thanh toán thất bại', class: 'bg-error-container text-on-error-container' },
+    refunded: { label: 'Đã hoàn tiền', class: 'bg-error-container text-on-error-container' }
+};
+
+export default function OrderTrackingPage() {
+    const { orderNumber } = useParams<{ orderNumber: string }>();
+    const navigate = useNavigate();
+    const [order, setOrder] = useState<OrderDto | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [cancelling, setCancelling] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+
+    const loadOrderData = async () => {
+        if (!orderNumber) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await fetchOrder(orderNumber);
+            setOrder(data.order);
+        } catch (err: any) {
+            console.error('Failed to load order details:', err);
+            setError(err?.response?.data?.message || err?.message || 'Không thể tải thông tin đơn hàng');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadOrderData();
+    }, [orderNumber]);
+
+    const handleCancelOrder = async () => {
+        if (!orderNumber) return;
+        setCancelling(true);
+        try {
+            await cancelOrder(orderNumber);
+            await loadOrderData(); // Reload data
+            setShowCancelModal(false);
+        } catch (err: any) {
+            alert(err?.response?.data?.message || err?.message || 'Không thể hủy đơn hàng');
+        } finally {
+            setCancelling(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-surface">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+            </div>
+        );
+    }
+
+    if (error || !order) {
+        return (
+            <div className="mx-auto max-w-[1280px] px-6 py-20 text-center text-on-surface">
+                <span className="material-symbols-outlined text-[64px] text-error">error</span>
+                <h1 className="mt-4 text-2xl font-bold">Đã xảy ra lỗi</h1>
+                <p className="mt-2 text-on-surface-variant">{error || 'Không tìm thấy đơn hàng'}</p>
+                <Link to="/profile" className="mt-6 inline-block rounded-full bg-primary px-8 py-3 text-sm font-semibold text-on-primary">
+                    Về Lịch Sử Mua Hàng
+                </Link>
+            </div>
+        );
+    }
+
+    const currentStatus = order.status;
+    const isCancelledOrRefunded = currentStatus === 'cancelled' || currentStatus === 'refunded';
+    const statusConfig = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.pending;
+    const currentStep = statusConfig.step;
+
+    // Helper to format date
+    const formatDate = (dateStr: string | null) => {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const formattedTotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.total);
+    const formattedSubtotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.subtotal);
+    const formattedShippingFee = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.shippingFee);
+    const formattedDiscount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.discountAmount);
+
+    // Extract shipping snapshot address info safely
+    const snapshot = (order.shippingSnapshot as any) || {};
+
+    const steps = [
+        { key: 1, label: 'Đơn mới', desc: 'Đã nhận đơn' },
+        { key: 2, label: 'Đã xác nhận', desc: 'Shop đã duyệt' },
+        { key: 3, label: 'Chuẩn bị hàng', desc: 'Đang đóng gói' },
+        { key: 4, label: 'Đang giao', desc: 'Shipper đang giao' },
+        { key: 5, label: 'Đã giao', desc: 'Hoàn tất đơn hàng' }
+    ];
+
+    const canCancel = currentStatus === 'pending' || currentStatus === 'confirmed';
+
+    return (
+        <div className="min-h-screen bg-surface py-10 text-on-surface antialiased">
+            <main className="mx-auto max-w-[960px] px-6">
+                {/* Header breadcrumbs */}
+                <div className="mb-6 flex items-center gap-2 text-sm text-on-surface-variant">
+                    <Link to="/profile" className="hover:text-primary transition">Tài khoản của tôi</Link>
+                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                    <span className="font-medium text-on-surface">Theo dõi đơn hàng #{order.orderNumber}</span>
+                </div>
+
+                {/* Main panel card */}
+                <div className="soft-shadow overflow-hidden rounded-[28px] bg-surface-container-lowest border border-outline-variant/30">
+                    {/* Top banner info */}
+                    <div className="flex flex-col justify-between border-b border-outline-variant/30 bg-surface-container-low p-8 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Đơn hàng</p>
+                            <h2 className="text-2xl font-bold text-on-surface">#{order.orderNumber}</h2>
+                            <p className="mt-1 text-sm text-on-surface-variant">Đặt ngày: {formatDate(order.placedAt)}</p>
+                        </div>
+                        <div className="mt-4 flex items-center gap-3 sm:mt-0">
+                            <span className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider ${statusConfig.colorClass}`}>
+                                <span className="material-symbols-outlined text-[18px]">{statusConfig.icon}</span>
+                                {statusConfig.label}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Order Tracking Progress Stepper */}
+                    <div className="p-8 border-b border-outline-variant/30">
+                        {isCancelledOrRefunded ? (
+                            <div className="flex flex-col items-center justify-center rounded-2xl bg-error-container/20 p-8 text-center border border-error/10">
+                                <span className="material-symbols-outlined text-[48px] text-error">
+                                    {currentStatus === 'cancelled' ? 'cancel' : 'keyboard_return'}
+                                </span>
+                                <h3 className="mt-3 text-lg font-bold text-error">
+                                    {currentStatus === 'cancelled' ? 'Đơn hàng đã bị Hủy' : 'Đơn hàng đã Hoàn tiền'}
+                                </h3>
+                                <p className="mt-1 max-w-lg text-sm text-on-error-container">
+                                    Đơn hàng này được cập nhật trạng thái lúc: {formatDate(order.placedAt || new Date().toISOString())}.
+                                    {order.adminNote && (
+                                        <span className="block mt-2 italic font-medium">Lý do: &quot;{order.adminNote}&quot;</span>
+                                    )}
+                                </p>
+                            </div>
+                        ) : (
+                            <div>
+                                <h3 className="mb-8 text-lg font-semibold text-on-surface">Hành trình đơn hàng</h3>
+                                <div className="relative flex flex-col justify-between md:flex-row gap-6">
+                                    {/* Line running behind steps */}
+                                    <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-outline-variant/30 md:left-0 md:right-0 md:top-[15px] md:h-0.5 md:w-auto" />
+                                    
+                                    {steps.map((step) => {
+                                        const isCompleted = step.key <= currentStep;
+                                        const isActive = step.key === currentStep;
+
+                                        return (
+                                            <div key={step.key} className="relative flex items-start md:flex-col md:items-center gap-4 flex-1">
+                                                <div className={`z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
+                                                    isCompleted 
+                                                        ? 'bg-primary text-on-primary' 
+                                                        : 'bg-surface-container-high text-outline'
+                                                } ${isActive ? 'ring-4 ring-primary/20 scale-110' : ''}`}>
+                                                    {isCompleted ? (
+                                                        <span className="material-symbols-outlined text-[18px] font-bold">check</span>
+                                                    ) : (
+                                                        <span className="text-xs font-semibold">{step.key}</span>
+                                                    )}
+                                                </div>
+                                                <div className="md:text-center">
+                                                    <p className={`text-sm font-bold leading-tight ${isCompleted ? 'text-on-surface' : 'text-outline'}`}>{step.label}</p>
+                                                    <p className="mt-0.5 text-[11px] text-on-surface-variant leading-none">{step.desc}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Delivery & Payment Snapshots Info */}
+                    <div className="grid grid-cols-1 divide-y border-b border-outline-variant/30 md:grid-cols-2 md:divide-x md:divide-y-0 divide-outline-variant/30">
+                        {/* Shipping snapshot */}
+                        <div className="p-8">
+                            <h3 className="mb-4 text-base font-bold text-on-surface flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[20px] text-primary">local_shipping</span>
+                                Địa chỉ giao nhận
+                            </h3>
+                            <div className="space-y-1.5 text-sm text-on-surface-variant">
+                                <p className="font-semibold text-on-surface">{snapshot.fullName || 'Người nhận mẫu'}</p>
+                                <p>SĐT: {snapshot.phone || '—'}</p>
+                                <p>Địa chỉ: {snapshot.street}, {snapshot.city}</p>
+                                <p className="inline-block mt-2 rounded bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">
+                                    Hình thức: {snapshot.deliveryType === 'campus' ? 'Nhận tại trường (Free Ship)' : 'Giao tận nơi'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Payment details */}
+                        <div className="p-8">
+                            <h3 className="mb-4 text-base font-bold text-on-surface flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[20px] text-primary">payments</span>
+                                Thông tin thanh toán
+                            </h3>
+                            <div className="space-y-3 text-sm">
+                                <div>
+                                    <p className="text-xs text-on-surface-variant">Phương thức thanh toán</p>
+                                    <p className="font-semibold text-on-surface">{PAYMENT_METHODS[order.payment?.method || 'cod']}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-on-surface-variant">Trạng thái giao dịch</p>
+                                    <span className={`inline-block mt-1 rounded-full px-3 py-1 text-xs font-bold ${
+                                        PAYMENT_STATUSES[order.payment?.status || 'pending'].class
+                                    }`}>
+                                        {PAYMENT_STATUSES[order.payment?.status || 'pending'].label}
+                                    </span>
+                                    {order.payment?.paidAt && (
+                                        <p className="mt-1 text-xs text-on-surface-variant">Vào lúc: {formatDate(order.payment.paidAt)}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Order items lists */}
+                    <div className="p-8 border-b border-outline-variant/30">
+                        <h3 className="mb-6 text-base font-bold text-on-surface">Danh sách sản phẩm</h3>
+                        <div className="divide-y divide-outline-variant/20">
+                            {order.items.map((item) => (
+                                <div key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-container-high border border-outline-variant/20 flex items-center justify-center">
+                                        <img
+                                            src="/PremiumLaptop.png"
+                                            alt=""
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="text-sm font-semibold text-on-surface line-clamp-1">{item.productName}</h4>
+                                        <p className="mt-0.5 text-xs text-on-surface-variant">SKU: {item.sku || '—'}</p>
+                                        <p className="mt-1 text-xs font-medium text-on-surface">Số lượng: {item.quantity}</p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-sm font-bold text-primary">${Number(item.lineTotal).toFixed(2)}</p>
+                                        <p className="text-xs text-on-surface-variant">${Number(item.unitPrice).toFixed(2)} / cái</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Order financial totals summary */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end p-8 gap-6 bg-surface-container-lowest">
+                        {/* Cancellation options */}
+                        <div>
+                            {canCancel ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="flex items-center gap-2 rounded-full border border-error/30 px-6 py-3 text-sm font-semibold text-error hover:bg-error/5 active:scale-95 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                    Hủy đơn hàng này
+                                </button>
+                            ) : (
+                                <p className="text-xs text-on-surface-variant italic">
+                                    * Đơn hàng đã ở trạng thái xử lý/vận chuyển, không thể tự hủy trực tuyến.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Summary totals values */}
+                        <div className="w-full md:w-80 space-y-3 text-sm">
+                            <div className="flex justify-between text-on-surface-variant">
+                                <span>Tạm tính:</span>
+                                <span>{formattedSubtotal}</span>
+                            </div>
+                            <div className="flex justify-between text-on-surface-variant">
+                                <span>Phí vận chuyển:</span>
+                                <span>{formattedShippingFee}</span>
+                            </div>
+                            {order.discountAmount > 0 && (
+                                <div className="flex justify-between text-error font-medium">
+                                    <span>Khuyến mãi giảm giá:</span>
+                                    <span>-{formattedDiscount}</span>
+                                </div>
+                            )}
+                            <hr className="border-outline-variant/30 my-1" />
+                            <div className="flex justify-between text-base font-bold text-on-surface">
+                                <span className="text-lg">Tổng cộng:</span>
+                                <span className="text-xl text-primary">{formattedTotal}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Back Link */}
+                <div className="mt-8 text-center">
+                    <Link to="/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                        Trở lại Lịch Sử Đơn Hàng
+                    </Link>
+                </div>
+            </main>
+
+            {/* Premium Confirm Cancellation Dialog Modal popup */}
+            {showCancelModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-fade-in">
+                    <div className="soft-shadow w-full max-w-md rounded-[28px] bg-surface-container-low p-8 border border-outline-variant/30 text-on-surface">
+                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-container text-on-error-container">
+                            <span className="material-symbols-outlined text-[24px]">warning</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-on-surface">Xác nhận hủy đơn hàng?</h3>
+                        
+                        {currentStatus === 'confirmed' ? (
+                            <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                                Đơn hàng của bạn **đã được xác nhận**. Hủy đơn hàng lúc này sẽ kích hoạt quy trình **Hoàn trả tiền tự động** (qua VNPAY/MoMo/Chuyển khoản). Bạn có chắc chắn muốn tiếp tục không?
+                            </p>
+                        ) : (
+                            <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                                Bạn có chắc chắn muốn hủy đơn hàng **#{order.orderNumber}**? Quyết định hủy đơn sẽ hoàn kho lập tức sản phẩm và không thể hoàn tác.
+                            </p>
+                        )}
+
+                        <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowCancelModal(false)}
+                                disabled={cancelling}
+                                className="h-12 rounded-full bg-surface-container-high px-6 text-sm font-semibold text-on-surface transition active:scale-95"
+                            >
+                                Bỏ qua
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCancelOrder}
+                                disabled={cancelling}
+                                className="flex h-12 items-center justify-center gap-2 rounded-full bg-error px-6 text-sm font-semibold text-on-error hover:bg-red-700 hover:shadow-md transition active:scale-95 disabled:opacity-60"
+                            >
+                                {cancelling ? (
+                                    <>
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                        Đang hủy...
+                                    </>
+                                ) : (
+                                    'Đồng ý hủy đơn'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

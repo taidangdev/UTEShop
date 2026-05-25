@@ -29,9 +29,11 @@ export default function CheckoutOrderSummary({
 
     return (
         <div
-            className={`sticky top-28 space-y-8 rounded-lg border border-white/30 bg-white/80 p-6 backdrop-blur-xl ${
-                compact ? 'shadow-[0_10px_30px_rgba(0,0,0,0.04)]' : ''
-            }`}
+            className={
+                compact
+                    ? 'space-y-6'
+                    : 'sticky top-28 space-y-8 rounded-lg border border-white/30 bg-white/80 p-6 backdrop-blur-xl'
+            }
         >
             <div>
                 <h3 className="mb-4 text-2xl font-semibold text-on-surface">Order Summary</h3>
@@ -141,10 +143,12 @@ export default function CheckoutOrderSummary({
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 rounded-lg bg-tertiary-fixed p-3 text-on-tertiary-fixed-variant">
-                <span className="material-symbols-outlined text-lg">verified</span>
-                <p className="text-xs font-semibold">Academic eligibility verified.</p>
-            </div>
+            {!compact && (
+                <div className="flex items-center gap-3 rounded-lg bg-tertiary-fixed p-3 text-on-tertiary-fixed-variant">
+                    <span className="material-symbols-outlined text-lg">verified</span>
+                    <p className="text-xs font-semibold">Academic eligibility verified.</p>
+                </div>
+            )}
         </div>
     );
 }

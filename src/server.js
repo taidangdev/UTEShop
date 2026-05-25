@@ -26,6 +26,10 @@ const startServer = async () => {
         // 3. Khởi động Server Express
         app.listen(PORT, () => {
             console.log(`🚀 Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+            
+            // Khởi chạy scheduler duyệt đơn tự động sau 5 phút
+            const { startAutoConfirmScheduler } = require('./services/orderScheduler.service');
+            startAutoConfirmScheduler();
         });
     } catch (error) {
         console.error('❌ Failed to connect to services:', error);

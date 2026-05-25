@@ -9,37 +9,37 @@ const {
 
 const STATUS_UI = {
     pending: {
-        label: 'Pending',
+        label: 'Đơn mới',
         statusClass: 'bg-surface-container-highest text-on-surface-variant',
         progress: 1
     },
     confirmed: {
-        label: 'Confirmed',
+        label: 'Đã xác nhận',
         statusClass: 'bg-primary/10 text-primary',
         progress: 1
     },
     processing: {
-        label: 'Processing',
+        label: 'Chuẩn bị hàng',
         statusClass: 'bg-primary/10 text-primary',
         progress: 2
     },
     shipping: {
-        label: 'In Transit',
+        label: 'Đang giao hàng',
         statusClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant',
         progress: 3
     },
     delivered: {
-        label: 'Delivered',
+        label: 'Đã giao thành công',
         statusClass: 'bg-surface-container-highest text-on-surface-variant',
         progress: 0
     },
     cancelled: {
-        label: 'Cancelled',
+        label: 'Đã hủy đơn',
         statusClass: 'bg-error-container text-on-error-container',
         progress: 0
     },
     refunded: {
-        label: 'Refunded',
+        label: 'Đã hoàn tiền',
         statusClass: 'bg-error-container text-on-error-container',
         progress: 0
     }

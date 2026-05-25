@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CheckoutFooter from '../components/checkout/CheckoutFooter';
 import CheckoutOrderSummary from '../components/checkout/CheckoutOrderSummary';
@@ -84,7 +84,7 @@ function PaymentOption({
 export default function CheckoutPaymentPage() {
     const navigate = useNavigate();
     const { items: cartItems, loading: cartLoading } = useCheckoutCart();
-    const information = getCheckoutInformation();
+    const information = useMemo(() => getCheckoutInformation(), []);
     const {
         items,
         totals,
@@ -287,7 +287,7 @@ export default function CheckoutPaymentPage() {
                                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
                             </div>
                         ) : (
-                            <div className="rounded-xl bg-surface-container-lowest p-8 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+                            <div className="sticky top-28 rounded-xl bg-surface-container-lowest p-8 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
                                 <CheckoutOrderSummary
                                     items={items}
                                     totals={totals}

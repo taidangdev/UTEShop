@@ -35,3 +35,10 @@ export async function fetchOrder(orderNumber: string): Promise<PlaceOrderRespons
     );
     return res.data;
 }
+
+export async function cancelOrder(orderNumber: string): Promise<PlaceOrderResponseData> {
+    const res = await axiosInstance.post<ApiEnvelope<PlaceOrderResponseData>>(
+        `/checkout/orders/${encodeURIComponent(orderNumber)}/cancel`
+    );
+    return res.data;
+}

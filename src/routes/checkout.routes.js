@@ -36,4 +36,13 @@ router.get(
     checkoutController.getOrder
 );
 
+router.post(
+    '/orders/:orderNumber/cancel',
+    verifyToken,
+    requirePermission('orders:read'),
+    orderNumberValidation,
+    validate,
+    checkoutController.cancelOrder
+);
+
 module.exports = router;

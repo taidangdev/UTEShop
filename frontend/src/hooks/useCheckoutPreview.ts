@@ -68,9 +68,5 @@ export function useCheckoutPreview(
         return () => window.clearTimeout(timer);
     }, [refresh]);
 
-    useEffect(() => {
-        setItems(fallbackItems);
-    }, [fallbackItems]);
-
     return { items, totals, loading, error, refresh };
 }
