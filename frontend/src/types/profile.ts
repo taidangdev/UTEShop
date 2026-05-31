@@ -22,6 +22,7 @@ export interface ProfileUser {
 export interface ProfileStats {
     orderCount: number;
     reviewCount: number;
+    loyaltyPoints?: number;
 }
 
 export interface ProfileMeResponse {
@@ -45,6 +46,8 @@ export interface ProfileOrder {
     progress: number;
     placedAt: string | null;
     itemCount: number;
+    productSlug?: string | null;
+    productId?: number | null;
     total: number;
     payment: { method: string; status: string } | null;
 }
@@ -56,8 +59,11 @@ export interface ProfileReview {
     productSlug: string | null;
     productImageUrl: string;
     rating: number;
+    title?: string | null;
     comment: string | null;
     status: string;
+    rewardType?: string | null;
+    rewardPayload?: Record<string, unknown> | null;
     createdAt: string;
 }
 

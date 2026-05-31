@@ -1,34 +1,33 @@
 const { Order, OrderItem, Payment, Address, User, Product } = require('../models');
+const demoOrderTemplates = require('./data/demoOrders.json');
 
 /**
- * Idempotent seeder for Orders, OrderItems, and Payments.
- * Simulates real-world scenario orders with diverse statuses and payment configurations.
+ * Idempotent seeder: orders for demo@uteshop.local (in-progress + completed).
  */
 const seedOrders = async () => {
     try {
-        console.log('  Starting to seed orders...');
+        console.log('  Starting to seed orders for demo@uteshop.local...');
 
-        // 1. Get user "demo" for member orders
         const demoUser = await User.findOne({ where: { email: 'demo@uteshop.local' } });
         if (!demoUser) {
-            console.warn('  ! Warning: User demo@uteshop.local not found. Skipping order seeding.');
+            console.warn('  ! User demo@uteshop.local not found. Skipping order seeding.');
             return;
         }
 
-        // 2. Get active products
         const products = await Product.findAll({ where: { status: 'active' } });
         if (products.length === 0) {
-            console.warn('  ! Warning: No active products found in DB. Skipping order seeding.');
+            console.warn('  ! No active products. Skipping order seeding.');
             return;
         }
 
-        // 3. Ensure "demo" has shipping addresses in addresses table
+        const productBySlug = new Map(products.map((p) => [p.slug, p]));
+
         let shippingAddress = await Address.findOne({ where: { userId: demoUser.id } });
         if (!shippingAddress) {
             shippingAddress = await Address.create({
                 userId: demoUser.id,
-                recipientName: 'Demo Student',
-                phone: '0987654321',
+                recipientName: demoUser.fullName || 'Demo Student',
+                phone: demoUser.phone || '0987654321',
                 line1: 'Ký túc xá Khu A, ĐH Sư phạm Kỹ thuật TP.HCM',
                 line2: 'Võ Văn Ngân, Linh Chiểu',
                 ward: 'Linh Chiểu',
@@ -40,234 +39,87 @@ const seedOrders = async () => {
             console.log('    + Created default address for demo user');
         }
 
-        // 4. Set up mock order data structures
-        const orderTemplates = [
-            {
-                orderNumber: 'UTE-20260525-0001',
-                status: 'pending',
-                paymentMethod: 'cod',
-                paymentStatus: 'pending',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 0,
-                daysAgo: 1
-            },
-            {
-                orderNumber: 'UTE-20260525-0002',
-                status: 'pending',
-                paymentMethod: 'bank_transfer',
-                paymentStatus: 'pending',
-                deliveryType: 'campus',
-                shippingFee: 0,
-                discountAmount: 15, // Student discount
-                daysAgo: 1
-            },
-            {
-                orderNumber: 'UTE-20260525-0003',
-                status: 'confirmed',
-                paymentMethod: 'bank_transfer',
-                paymentStatus: 'paid',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 0,
-                daysAgo: 2,
-                paidDaysAgo: 2
-            },
-            {
-                orderNumber: 'UTE-20260525-0004',
-                status: 'confirmed',
-                paymentMethod: 'vnpay',
-                paymentStatus: 'paid',
-                deliveryType: 'campus',
-                shippingFee: 0,
-                discountAmount: 10,
-                daysAgo: 2,
-                paidDaysAgo: 2
-            },
-            {
-                orderNumber: 'UTE-20260525-0005',
-                status: 'processing',
-                paymentMethod: 'vnpay',
-                paymentStatus: 'paid',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 0,
-                daysAgo: 3,
-                paidDaysAgo: 3
-            },
-            {
-                orderNumber: 'UTE-20260525-0006',
-                status: 'shipping',
-                paymentMethod: 'cod',
-                paymentStatus: 'pending',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 5,
-                daysAgo: 4,
-                shippedDaysAgo: 1
-            },
-            {
-                orderNumber: 'UTE-20260525-0007',
-                status: 'shipping',
-                paymentMethod: 'momo',
-                paymentStatus: 'paid',
-                deliveryType: 'campus',
-                shippingFee: 0,
-                discountAmount: 15,
-                daysAgo: 4,
-                paidDaysAgo: 4,
-                shippedDaysAgo: 1
-            },
-            {
-                orderNumber: 'UTE-20260525-0008',
-                status: 'delivered',
-                paymentMethod: 'cod',
-                paymentStatus: 'paid',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 0,
-                daysAgo: 7,
-                shippedDaysAgo: 5,
-                deliveredDaysAgo: 4,
-                paidDaysAgo: 4 // COD paid when delivered
-            },
-            {
-                orderNumber: 'UTE-20260525-0009',
-                status: 'delivered',
-                paymentMethod: 'vnpay',
-                paymentStatus: 'paid',
-                deliveryType: 'campus',
-                shippingFee: 0,
-                discountAmount: 20,
-                daysAgo: 8,
-                paidDaysAgo: 8,
-                shippedDaysAgo: 6,
-                deliveredDaysAgo: 5
-            },
-            {
-                orderNumber: 'UTE-20260525-0010',
-                status: 'cancelled',
-                paymentMethod: 'cod',
-                paymentStatus: 'pending',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 0,
-                daysAgo: 5,
-                cancelledDaysAgo: 4,
-                adminNote: 'Khách hàng yêu cầu hủy đơn hàng qua hotline.'
-            },
-            {
-                orderNumber: 'UTE-20260525-0011',
-                status: 'cancelled',
-                paymentMethod: 'bank_transfer',
-                paymentStatus: 'failed',
-                deliveryType: 'campus',
-                shippingFee: 0,
-                discountAmount: 0,
-                daysAgo: 6,
-                cancelledDaysAgo: 5,
-                adminNote: 'Hủy đơn tự động do quá thời gian chuyển khoản 24h.'
-            },
-            {
-                orderNumber: 'UTE-20260525-0012',
-                status: 'refunded',
-                paymentMethod: 'momo',
-                paymentStatus: 'refunded',
-                deliveryType: 'home',
-                shippingFee: 12,
-                discountAmount: 15,
-                daysAgo: 10,
-                paidDaysAgo: 10,
-                shippedDaysAgo: 8,
-                deliveredDaysAgo: 7,
-                cancelledDaysAgo: 6, // Refund/Cancellation date
-                adminNote: 'Sản phẩm lỗi kỹ thuật, đã hoàn tiền 100% qua ví MoMo.'
-            }
-        ];
-
-        // Helper to get time offset
         const getDateOffset = (daysAgo) => {
-            if (daysAgo === undefined) return null;
+            if (daysAgo === undefined || daysAgo === null) return null;
             const date = new Date();
             date.setDate(date.getDate() - daysAgo);
             return date;
         };
 
-        let seededCount = 0;
-        let skipCount = 0;
-
-        for (const template of orderTemplates) {
-            // Check if order already exists
-            const existingOrder = await Order.findOne({ where: { orderNumber: template.orderNumber } });
-            if (existingOrder) {
-                skipCount++;
-                continue;
+        const resolveItems = (templateItems, fallbackProducts) => {
+            const lines = [];
+            if (templateItems?.length) {
+                for (const row of templateItems) {
+                    const prod =
+                        productBySlug.get(row.productSlug) ||
+                        fallbackProducts.find((p) => p.slug === row.productSlug);
+                    if (!prod) {
+                        console.warn(`    ! Product slug not found: ${row.productSlug}`);
+                        continue;
+                    }
+                    const qty = row.quantity || 1;
+                    const price = Number(prod.price);
+                    lines.push({
+                        productId: prod.id,
+                        productName: prod.name,
+                        sku: prod.sku,
+                        quantity: qty,
+                        unitPrice: price,
+                        lineTotal: price * qty
+                    });
+                }
             }
-
-            // Pick 1-3 random products to purchase
-            const orderProductCount = Math.floor(Math.random() * 2) + 1; // 1 to 2 products
-            const selectedProducts = [];
-            const productPool = [...products];
-
-            for (let i = 0; i < orderProductCount; i++) {
-                if (productPool.length === 0) break;
-                const randomIndex = Math.floor(Math.random() * productPool.length);
-                selectedProducts.push(productPool.splice(randomIndex, 1)[0]);
+            if (lines.length === 0) {
+                const pick = fallbackProducts[0];
+                const price = Number(pick.price);
+                lines.push({
+                    productId: pick.id,
+                    productName: pick.name,
+                    sku: pick.sku,
+                    quantity: 1,
+                    unitPrice: price,
+                    lineTotal: price
+                });
             }
+            return lines;
+        };
 
-            // Build shipping snapshot
+        const createOrderFromTemplate = async (template, itemsToCreate) => {
+            const subtotal = itemsToCreate.reduce((sum, i) => sum + i.lineTotal, 0);
+            const shippingFee = template.shippingFee ?? 0;
+            const discountAmount = template.discountAmount ?? 0;
+            const total = Math.max(0, subtotal + shippingFee - discountAmount);
+
+            const recipientName = demoUser.fullName || demoUser.username || 'Demo Student';
+            const phone = demoUser.phone || shippingAddress.phone || '0987654321';
+
             const shippingSnapshot = {
-                fullName: 'Demo Student',
-                phone: '0987654321',
-                studentId: '21110001',
-                deliveryType: template.deliveryType,
+                fullName: recipientName,
+                phone,
+                studentId: demoUser.studentId || '21110001',
+                deliveryType: template.deliveryType || 'campus',
                 street: 'Ký túc xá Khu A, ĐH Sư phạm Kỹ thuật TP.HCM',
                 city: 'Hồ Chí Minh',
                 state: 'Thủ Đức',
                 postalCode: '700000',
-                coupon: template.discountAmount > 0 ? 'MOCKDISCOUNT' : null,
-                discountCode: template.discountAmount > 0 ? 'STUDENT15' : null,
-                appliedDiscountCode: template.discountAmount > 0 ? 'STUDENT15' : null
+                coupon: discountAmount > 0 ? 'MOCKDISCOUNT' : null,
+                discountCode: discountAmount > 0 ? 'STUDENT15' : null,
+                appliedDiscountCode: discountAmount > 0 ? 'STUDENT15' : null
             };
 
-            // Calculate money figures
-            let subtotal = 0;
-            const itemsToCreate = [];
-
-            for (const prod of selectedProducts) {
-                const qty = Math.floor(Math.random() * 2) + 1; // 1 to 2 items
-                const price = Number(prod.price);
-                const lineTotal = price * qty;
-                subtotal += lineTotal;
-
-                itemsToCreate.push({
-                    productId: prod.id,
-                    productName: prod.name,
-                    sku: prod.sku,
-                    quantity: qty,
-                    unitPrice: price,
-                    lineTotal: lineTotal
-                });
-            }
-
-            const shippingFee = template.shippingFee;
-            const discountAmount = template.discountAmount;
-            const total = Math.max(0, subtotal + shippingFee - discountAmount);
-
-            // Create Order
             const order = await Order.create({
                 orderNumber: template.orderNumber,
                 userId: demoUser.id,
                 guestEmail: null,
-                guestPhone: shippingAddress.phone,
+                guestPhone: phone,
                 shippingAddressId: shippingAddress.id,
-                shippingSnapshot: shippingSnapshot,
+                shippingSnapshot,
                 status: template.status,
-                subtotal: subtotal,
-                discountAmount: discountAmount,
-                shippingFee: shippingFee,
-                total: total,
-                note: 'Đơn hàng thử nghiệm giao diện.',
+                subtotal,
+                discountAmount,
+                shippingFee,
+                total,
+                note: template.note || 'Đơn hàng demo UTEShop.',
                 adminNote: template.adminNote || null,
                 placedAt: getDateOffset(template.daysAgo),
                 paidAt: getDateOffset(template.paidDaysAgo),
@@ -276,7 +128,6 @@ const seedOrders = async () => {
                 cancelledAt: getDateOffset(template.cancelledDaysAgo)
             });
 
-            // Create OrderItems
             for (const item of itemsToCreate) {
                 await OrderItem.create({
                     orderId: order.id,
@@ -290,20 +141,45 @@ const seedOrders = async () => {
                 });
             }
 
-            // Create Payment
             await Payment.create({
                 orderId: order.id,
                 method: template.paymentMethod,
                 status: template.paymentStatus,
                 amount: total,
-                transactionRef: template.paymentStatus === 'paid' ? `TXN-${Math.floor(100000 + Math.random() * 900000)}` : null,
+                transactionRef:
+                    template.paymentStatus === 'paid'
+                        ? `TXN-DEMO-${order.id}-${Date.now().toString(36).toUpperCase()}`
+                        : null,
                 paidAt: getDateOffset(template.paidDaysAgo)
             });
 
+            return order;
+        };
+
+        let seededCount = 0;
+        let skipCount = 0;
+
+        for (const template of demoOrderTemplates) {
+            const existing = await Order.findOne({
+                where: { orderNumber: template.orderNumber }
+            });
+            if (existing) {
+                skipCount++;
+                continue;
+            }
+
+            const itemsToCreate = resolveItems(template.items, products);
+            await createOrderFromTemplate(template, itemsToCreate);
             seededCount++;
+            console.log(`    + ${template.orderNumber} (${template.status})`);
         }
 
-        console.log(`    Successfully seeded: ${seededCount} orders, skipped ${skipCount} existing orders.`);
+        console.log(
+            `    Demo orders: ${seededCount} created, ${skipCount} skipped (already exist).`
+        );
+        console.log(
+            '    Status mix: pending/confirmed/processing/shipping = chưa hoàn thành; delivered = đã giao.'
+        );
     } catch (error) {
         console.error('  ! Failed to seed orders:', error);
         throw error;

@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import WriteReviewModal from "../components/reviews/WriteReviewModal";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchMyOrders } from "../store/profileSlice";
 import { cancelOrder } from "../services/checkoutApi";
-import type { ProfileOrder } from "../types/profile";
+import { fetchEligibleReviewItems } from "../services/reviewApi";
+
+const REVIEWABLE_STATUSES = new Set(["delivered"]);
 
 const TABS = [
   { id: "all", label: "Tất cả" },
@@ -16,7 +19,12 @@ const TABS = [
   { id: "refunded", label: "Đã hoàn tiền" },
 ];
 
+function orderProductPath(order: { productSlug?: string | null }) {
+  return order.productSlug ? `/products/${order.productSlug}` : null;
+}
+
 export default function MyOrdersPage() {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { orders, ordersLoading, ordersError } = useAppSelector(
     (state) => state.profile,
@@ -26,10 +34,48 @@ export default function MyOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cancellingOrder, setCancellingOrder] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewOrderNumber, setReviewOrderNumber] = useState<string | undefined>();
+  const [reviewableOrderNumbers, setReviewableOrderNumbers] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const loadReviewableOrders = useCallback(async () => {
+    try {
+      const items = await fetchEligibleReviewItems();
+      setReviewableOrderNumbers(
+        new Set(items.map((item) => item.orderNumber)),
+      );
+    } catch {
+      setReviewableOrderNumbers(new Set());
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(fetchMyOrders());
-  }, [dispatch]);
+    loadReviewableOrders();
+  }, [dispatch, loadReviewableOrders]);
+
+  const openReviewModal = (orderNumber: string) => {
+    setReviewOrderNumber(orderNumber);
+    setReviewModalOpen(true);
+  };
+
+  const closeReviewModal = () => {
+    setReviewModalOpen(false);
+    setReviewOrderNumber(undefined);
+  };
+
+  const handleReviewSuccess = () => {
+    loadReviewableOrders();
+    dispatch(fetchMyOrders());
+  };
+
+  const canReviewOrder = useMemo(
+    () => (orderNumber: string, status: string) =>
+      REVIEWABLE_STATUSES.has(status) && reviewableOrderNumbers.has(orderNumber),
+    [reviewableOrderNumbers],
+  );
 
   const handleCancelOrder = async (orderNumber: string) => {
     setCancelling(true);
@@ -178,6 +224,8 @@ export default function MyOrdersPage() {
               {filteredOrders.map((order) => {
                 const canCancel =
                   order.status === "pending" || order.status === "confirmed";
+                const canReview = canReviewOrder(order.orderNumber, order.status);
+                const productPath = orderProductPath(order);
 
                 return (
                   <div
@@ -185,8 +233,17 @@ export default function MyOrdersPage() {
                     className="soft-shadow rounded-[28px] border border-outline-variant/30 bg-surface-container-lowest p-6 transition-all hover:border-primary/20"
                   >
                     <div className="flex flex-col justify-between gap-6 md:flex-row">
-                      {/* Left item details */}
-                      <div className="flex gap-4">
+                      {/* Left: click → product detail */}
+                      <button
+                        type="button"
+                        disabled={!productPath}
+                        onClick={() => productPath && navigate(productPath)}
+                        className={`flex min-w-0 flex-1 gap-4 text-left transition ${
+                          productPath
+                            ? "cursor-pointer hover:opacity-90"
+                            : "cursor-default opacity-80"
+                        }`}
+                      >
                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high border border-outline-variant/20">
                           <img
                             src={order.image}
@@ -194,7 +251,7 @@ export default function MyOrdersPage() {
                             className="h-full w-full object-cover"
                           />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="mb-1 flex items-center gap-2 flex-wrap">
                             <span
                               className={`rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${order.statusClass}`}
@@ -214,8 +271,13 @@ export default function MyOrdersPage() {
                           <p className="text-sm text-on-surface-variant">
                             {order.detail}
                           </p>
+                          {productPath && (
+                            <p className="mt-1 text-xs font-medium text-primary">
+                              Xem chi tiết sản phẩm →
+                            </p>
+                          )}
                         </div>
-                      </div>
+                      </button>
 
                       {/* Right pricing & buttons */}
                       <div className="flex items-end justify-between md:flex-col md:items-end md:justify-start gap-4">
@@ -231,24 +293,51 @@ export default function MyOrdersPage() {
                           </p>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {canReview && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openReviewModal(order.orderNumber);
+                              }}
+                              className="flex h-10 items-center justify-center gap-1 rounded-full border border-primary/30 px-4 text-xs font-semibold text-primary hover:bg-primary/5 active:scale-95 transition"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">
+                                rate_review
+                              </span>
+                              Đánh giá
+                            </button>
+                          )}
                           {canCancel && (
                             <button
                               type="button"
-                              onClick={() =>
-                                setCancellingOrder(order.orderNumber)
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCancellingOrder(order.orderNumber);
+                              }}
                               className="flex h-10 items-center justify-center gap-2 rounded-full border border-error/20 px-4 text-xs font-semibold text-error hover:bg-error/5 active:scale-95 transition"
                             >
                               Hủy đơn
                             </button>
                           )}
-                          <Link
-                            to={`/profile/orders/${order.orderNumber}`}
-                            className={`flex h-10 items-center justify-center rounded-full px-5 text-xs font-semibold transition active:scale-95 ${order.actionClass}`}
-                          >
-                            {order.action}
-                          </Link>
+                          {productPath ? (
+                            <Link
+                              to={productPath}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex h-10 items-center justify-center rounded-full border border-outline-variant px-5 text-xs font-semibold text-on-surface-variant transition hover:bg-surface-container-high active:scale-95"
+                            >
+                              Xem sản phẩm
+                            </Link>
+                          ) : (
+                            <Link
+                              to={`/profile/orders/${order.orderNumber}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex h-10 items-center justify-center rounded-full px-5 text-xs font-semibold transition active:scale-95 ${order.actionClass}`}
+                            >
+                              {order.action}
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -259,6 +348,13 @@ export default function MyOrdersPage() {
           )}
         </div>
       </main>
+
+      <WriteReviewModal
+        open={reviewModalOpen}
+        onClose={closeReviewModal}
+        onSuccess={handleReviewSuccess}
+        orderNumber={reviewOrderNumber}
+      />
 
       {/* Premium Confirm Cancellation Dialog Modal popup */}
       {cancellingOrder && (

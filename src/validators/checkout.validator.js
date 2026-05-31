@@ -17,7 +17,9 @@ const checkoutInformationValidation = [
         .isIn(['', 'NEW2024', 'FREESHIP', 'LABKIT'])
         .withMessage('Invalid coupon'),
     body('information.discountCode').optional().isString(),
-    body('information.appliedDiscountCode').optional().isString()
+    body('information.appliedDiscountCode').optional().isString(),
+    body('information.userCouponCode').optional().isString(),
+    body('information.pointsToRedeem').optional().isInt({ min: 0 })
 ];
 
 const checkoutProductIdsValidation = [

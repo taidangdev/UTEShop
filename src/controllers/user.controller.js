@@ -1,5 +1,7 @@
 const userService = require('../services/user.service');
 const profileService = require('../services/profile.service');
+const loyaltyService = require('../services/loyalty.service');
+const couponService = require('../services/coupon.service');
 const { successResponse } = require('../utils/responseHandler');
 
 const getMe = async (req, res, next) => {
@@ -30,6 +32,27 @@ const getMyReviews = async (req, res, next) => {
         const { page, limit } = req.query;
         const data = await profileService.listUserReviews(req.user.id, { page, limit });
         return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getMyPoints = async (req, res, next) => {
+    try {
+        const data = await loyaltyService.listTransactions(req.user.id, {
+            page: req.query.page,
+            limit: req.query.limit
+        });
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getMyCoupons = async (req, res, next) => {
+    try {
+        const coupons = await couponService.listActiveCoupons(req.user.id);
+        return successResponse(res, 200, 'OK', { coupons });
     } catch (error) {
         next(error);
     }
@@ -84,6 +107,8 @@ module.exports = {
     getMe,
     getMyOrders,
     getMyReviews,
+    getMyPoints,
+    getMyCoupons,
     requestEditProfileOtp,
     editProfile
 };

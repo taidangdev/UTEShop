@@ -17,7 +17,15 @@ export function cartItemDtoToLine(item: CartItemDto): CartLine {
 }
 
 export function apiTotalsToCheckoutTotals(
-    totals: { subtotal: number; shippingFee: number; discountAmount: number; total: number }
+    totals: {
+        subtotal: number;
+        shippingFee: number;
+        discountAmount: number;
+        total: number;
+        pointsRedeemed?: number;
+        pointsDiscount?: number;
+        userCouponCode?: string | null;
+    }
 ): CheckoutTotals {
     return {
         ...totals,

@@ -1,0 +1,32 @@
+[
+  {
+    "rating": 5,
+    "title": "Essential for Freshman Year",
+    "comment": "Everything is high quality. Used this for my entire robotics term project."
+  },
+  {
+    "rating": 4,
+    "title": "Great value for the price",
+    "comment": "Verified with my professors—this has everything needed for the labs."
+  },
+  {
+    "rating": 5,
+    "title": "Professional Grade",
+    "comment": "The sensors are much more accurate than alternatives. Worth it for the official shop kit."
+  },
+  {
+    "rating": 4,
+    "title": "Solid campus purchase",
+    "comment": "Fast pickup at the engineering building. Packaging was neat and complete."
+  },
+  {
+    "rating": 5,
+    "title": "Perfect for coursework",
+    "comment": "Matched our syllabus modules. Would recommend to anyone in mechatronics."
+  },
+  {
+    "rating": 3,
+    "title": "Good, minor packaging issue",
+    "comment": "Product works well; outer box had a small dent but contents were fine."
+  }
+]

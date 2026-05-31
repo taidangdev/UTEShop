@@ -14,9 +14,9 @@ const startServer = async () => {
         console.log('✅ MySQL (Docker) connected successfully.');
 
         const { syncDatabase } = require('./models');
-        const { ensureUserColumns } = require('./utils/ensureSchema');
+        const { ensureSchema } = require('./utils/ensureSchema');
         await syncDatabase({ alter: false });
-        await ensureUserColumns(sequelize);
+        await ensureSchema(sequelize);
         console.log('✅ MySQL tables synchronized.');
 
         // 2. Kết nối Redis

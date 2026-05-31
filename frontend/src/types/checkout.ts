@@ -18,6 +18,10 @@ export interface CheckoutInformation {
     coupon: CheckoutCoupon;
     discountCode: string;
     appliedDiscountCode: string;
+    /** Personal coupon from review rewards */
+    userCouponCode: string;
+    /** Loyalty points to redeem at checkout */
+    pointsToRedeem: number;
 }
 
 export interface CheckoutTotals {
@@ -26,6 +30,9 @@ export interface CheckoutTotals {
     discountAmount: number;
     total: number;
     shippingLabel: string;
+    pointsRedeemed?: number;
+    pointsDiscount?: number;
+    userCouponCode?: string | null;
 }
 
 export interface CheckoutPreviewData {

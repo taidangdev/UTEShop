@@ -10,8 +10,40 @@
     "username": "demo",
     "email": "demo@uteshop.local",
     "plainPassword": "Demo123!",
+    "fullName": "Demo Student",
+    "phone": "0987654321",
     "role": "customer",
     "studentId": "21110001",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "reviewer1",
+    "email": "reviewer1@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Alex Johnson",
+    "studentId": "21110002",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "reviewer2",
+    "email": "reviewer2@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Sarah Chen",
+    "studentId": "21110003",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "reviewer3",
+    "email": "reviewer3@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Marcus Rodriguez",
+    "studentId": "21110004",
     "majorCode": "IT",
     "status": "active"
   }

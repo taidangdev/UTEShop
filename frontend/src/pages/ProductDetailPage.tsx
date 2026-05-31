@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosConfig';
 import { formatPrice } from '../utils/formatPrice';
 import { addItemToServerCart } from '../services/cartApi';
@@ -7,38 +7,11 @@ import { addToCart } from '../utils/cartStorage';
 import ProductImageGallery from '../components/catalog/ProductImageGallery';
 import QuantitySelector from '../components/catalog/QuantitySelector';
 import SimilarProducts from '../components/catalog/SimilarProducts';
+import WriteReviewModal from '../components/reviews/WriteReviewModal';
+import { getAccessToken } from '../services/authSession';
+import { useAppSelector } from '../store/hooks';
 import type { ApiEnvelope } from '../types/api';
-import type { CatalogProduct, ProductDetail, ProductDetailResponse, ProductReview } from '../types/catalog';
-
-const DEMO_REVIEWS = [
-    {
-        id: 'demo-1',
-        rating: 5,
-        title: 'Essential for Freshman Year',
-        comment:
-            'Everything is high quality. The jumper wires do not feel cheap and the microcontroller is reliable. Used this for my entire robotics term project.',
-        user: { fullName: 'Alex Johnson', username: 'alexj' },
-        subtitle: 'Electrical Engineering, Year 1'
-    },
-    {
-        id: 'demo-2',
-        rating: 4,
-        title: 'Great value for the price',
-        comment:
-            'Verified with my professors—this has everything needed for the labs. The case is a nice touch to keep things organized in my dorm.',
-        user: { fullName: 'Sarah Chen', username: 'sarahc' },
-        subtitle: 'Mechatronics, Year 2'
-    },
-    {
-        id: 'demo-3',
-        rating: 5,
-        title: 'Professional Grade',
-        comment:
-            'The sensors are much more accurate than the ones I found online. Definitely worth spending the extra bit for the official shop kit.',
-        user: { fullName: 'Marcus Rodriguez', username: 'marcusr' },
-        subtitle: 'Mechanical Engineering, Year 1'
-    }
-];
+import type { CatalogProduct, ProductDetail, ProductDetailResponse } from '../types/catalog';
 
 function initials(name?: string | null, username?: string | null) {
     const base = name || username || '?';
@@ -151,7 +124,11 @@ function ProductDetailFooter() {
 
 export default function ProductDetailPage() {
     const { slug } = useParams();
+    const navigate = useNavigate();
+    const authUser = useAppSelector((s) => s.auth.user);
+    const isAuthenticated = Boolean(authUser || getAccessToken());
     const [product, setProduct] = useState<ProductDetail | null>(null);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [similarProducts, setSimilarProducts] = useState<CatalogProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -204,26 +181,30 @@ export default function ProductDetailPage() {
 
     const specRows = useMemo(() => (product ? buildSpecRows(product) : []), [product]);
 
-    const reviews = useMemo(() => {
-        if (!product) return [];
-        if ((product.reviews?.length ?? 0) > 0) {
-            return (product.reviews ?? []).map((r: ProductReview) => ({
-                id: r.id,
-                rating: r.rating,
-                title: r.comment?.slice(0, 40) || 'Student review',
-                comment: r.comment,
-                user: r.user,
-                subtitle: r.user?.fullName ? 'Verified student' : ''
-            }));
-        }
-        return DEMO_REVIEWS;
-    }, [product]);
+    const reviews = useMemo(() => product?.reviews ?? [], [product]);
 
-    const reviewAverage =
-        product?.reviewSummary?.count && product.reviewSummary.average != null
-            ? product.reviewSummary.average
-            : 4.8;
-    const reviewCount = product?.reviewSummary?.count || 124;
+    const reviewAverage = product?.reviewSummary?.average ?? 0;
+    const reviewCount = product?.reviewSummary?.count ?? 0;
+
+    const reloadProduct = async () => {
+        if (!slug) return;
+        try {
+            const res = await axiosInstance.get<ApiEnvelope<ProductDetailResponse>>(
+                `/catalog/products/${slug}`
+            );
+            setProduct(res.data?.product ?? null);
+        } catch {
+            // keep current product on refresh failure
+        }
+    };
+
+    const handleWriteReview = () => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: `/products/${slug}` } });
+            return;
+        }
+        setReviewModalOpen(true);
+    };
 
     const stockQty = product?.stockQuantity ?? 0;
     const soldCount = product?.soldCount ?? 0;
@@ -574,32 +555,48 @@ export default function ProductDetailPage() {
                             <h2 className="mb-2 text-4xl font-bold text-on-surface">Student Reviews</h2>
                             <div className="flex flex-wrap items-center gap-4">
                                 <StarRating value={reviewAverage} />
-                                <span className="font-bold text-on-surface">
-                                    {reviewAverage?.toFixed(1)} / 5.0
-                                </span>
-                                <span className="text-on-surface-variant">
-                                    Based on {reviewCount} students
-                                </span>
+                                {reviewCount > 0 && (
+                                    <>
+                                        <span className="font-bold text-on-surface">
+                                            {reviewAverage.toFixed(1)} / 5.0
+                                        </span>
+                                        <span className="text-on-surface-variant">
+                                            Based on {reviewCount} student{reviewCount !== 1 ? 's' : ''}
+                                        </span>
+                                    </>
+                                )}
+                                {reviewCount === 0 && (
+                                    <span className="text-on-surface-variant">No reviews yet</span>
+                                )}
                             </div>
                         </div>
                         <button
                             type="button"
+                            onClick={handleWriteReview}
                             className="rounded-full bg-surface-container-highest px-6 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-high"
                         >
                             Write a Review
                         </button>
                     </div>
 
+                    {reviews.length === 0 && (
+                        <p className="mb-8 rounded-[24px] bg-surface-container-low px-6 py-10 text-center text-on-surface-variant">
+                            Be the first to review this product after your order is confirmed.
+                        </p>
+                    )}
+
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                        {reviews.slice(0, 3).map((review) => (
+                        {reviews.slice(0, 6).map((review) => (
                             <div
                                 key={review.id}
                                 className="soft-shadow flex h-full flex-col rounded-[24px] bg-white p-8"
                             >
                                 <StarRating value={review.rating} size={18} />
-                                <p className="mb-3 mt-4 font-bold text-on-surface">{review.title}</p>
+                                <p className="mb-3 mt-4 font-bold text-on-surface">
+                                    {review.title || 'Student review'}
+                                </p>
                                 <p className="flex-grow text-base text-on-surface-variant">
-                                    &quot;{review.comment}&quot;
+                                    {review.comment ? `"${review.comment}"` : 'No written comment.'}
                                 </p>
                                 <div className="mt-6 flex items-center gap-3">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-highest text-sm font-bold text-primary">
@@ -612,11 +609,7 @@ export default function ProductDetailPage() {
                                         <div className="text-sm font-bold text-on-surface">
                                             {review.user?.fullName || review.user?.username}
                                         </div>
-                                        {review.subtitle && (
-                                            <div className="text-xs text-on-surface-variant">
-                                                {review.subtitle}
-                                            </div>
-                                        )}
+                                        <div className="text-xs text-on-surface-variant">Verified student</div>
                                     </div>
                                 </div>
                             </div>
@@ -626,6 +619,15 @@ export default function ProductDetailPage() {
             </main>
 
             <ProductDetailFooter />
+
+            {product && (
+                <WriteReviewModal
+                    open={reviewModalOpen}
+                    onClose={() => setReviewModalOpen(false)}
+                    productId={product.id}
+                    onSuccess={reloadProduct}
+                />
+            )}
         </div>
     );
 }

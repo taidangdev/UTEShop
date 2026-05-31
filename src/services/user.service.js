@@ -108,6 +108,7 @@ const getUserPublicById = async (userId) => {
             'majorId',
             'avatarUrl',
             'emailVerifiedAt',
+            'loyaltyPoints',
             'createdAt',
             'updatedAt'
         ],

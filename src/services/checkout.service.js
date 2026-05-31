@@ -15,6 +15,8 @@ const {
     mapCartItemRow,
     assertStock
 } = require('./cart.service');
+const couponService = require('./coupon.service');
+const loyaltyService = require('./loyalty.service');
 
 const HOME_SHIPPING_FEE = 12;
 
@@ -42,7 +44,9 @@ function normalizeInformation(raw = {}) {
         postalCode: String(raw.postalCode || '').trim(),
         coupon: raw.coupon || '',
         discountCode: String(raw.discountCode || '').trim(),
-        appliedDiscountCode: String(raw.appliedDiscountCode || '').trim()
+        appliedDiscountCode: String(raw.appliedDiscountCode || '').trim(),
+        userCouponCode: String(raw.userCouponCode || raw.appliedDiscountCode || '').trim(),
+        pointsToRedeem: Math.max(0, parseInt(raw.pointsToRedeem, 10) || 0)
     };
 }
 
@@ -79,10 +83,14 @@ function validateInformation(info) {
     }
 }
 
-function calculateTotals(lineItems, information) {
+async function calculateCheckoutTotals(lineItems, information, userId) {
     const subtotal = lineItems.reduce((sum, row) => sum + row.lineTotal, 0);
     let shippingFee = information.deliveryType === 'campus' ? 0 : HOME_SHIPPING_FEE;
     let discountAmount = 0;
+    let appliedUserCouponId = null;
+    let pointsRedeemed = 0;
+    let pointsDiscount = 0;
+    let userCouponCode = null;
 
     if (information.coupon === 'FREESHIP') {
         shippingFee = 0;
@@ -100,13 +108,48 @@ function calculateTotals(lineItems, information) {
         discountAmount += subtotal * 0.15;
     }
 
+    if (userId && information.userCouponCode) {
+        const coupon = await couponService.findValidUserCoupon(
+            userId,
+            information.userCouponCode
+        );
+        if (coupon) {
+            if (coupon.discountType === 'free_shipping') {
+                shippingFee = 0;
+            } else {
+                discountAmount += couponService.calculateCouponDiscount(coupon, subtotal);
+            }
+            appliedUserCouponId = coupon.id;
+            userCouponCode = coupon.code;
+        } else {
+            const err = new Error('Invalid or expired coupon code');
+            err.statusCode = 400;
+            err.code = 'INVALID_COUPON';
+            throw err;
+        }
+    }
+
+    if (userId && information.pointsToRedeem > 0) {
+        const balance = await loyaltyService.getBalance(userId);
+        const maxPoints = loyaltyService.maxRedeemablePoints(subtotal, balance);
+        pointsRedeemed = Math.min(information.pointsToRedeem, maxPoints);
+        if (pointsRedeemed > 0) {
+            pointsDiscount = loyaltyService.pointsToDiscountAmount(pointsRedeemed);
+            discountAmount += pointsDiscount;
+        }
+    }
+
     const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
     return {
         subtotal: roundMoney(subtotal),
         shippingFee: roundMoney(shippingFee),
         discountAmount: roundMoney(discountAmount),
-        total: roundMoney(total)
+        total: roundMoney(total),
+        appliedUserCouponId,
+        userCouponCode,
+        pointsRedeemed,
+        pointsDiscount: roundMoney(pointsDiscount)
     };
 }
 
@@ -184,7 +227,9 @@ function buildShippingSnapshot(information) {
         postalCode: information.postalCode,
         coupon: information.coupon || null,
         discountCode: information.discountCode || null,
-        appliedDiscountCode: information.appliedDiscountCode || null
+        appliedDiscountCode: information.appliedDiscountCode || null,
+        userCouponCode: information.userCouponCode || null,
+        pointsToRedeem: information.pointsToRedeem || 0
     };
 }
 
@@ -195,12 +240,15 @@ async function previewCheckout(cartContext, { productIds, information: rawInform
     const cart = await ensureCart(cartContext);
     const selectedItems = filterCartItems(cart, productIds);
     const lines = await buildCheckoutLines(selectedItems);
-    const totals = calculateTotals(lines, information);
+    const totals = await calculateCheckoutTotals(lines, information, cartContext.userId);
 
     return {
         items: lines.map((l) => l.mapped),
         totals,
-        information
+        information,
+        loyaltyPoints: cartContext.userId
+            ? await loyaltyService.getBalance(cartContext.userId)
+            : null
     };
 }
 
@@ -303,8 +351,13 @@ async function placeOrder(
     const cart = await ensureCart(cartContext);
     const selectedItems = filterCartItems(cart, productIds);
     const lines = await buildCheckoutLines(selectedItems);
-    const totals = calculateTotals(lines, information);
-    const shippingSnapshot = buildShippingSnapshot(information);
+    const totals = await calculateCheckoutTotals(lines, information, userId);
+    const shippingSnapshot = {
+        ...buildShippingSnapshot(information),
+        userCouponCode: totals.userCouponCode,
+        pointsRedeemed: totals.pointsRedeemed,
+        pointsDiscount: totals.pointsDiscount
+    };
 
     const transaction = await sequelize.transaction();
 
@@ -383,6 +436,23 @@ async function placeOrder(
         const remaining = await CartItem.count({ where: { cartId: cart.id }, transaction });
         if (remaining === 0) {
             await cart.update({ status: 'converted' }, { transaction });
+        }
+
+        if (userId && totals.appliedUserCouponId) {
+            await couponService.markCouponUsed(totals.appliedUserCouponId, order.id, transaction);
+        }
+
+        if (userId && totals.pointsRedeemed > 0) {
+            await loyaltyService.redeemPoints(
+                userId,
+                totals.pointsRedeemed,
+                {
+                    referenceType: 'order',
+                    referenceId: order.id,
+                    note: `Redeemed on order ${order.orderNumber}`
+                },
+                transaction
+            );
         }
 
         await transaction.commit();

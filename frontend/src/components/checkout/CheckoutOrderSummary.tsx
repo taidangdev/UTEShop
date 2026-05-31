@@ -1,5 +1,6 @@
 import type { CartLine } from '../../utils/cartStorage';
 import type { CheckoutInformation, CheckoutTotals } from '../../types/checkout';
+import type { UserCoupon } from '../../types/review';
 import { formatPrice } from '../../utils/formatPrice';
 
 interface CheckoutOrderSummaryProps {
@@ -10,6 +11,10 @@ interface CheckoutOrderSummaryProps {
     onCouponChange?: (coupon: CheckoutInformation['coupon']) => void;
     onDiscountCodeChange?: (code: string) => void;
     onApplyDiscount?: () => void;
+    userCoupons?: UserCoupon[];
+    pointsBalance?: number;
+    onUserCouponChange?: (code: string) => void;
+    onPointsChange?: (points: number) => void;
     compact?: boolean;
 }
 
@@ -21,6 +26,10 @@ export default function CheckoutOrderSummary({
     onCouponChange,
     onDiscountCodeChange,
     onApplyDiscount,
+    userCoupons = [],
+    pointsBalance = 0,
+    onUserCouponChange,
+    onPointsChange,
     compact = false
 }: CheckoutOrderSummaryProps) {
     const showStudentDiscount = information.studentId.trim().length > 0;
@@ -60,6 +69,45 @@ export default function CheckoutOrderSummary({
                     ))}
                 </div>
             </div>
+
+            {showCoupons && onUserCouponChange && userCoupons.length > 0 && (
+                <div className="space-y-3 border-t border-outline-variant/30 pt-6">
+                    <label className="text-xs font-semibold text-on-surface-variant">
+                        Review reward coupons
+                    </label>
+                    <select
+                        value={information.userCouponCode}
+                        onChange={(e) => onUserCouponChange(e.target.value)}
+                        className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
+                    >
+                        <option value="">No coupon</option>
+                        {userCoupons.map((c) => (
+                            <option key={c.id} value={c.code}>
+                                {c.code} ({c.discountValue}% off)
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {showCoupons && onPointsChange && pointsBalance > 0 && (
+                <div className="space-y-2 border-t border-outline-variant/30 pt-6">
+                    <label className="text-xs font-semibold text-on-surface-variant">
+                        Loyalty points ({pointsBalance} available)
+                    </label>
+                    <input
+                        type="number"
+                        min={0}
+                        max={pointsBalance}
+                        value={information.pointsToRedeem || ''}
+                        onChange={(e) =>
+                            onPointsChange(Math.min(pointsBalance, Math.max(0, Number(e.target.value) || 0)))
+                        }
+                        placeholder="Points to redeem"
+                        className="h-10 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
+                    />
+                </div>
+            )}
 
             {showCoupons && onCouponChange && onDiscountCodeChange && onApplyDiscount && (
                 <div className="space-y-4 border-t border-outline-variant/30 pt-6">
@@ -135,6 +183,20 @@ export default function CheckoutOrderSummary({
                         <span className="text-primary">
                             -{formatPrice(totals.subtotal * 0.05)}
                         </span>
+                    </div>
+                )}
+                {(totals.pointsRedeemed ?? 0) > 0 && (
+                    <div className="flex justify-between text-sm text-on-surface-variant">
+                        <span>Points redeemed ({totals.pointsRedeemed})</span>
+                        <span className="text-primary">
+                            -{formatPrice(totals.pointsDiscount ?? 0)}
+                        </span>
+                    </div>
+                )}
+                {information.userCouponCode && totals.userCouponCode && (
+                    <div className="flex justify-between text-sm text-on-surface-variant">
+                        <span>Coupon {totals.userCouponCode}</span>
+                        <span className="text-primary">Applied</span>
                     </div>
                 )}
                 <div className="flex justify-between border-t border-outline-variant pt-4 text-2xl font-semibold text-on-surface">

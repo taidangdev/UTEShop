@@ -8,6 +8,9 @@ import { useCheckoutPreview } from '../hooks/useCheckoutPreview';
 import axiosInstance from '../services/axiosConfig';
 import type { ApiEnvelope } from '../types/api';
 import type { CheckoutInformation } from '../types/checkout';
+import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
+import { getAccessToken } from '../services/authSession';
+import type { UserCoupon } from '../types/review';
 import {
     getCheckoutInformation,
     hasCheckoutSelection,
@@ -29,6 +32,8 @@ export default function CheckoutInformationPage() {
     const { items: cartItems, loading: cartLoading } = useCheckoutCart();
     const [information, setInformation] = useState<CheckoutInformation>(() => getCheckoutInformation());
     const [formError, setFormError] = useState<string | null>(null);
+    const [userCoupons, setUserCoupons] = useState<UserCoupon[]>([]);
+    const [pointsBalance, setPointsBalance] = useState(0);
     const {
         items,
         totals,
@@ -61,6 +66,29 @@ export default function CheckoutInformationPage() {
             }
         }
         prefillProfile();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!getAccessToken()) return;
+        let cancelled = false;
+        async function loadRewards() {
+            try {
+                const [pointsData, coupons] = await Promise.all([
+                    fetchMyPoints(),
+                    fetchMyCoupons()
+                ]);
+                if (!cancelled) {
+                    setPointsBalance(pointsData.balance);
+                    setUserCoupons(coupons);
+                }
+            } catch {
+                // Guest or rewards unavailable
+            }
+        }
+        loadRewards();
         return () => {
             cancelled = true;
         };
@@ -323,6 +351,10 @@ export default function CheckoutInformationPage() {
                                 onCouponChange={(coupon) => updateField('coupon', coupon)}
                                 onDiscountCodeChange={(code) => updateField('discountCode', code)}
                                 onApplyDiscount={handleApplyDiscount}
+                                userCoupons={userCoupons}
+                                pointsBalance={pointsBalance}
+                                onUserCouponChange={(code) => updateField('userCouponCode', code)}
+                                onPointsChange={(points) => updateField('pointsToRedeem', points)}
                             />
                         )}
                     </div>

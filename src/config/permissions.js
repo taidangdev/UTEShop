@@ -7,7 +7,8 @@ const CUSTOMER_PERMISSIONS = [
     'profile:update',
     'orders:read',
     'orders:create',
-    'cart:manage'
+    'cart:manage',
+    'reviews:create'
 ];
 
 const PERMISSIONS_BY_ROLE = {

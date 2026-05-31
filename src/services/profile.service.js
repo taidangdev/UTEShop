@@ -126,6 +126,8 @@ function mapOrderRow(order) {
         progress: ui.progress,
         placedAt: order.placedAt,
         itemCount: items.length,
+        productSlug: first?.product?.slug ?? null,
+        productId: first?.product?.id ?? first?.productId ?? null,
         total: Number(order.total),
         payment: order.payment
             ? {
@@ -143,23 +145,35 @@ function mapReviewRow(review) {
     return {
         id: review.id,
         productId: review.productId,
+        orderId: review.orderId,
+        orderItemId: review.orderItemId,
         productName: product?.name || 'Product',
         productSlug: product?.slug || null,
         productImageUrl: primaryImage || '/PremiumLaptop.png',
         rating: review.rating,
+        title: review.title,
         comment: review.comment,
         status: review.status,
+        rewardType: review.rewardType,
+        rewardGrantedAt: review.rewardGrantedAt,
+        rewardPayload: review.rewardPayload,
         createdAt: review.createdAt
     };
 }
 
 async function getUserStats(userId) {
-    const [orderCount, reviewCount] = await Promise.all([
+    const { User } = require('../models');
+    const [orderCount, reviewCount, user] = await Promise.all([
         Order.count({ where: { userId } }),
-        ProductReview.count({ where: { userId } })
+        ProductReview.count({ where: { userId } }),
+        User.findByPk(userId, { attributes: ['loyaltyPoints'] })
     ]);
 
-    return { orderCount, reviewCount };
+    return {
+        orderCount,
+        reviewCount,
+        loyaltyPoints: user?.loyaltyPoints ?? 0
+    };
 }
 
 async function listUserOrders(userId, { page = 1, limit = 10 } = {}) {

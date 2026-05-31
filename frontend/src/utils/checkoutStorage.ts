@@ -19,7 +19,9 @@ const defaultInformation = (): CheckoutInformation => ({
     postalCode: '',
     coupon: '',
     discountCode: '',
-    appliedDiscountCode: ''
+    appliedDiscountCode: '',
+    userCouponCode: '',
+    pointsToRedeem: 0
 });
 
 function readSession(): CheckoutSession {

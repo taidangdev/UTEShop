@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchOrder, cancelOrder } from '../services/checkoutApi';
+import { fetchEligibleReviewItems } from '../services/reviewApi';
 import type { OrderDto } from '../types/checkout';
+
+const REVIEWABLE_STATUSES = new Set(['delivered']);
 
 const STATUS_CONFIG: Record<string, { label: string; icon: string; colorClass: string; step: number }> = {
     pending: { label: 'Đơn hàng mới', icon: 'pending_actions', colorClass: 'bg-surface-container-highest text-on-surface-variant', step: 1 },
@@ -29,12 +33,28 @@ const PAYMENT_STATUSES: Record<string, { label: string; class: string }> = {
 
 export default function OrderTrackingPage() {
     const { orderNumber } = useParams<{ orderNumber: string }>();
-    const navigate = useNavigate();
     const [order, setOrder] = useState<OrderDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [cancelling, setCancelling] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [reviewOrderItemId, setReviewOrderItemId] = useState<number | undefined>();
+    const [reviewableItemIds, setReviewableItemIds] = useState<Set<number>>(() => new Set());
+
+    const loadReviewableItems = useCallback(async (currentOrderNumber: string) => {
+        try {
+            const items = await fetchEligibleReviewItems();
+            const ids = new Set(
+                items
+                    .filter((item) => item.orderNumber === currentOrderNumber)
+                    .map((item) => item.orderItemId)
+            );
+            setReviewableItemIds(ids);
+        } catch {
+            setReviewableItemIds(new Set());
+        }
+    }, []);
 
     const loadOrderData = async () => {
         if (!orderNumber) return;
@@ -43,6 +63,11 @@ export default function OrderTrackingPage() {
         try {
             const data = await fetchOrder(orderNumber);
             setOrder(data.order);
+            if (data.order.status === 'delivered') {
+                await loadReviewableItems(orderNumber);
+            } else {
+                setReviewableItemIds(new Set());
+            }
         } catch (err: any) {
             console.error('Failed to load order details:', err);
             setError(err?.response?.data?.message || err?.message || 'Không thể tải thông tin đơn hàng');
@@ -254,7 +279,7 @@ export default function OrderTrackingPage() {
                         <h3 className="mb-6 text-base font-bold text-on-surface">Danh sách sản phẩm</h3>
                         <div className="divide-y divide-outline-variant/20">
                             {order.items.map((item) => (
-                                <div key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                                <div key={item.id} className="flex flex-wrap items-center gap-4 py-4 first:pt-0 last:pb-0">
                                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-container-high border border-outline-variant/20 flex items-center justify-center">
                                         <img
                                             src="/PremiumLaptop.png"
@@ -267,9 +292,24 @@ export default function OrderTrackingPage() {
                                         <p className="mt-0.5 text-xs text-on-surface-variant">SKU: {item.sku || '—'}</p>
                                         <p className="mt-1 text-xs font-medium text-on-surface">Số lượng: {item.quantity}</p>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm font-bold text-primary">${Number(item.lineTotal).toFixed(2)}</p>
-                                        <p className="text-xs text-on-surface-variant">${Number(item.unitPrice).toFixed(2)} / cái</p>
+                                    <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-primary">${Number(item.lineTotal).toFixed(2)}</p>
+                                            <p className="text-xs text-on-surface-variant">${Number(item.unitPrice).toFixed(2)} / cái</p>
+                                        </div>
+                                        {REVIEWABLE_STATUSES.has(order.status) &&
+                                            reviewableItemIds.has(item.id) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setReviewOrderItemId(item.id);
+                                                    setReviewModalOpen(true);
+                                                }}
+                                                className="rounded-full border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5"
+                                            >
+                                                Đánh giá
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -329,6 +369,17 @@ export default function OrderTrackingPage() {
                     </Link>
                 </div>
             </main>
+
+            <WriteReviewModal
+                open={reviewModalOpen}
+                onClose={() => {
+                    setReviewModalOpen(false);
+                    setReviewOrderItemId(undefined);
+                }}
+                onSuccess={() => orderNumber && loadReviewableItems(orderNumber)}
+                orderNumber={orderNumber}
+                orderItemId={reviewOrderItemId}
+            />
 
             {/* Premium Confirm Cancellation Dialog Modal popup */}
             {showCancelModal && (

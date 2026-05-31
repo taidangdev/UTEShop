@@ -17,6 +17,7 @@ const ensureUserColumns = async (sequelize) => {
         if (!table[name]) {
             await qi.addColumn('users', name, spec);
             console.log(`  + users.${name}`);
+            table[name] = spec;
         }
     };
 
@@ -24,14 +25,53 @@ const ensureUserColumns = async (sequelize) => {
     await addIfMissing('studentId', { type: DataTypes.STRING(20), allowNull: true });
     await addIfMissing('avatarUrl', { type: DataTypes.STRING(500), allowNull: true });
     await addIfMissing('emailVerifiedAt', { type: DataTypes.DATE, allowNull: true });
+    await addIfMissing('loyaltyPoints', {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    });
 
-    // Ensure users.role column has ENUM('admin', 'customer', 'user')
     try {
-        await sequelize.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'customer', 'user') DEFAULT 'customer'");
+        await sequelize.query(
+            "ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'customer', 'user') DEFAULT 'customer'"
+        );
         console.log('  + Verified users.role ENUM values');
     } catch (err) {
         console.warn('  ! Warning updating users.role ENUM:', err.message);
     }
 };
 
-module.exports = { ensureUserColumns };
+const ensureProductReviewColumns = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+    let table;
+
+    try {
+        table = await qi.describeTable('product_reviews');
+    } catch {
+        return;
+    }
+
+    const addIfMissing = async (name, spec) => {
+        if (!table[name]) {
+            await qi.addColumn('product_reviews', name, spec);
+            console.log(`  + product_reviews.${name}`);
+            table[name] = spec;
+        }
+    };
+
+    await addIfMissing('orderItemId', { type: DataTypes.INTEGER, allowNull: true, unique: true });
+    await addIfMissing('title', { type: DataTypes.STRING(200), allowNull: true });
+    await addIfMissing('rewardType', {
+        type: DataTypes.ENUM('points', 'coupon'),
+        allowNull: true
+    });
+    await addIfMissing('rewardGrantedAt', { type: DataTypes.DATE, allowNull: true });
+    await addIfMissing('rewardPayload', { type: DataTypes.JSON, allowNull: true });
+};
+
+const ensureSchema = async (sequelize) => {
+    await ensureUserColumns(sequelize);
+    await ensureProductReviewColumns(sequelize);
+};
+
+module.exports = { ensureUserColumns, ensureProductReviewColumns, ensureSchema };

@@ -23,6 +23,10 @@ router.get('/me/orders', requirePermission('orders:read'), userController.getMyO
 
 router.get('/me/reviews', requirePermission('profile:read'), userController.getMyReviews);
 
+router.get('/me/points', requirePermission('profile:read'), userController.getMyPoints);
+
+router.get('/me/coupons', requirePermission('profile:read'), userController.getMyCoupons);
+
 router.post(
     '/profile/request-otp',
     requirePermission('profile:update'),

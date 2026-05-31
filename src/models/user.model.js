@@ -58,6 +58,11 @@ const User = sequelize.define(
         emailVerifiedAt: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        loyaltyPoints: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
         }
     },
     {

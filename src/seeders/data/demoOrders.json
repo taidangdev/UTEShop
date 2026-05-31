@@ -1,0 +1,147 @@
+[
+  {
+    "orderNumber": "DEMO-2026-0001",
+    "status": "pending",
+    "paymentMethod": "cod",
+    "paymentStatus": "pending",
+    "deliveryType": "campus",
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "daysAgo": 0,
+    "note": "Đơn mới đặt — chờ xác nhận",
+    "items": [{ "productSlug": "engineering-starter-kit", "quantity": 1 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0002",
+    "status": "pending",
+    "paymentMethod": "bank_transfer",
+    "paymentStatus": "pending",
+    "deliveryType": "home",
+    "shippingFee": 12,
+    "discountAmount": 0,
+    "daysAgo": 1,
+    "note": "Chờ chuyển khoản ngân hàng",
+    "items": [
+      { "productSlug": "ute-engineering-hoodie", "quantity": 1 },
+      { "productSlug": "minimalist-study-lamp", "quantity": 1 }
+    ]
+  },
+  {
+    "orderNumber": "DEMO-2026-0003",
+    "status": "confirmed",
+    "paymentMethod": "vnpay",
+    "paymentStatus": "paid",
+    "deliveryType": "campus",
+    "shippingFee": 0,
+    "discountAmount": 10,
+    "daysAgo": 2,
+    "paidDaysAgo": 2,
+    "note": "Đã thanh toán — chờ shop xác nhận giao",
+    "items": [{ "productSlug": "chuot-gaming-rgb", "quantity": 2 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0004",
+    "status": "processing",
+    "paymentMethod": "momo",
+    "paymentStatus": "paid",
+    "deliveryType": "home",
+    "shippingFee": 12,
+    "discountAmount": 0,
+    "daysAgo": 3,
+    "paidDaysAgo": 3,
+    "note": "Đang chuẩn bị hàng",
+    "items": [{ "productSlug": "ban-phim-co-bluetooth", "quantity": 1 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0005",
+    "status": "shipping",
+    "paymentMethod": "vnpay",
+    "paymentStatus": "paid",
+    "deliveryType": "home",
+    "shippingFee": 12,
+    "discountAmount": 5,
+    "daysAgo": 5,
+    "paidDaysAgo": 5,
+    "shippedDaysAgo": 1,
+    "note": "Đang giao hàng",
+    "items": [
+      { "productSlug": "engineering-starter-kit", "quantity": 1 },
+      { "productSlug": "ute-engineering-hoodie", "quantity": 1 }
+    ]
+  },
+  {
+    "orderNumber": "DEMO-2026-0006",
+    "status": "shipping",
+    "paymentMethod": "cod",
+    "paymentStatus": "pending",
+    "deliveryType": "campus",
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "daysAgo": 4,
+    "shippedDaysAgo": 2,
+    "note": "Giao campus — COD khi nhận",
+    "items": [{ "productSlug": "minimalist-study-lamp", "quantity": 1 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0007",
+    "status": "delivered",
+    "paymentMethod": "vnpay",
+    "paymentStatus": "paid",
+    "deliveryType": "campus",
+    "shippingFee": 0,
+    "discountAmount": 15,
+    "daysAgo": 10,
+    "paidDaysAgo": 10,
+    "shippedDaysAgo": 8,
+    "deliveredDaysAgo": 7,
+    "note": "Đã giao — có thể đánh giá & nhận thưởng",
+    "items": [{ "productSlug": "engineering-starter-kit", "quantity": 1 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0008",
+    "status": "delivered",
+    "paymentMethod": "momo",
+    "paymentStatus": "paid",
+    "deliveryType": "home",
+    "shippingFee": 12,
+    "discountAmount": 0,
+    "daysAgo": 14,
+    "paidDaysAgo": 14,
+    "shippedDaysAgo": 12,
+    "deliveredDaysAgo": 11,
+    "note": "Đơn cũ đã hoàn thành",
+    "items": [
+      { "productSlug": "chuot-gaming-rgb", "quantity": 1 },
+      { "productSlug": "ban-phim-co-bluetooth", "quantity": 1 }
+    ]
+  },
+  {
+    "orderNumber": "DEMO-2026-0009",
+    "status": "delivered",
+    "paymentMethod": "cod",
+    "paymentStatus": "paid",
+    "deliveryType": "home",
+    "shippingFee": 12,
+    "discountAmount": 20,
+    "daysAgo": 21,
+    "paidDaysAgo": 20,
+    "shippedDaysAgo": 19,
+    "deliveredDaysAgo": 18,
+    "note": "Đơn đã giao — dùng thử review",
+    "items": [{ "productSlug": "ute-engineering-hoodie", "quantity": 1 }]
+  },
+  {
+    "orderNumber": "DEMO-2026-0010",
+    "status": "cancelled",
+    "paymentMethod": "bank_transfer",
+    "paymentStatus": "failed",
+    "deliveryType": "campus",
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "daysAgo": 6,
+    "cancelledDaysAgo": 5,
+    "adminNote": "Hủy do quá hạn thanh toán.",
+    "note": "Đơn đã hủy",
+    "items": [{ "productSlug": "minimalist-study-lamp", "quantity": 1 }]
+  }
+]

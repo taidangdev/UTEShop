@@ -18,6 +18,8 @@ const ConsignmentImage = require('./consignmentImage.model');
 const Promotion = require('./promotion.model');
 const Banner = require('./banner.model');
 const ProductReview = require('./productReview.model');
+const PointTransaction = require('./pointTransaction.model');
+const UserCoupon = require('./userCoupon.model');
 const Wishlist = require('./wishlist.model');
 
 // --- User & Major ---
@@ -100,6 +102,15 @@ Product.hasMany(ProductReview, { foreignKey: 'productId', as: 'reviews' });
 ProductReview.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 ProductReview.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 ProductReview.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+ProductReview.belongsTo(OrderItem, { foreignKey: 'orderItemId', as: 'orderItem' });
+OrderItem.hasOne(ProductReview, { foreignKey: 'orderItemId', as: 'review' });
+
+User.hasMany(PointTransaction, { foreignKey: 'userId', as: 'pointTransactions' });
+PointTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+User.hasMany(UserCoupon, { foreignKey: 'userId', as: 'coupons' });
+UserCoupon.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+UserCoupon.belongsTo(ProductReview, { foreignKey: 'reviewId', as: 'review' });
 
 User.belongsToMany(Product, {
     through: Wishlist,
@@ -140,5 +151,7 @@ module.exports = {
     Promotion,
     Banner,
     ProductReview,
+    PointTransaction,
+    UserCoupon,
     Wishlist
 };

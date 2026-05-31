@@ -8,17 +8,20 @@ const { seedBanners } = require('./seedBanners');
 const { seedPromotions } = require('./seedPromotions');
 const { seedUsers } = require('./seedUsers');
 const { seedOrders } = require('./seedOrders');
+const { seedReviews } = require('./seedReviews');
 
 const run = async () => {
     try {
         await sequelize.authenticate();
         console.log('Database connection OK.');
 
-        const { ensureUserColumns } = require('../utils/ensureSchema');
+        const { ensureUserColumns, ensureSchema } = require('../utils/ensureSchema');
+
+        console.log('Applying schema patches...');
+        await ensureSchema(sequelize);
 
         console.log('Syncing all tables...');
         await syncDatabase({ alter: false });
-        await ensureUserColumns(sequelize);
 
         console.log('Seeding majors...');
         const majorCodeToId = await seedMajors();
@@ -40,6 +43,9 @@ const run = async () => {
 
         console.log('Seeding orders...');
         await seedOrders();
+
+        console.log('Seeding product reviews...');
+        await seedReviews();
 
         console.log('Done.');
     } catch (err) {

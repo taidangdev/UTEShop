@@ -19,12 +19,21 @@ const ProductReview = sequelize.define(
         },
         orderId: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: false
+        },
+        orderItemId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            unique: true
         },
         rating: {
             type: DataTypes.TINYINT,
             allowNull: false,
             validate: { min: 1, max: 5 }
+        },
+        title: {
+            type: DataTypes.STRING(200),
+            allowNull: true
         },
         comment: {
             type: DataTypes.TEXT,
@@ -34,12 +43,28 @@ const ProductReview = sequelize.define(
             type: DataTypes.ENUM('pending', 'approved', 'rejected'),
             allowNull: false,
             defaultValue: 'pending'
+        },
+        rewardType: {
+            type: DataTypes.ENUM('points', 'coupon'),
+            allowNull: true
+        },
+        rewardGrantedAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        rewardPayload: {
+            type: DataTypes.JSON,
+            allowNull: true
         }
     },
     {
         tableName: 'product_reviews',
         timestamps: true,
-        indexes: [{ fields: ['productId', 'userId'] }]
+        indexes: [
+            { fields: ['productId', 'status'] },
+            { fields: ['userId'] },
+            { unique: true, fields: ['orderItemId'] }
+        ]
     }
 );
 

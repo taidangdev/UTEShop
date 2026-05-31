@@ -280,6 +280,7 @@ function mapProductDetail(product) {
         reviews: approvedReviews.map((r) => ({
             id: r.id,
             rating: r.rating,
+            title: r.title,
             comment: r.comment,
             createdAt: r.createdAt,
             user: r.user
