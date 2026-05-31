@@ -9,10 +9,13 @@ import axiosInstance from '../services/axiosConfig';
 import type { ApiEnvelope } from '../types/api';
 import type { CheckoutInformation } from '../types/checkout';
 import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
+import { fetchActivePromotions, validatePromotionCode } from '../services/promotionApi';
+import type { ShopPromotion } from '../types/promotion';
 import { getAccessToken } from '../services/authSession';
 import type { UserCoupon } from '../types/review';
 import {
     getCheckoutInformation,
+    getCheckoutProductIds,
     hasCheckoutSelection,
     saveCheckoutInformation
 } from '../utils/checkoutStorage';
@@ -34,11 +37,16 @@ export default function CheckoutInformationPage() {
     const [formError, setFormError] = useState<string | null>(null);
     const [userCoupons, setUserCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState(0);
+    const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
+    const [shopPromotions, setShopPromotions] = useState<ShopPromotion[]>([]);
+    const [promotionsLoading, setPromotionsLoading] = useState(true);
+    const [promotionApplying, setPromotionApplying] = useState(false);
     const {
         items,
         totals,
         loading: previewLoading,
-        error: previewError
+        error: previewError,
+        maxPointsRedeemable
     } = useCheckoutPreview(information, cartItems);
 
     useEffect(() => {
@@ -94,12 +102,78 @@ export default function CheckoutInformationPage() {
         };
     }, []);
 
+    useEffect(() => {
+        let cancelled = false;
+        async function loadPromotions() {
+            setPromotionsLoading(true);
+            try {
+                const list = await fetchActivePromotions();
+                if (!cancelled) setShopPromotions(list);
+            } catch {
+                if (!cancelled) setShopPromotions([]);
+            } finally {
+                if (!cancelled) setPromotionsLoading(false);
+            }
+        }
+        loadPromotions();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const updateField = <K extends keyof CheckoutInformation>(key: K, value: CheckoutInformation[K]) => {
         setInformation((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleApplyDiscount = () => {
-        updateField('appliedDiscountCode', information.discountCode.trim());
+    const clearPromotion = () => {
+        setInformation((prev) => ({
+            ...prev,
+            appliedDiscountCode: '',
+            discountCode: ''
+        }));
+        setPromotionMessage(null);
+    };
+
+    const applyPromotionByCode = async (code: string) => {
+        const productIds = getCheckoutProductIds();
+        setPromotionApplying(true);
+        try {
+            const result = await validatePromotionCode(code, productIds);
+            if (!result.valid) {
+                setPromotionMessage(result.message || 'Mã không hợp lệ với giỏ hàng hiện tại');
+                return false;
+            }
+            setPromotionMessage(
+                `✓ ${result.promotion?.name || code} — giảm $${result.promotionDiscount?.toFixed(2) ?? '0'}${
+                    result.freeShipping ? ', miễn phí ship' : ''
+                }`
+            );
+            setInformation((prev) => ({
+                ...prev,
+                appliedDiscountCode: code,
+                discountCode: code
+            }));
+            return true;
+        } catch (err) {
+            const msg =
+                typeof err === 'string'
+                    ? err
+                    : (err as { message?: string })?.message || 'Không thể áp dụng mã';
+            setPromotionMessage(msg);
+            return false;
+        } finally {
+            setPromotionApplying(false);
+        }
+    };
+
+    const handlePromotionSelect = async (code: string) => {
+        if (!code) {
+            clearPromotion();
+            return;
+        }
+        if (code === information.appliedDiscountCode) return;
+        setInformation((prev) => ({ ...prev, discountCode: code }));
+        await applyPromotionByCode(code);
     };
 
     const validate = () => {
@@ -348,11 +422,14 @@ export default function CheckoutInformationPage() {
                                 totals={totals}
                                 information={information}
                                 showCoupons
-                                onCouponChange={(coupon) => updateField('coupon', coupon)}
-                                onDiscountCodeChange={(code) => updateField('discountCode', code)}
-                                onApplyDiscount={handleApplyDiscount}
+                                shopPromotions={shopPromotions}
+                                promotionsLoading={promotionsLoading}
+                                promotionApplying={promotionApplying}
+                                onPromotionSelect={handlePromotionSelect}
+                                promotionMessage={promotionMessage}
                                 userCoupons={userCoupons}
                                 pointsBalance={pointsBalance}
+                                maxPointsRedeemable={maxPointsRedeemable}
                                 onUserCouponChange={(code) => updateField('userCouponCode', code)}
                                 onPointsChange={(points) => updateField('pointsToRedeem', points)}
                             />

@@ -40,6 +40,15 @@ const OrderItem = sequelize.define(
         lineTotal: {
             type: DataTypes.DECIMAL(12, 2),
             allowNull: false
+        },
+        discountAmount: {
+            type: DataTypes.DECIMAL(12, 2),
+            allowNull: false,
+            defaultValue: 0
+        },
+        promotionId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }
     },
     {

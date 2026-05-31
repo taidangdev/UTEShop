@@ -18,6 +18,16 @@ const Promotion = sequelize.define(
             type: DataTypes.STRING(150),
             allowNull: false
         },
+        /** shop = whole cart; category = listed categories; product = listed products */
+        scope: {
+            type: DataTypes.ENUM('shop', 'category', 'product'),
+            allowNull: false,
+            defaultValue: 'shop'
+        },
+        description: {
+            type: DataTypes.STRING(500),
+            allowNull: true
+        },
         type: {
             type: DataTypes.ENUM('percentage', 'fixed_amount', 'free_shipping'),
             allowNull: false
@@ -30,7 +40,12 @@ const Promotion = sequelize.define(
             type: DataTypes.DECIMAL(12, 2),
             allowNull: true
         },
+        /** @deprecated Prefer promotion_categories — kept for backward compatibility */
         categoryId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        maxUsesPerUser: {
             type: DataTypes.INTEGER,
             allowNull: true
         },

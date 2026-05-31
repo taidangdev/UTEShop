@@ -256,10 +256,10 @@ export default function CheckoutPaymentPage() {
                             </div>
                         </section>
 
-                        <div className="flex flex-col items-center gap-4 pt-8 sm:flex-row">
+                        <div className="flex flex-col items-stretch gap-4 pt-8 sm:flex-row sm:items-center">
                             <Link
                                 to="/checkout"
-                                className="h-14 w-full rounded-full bg-surface-container-low px-8 text-sm font-medium text-on-surface transition hover:bg-surface-container-high active:scale-95 sm:w-auto"
+                                className="inline-flex h-14 w-full items-center justify-center rounded-full bg-surface-container-low px-8 text-sm font-medium leading-none text-on-surface transition hover:bg-surface-container-high active:scale-95 sm:w-auto"
                             >
                                 Back to Information
                             </Link>
@@ -267,7 +267,7 @@ export default function CheckoutPaymentPage() {
                                 type="button"
                                 onClick={handleConfirm}
                                 disabled={processing || loading}
-                                className="h-14 w-full rounded-full bg-primary-container px-12 text-sm font-medium text-on-primary transition hover:bg-primary hover:shadow-lg active:scale-95 disabled:opacity-60 sm:w-auto"
+                                className="inline-flex h-14 w-full items-center justify-center rounded-full bg-primary-container px-12 text-sm font-medium leading-none text-on-primary transition hover:bg-primary hover:shadow-lg active:scale-95 disabled:opacity-60 sm:w-auto"
                             >
                                 {processing ? (
                                     <span className="flex items-center justify-center gap-2">

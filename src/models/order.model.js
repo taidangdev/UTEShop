@@ -57,6 +57,14 @@ const Order = sequelize.define(
             allowNull: false,
             defaultValue: 0
         },
+        appliedPromotionId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        promotionCode: {
+            type: DataTypes.STRING(50),
+            allowNull: true
+        },
         shippingFee: {
             type: DataTypes.DECIMAL(12, 2),
             allowNull: false,

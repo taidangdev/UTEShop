@@ -25,6 +25,11 @@ export function apiTotalsToCheckoutTotals(
         pointsRedeemed?: number;
         pointsDiscount?: number;
         userCouponCode?: string | null;
+        userCouponDiscount?: number;
+        appliedPromotionId?: number | null;
+        promotionCode?: string | null;
+        promotionName?: string | null;
+        promotionDiscount?: number;
     }
 ): CheckoutTotals {
     return {

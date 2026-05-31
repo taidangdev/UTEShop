@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchMyOrders, fetchMyReviews, fetchUserProfile } from '../store/profileSlice';
 import { logout } from '../store/authSlice';
 import ProfileEditModal from '../components/profile/ProfileEditModal';
+import ProfileRewardsPanel from '../components/profile/ProfileRewardsPanel';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
 import type { UserCoupon } from '../types/review';
@@ -12,6 +13,8 @@ import type { ProfileUser } from '../types/profile';
 
 const DEFAULT_AVATAR =
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=faces';
+
+const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'settings'] as const;
 
 const SIDEBAR_ITEMS = [
     { id: 'overview', label: 'Overview', icon: 'dashboard', filled: true },
@@ -104,6 +107,7 @@ function ProfileFooter() {
 const ProfilePage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const {
         user,
         stats,
@@ -129,6 +133,13 @@ const ProfilePage = () => {
         dispatch(fetchMyOrders());
         dispatch(fetchMyReviews());
     }, [dispatch]);
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && PROFILE_SECTIONS.includes(tab as (typeof PROFILE_SECTIONS)[number])) {
+            setActiveSection(tab);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         let cancelled = false;
@@ -179,6 +190,11 @@ const ProfilePage = () => {
             navigate('/profile/orders');
         } else {
             setActiveSection(id);
+            if (id === 'rewards') {
+                navigate('/profile?tab=rewards', { replace: true });
+            } else if (searchParams.get('tab')) {
+                navigate('/profile', { replace: true });
+            }
         }
     };
 
@@ -404,6 +420,17 @@ const ProfilePage = () => {
                                                 {user.address}
                                             </p>
                                         )}
+                                    </section>
+                                )}
+
+                                {activeSection === 'rewards' && (
+                                    <section id="section-rewards">
+                                        <h2 className="mb-8 text-2xl font-semibold text-on-surface">
+                                            Điểm tích lũy & Khuyến mãi
+                                        </h2>
+                                        <ProfileRewardsPanel
+                                            loyaltyPoints={pointsBalance ?? stats?.loyaltyPoints ?? undefined}
+                                        />
                                     </section>
                                 )}
 

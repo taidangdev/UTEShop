@@ -15,8 +15,8 @@ const startServer = async () => {
 
         const { syncDatabase } = require('./models');
         const { ensureSchema } = require('./utils/ensureSchema');
-        await syncDatabase({ alter: false });
         await ensureSchema(sequelize);
+        await syncDatabase({ alter: false });
         console.log('✅ MySQL tables synchronized.');
 
         // 2. Kết nối Redis

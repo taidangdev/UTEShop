@@ -17,7 +17,6 @@ const defaultInformation = (): CheckoutInformation => ({
     city: '',
     state: '',
     postalCode: '',
-    coupon: '',
     discountCode: '',
     appliedDiscountCode: '',
     userCouponCode: '',
@@ -28,7 +27,17 @@ function readSession(): CheckoutSession {
     try {
         const raw = sessionStorage.getItem(CHECKOUT_KEY);
         if (!raw) return { productIds: [] };
-        return JSON.parse(raw) as CheckoutSession;
+        const parsed = JSON.parse(raw) as CheckoutSession;
+        if (parsed.information) {
+            parsed.information = {
+                ...defaultInformation(),
+                ...parsed.information,
+                pointsToRedeem: parsed.information.pointsToRedeem ?? 0,
+                userCouponCode: parsed.information.userCouponCode ?? '',
+                appliedDiscountCode: parsed.information.appliedDiscountCode ?? ''
+            };
+        }
+        return parsed;
     } catch {
         return { productIds: [] };
     }

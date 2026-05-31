@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosConfig';
 import {
     apiItemsToCartLines,
+    cartItemCount,
     fetchServerCart,
     mergeLocalCartToServer,
     removeServerCartItem,
@@ -13,6 +14,8 @@ import { formatPrice } from '../utils/formatPrice';
 import {
     CART_UPDATED_EVENT,
     getCart,
+    getCartCount,
+    notifyCartUpdated,
     removeFromCart,
     updateCartQuantity,
     type CartLine
@@ -242,6 +245,7 @@ export default function CartPage() {
 
     const refreshLocalCart = useCallback(() => {
         applyCartLines(getCart(), setItems, setSelectedIds);
+        notifyCartUpdated({ itemCount: getCartCount() });
     }, []);
 
     const loadCart = useCallback(async () => {
@@ -253,6 +257,7 @@ export default function CartPage() {
             }
             const cart = await fetchServerCart();
             applyCartLines(apiItemsToCartLines(cart), setItems, setSelectedIds);
+            notifyCartUpdated({ itemCount: cartItemCount(cart) });
             setUseApi(true);
         } catch {
             refreshLocalCart();
@@ -314,6 +319,11 @@ export default function CartPage() {
     const subtotal = useMemo(
         () => selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
         [selectedItems]
+    );
+
+    const totalQuantity = useMemo(
+        () => items.reduce((sum, i) => sum + i.quantity, 0),
+        [items]
     );
 
     const allSelected = items.length > 0 && items.every((i) => selectedIds.has(i.productId));
@@ -387,9 +397,16 @@ export default function CartPage() {
     return (
         <div className="min-h-screen bg-surface text-on-surface antialiased">
             <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
-                <h1 className="mb-12 text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
-                    Your Cart
-                </h1>
+                <div className="mb-12 flex flex-wrap items-baseline gap-3">
+                    <h1 className="text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
+                        Your Cart
+                    </h1>
+                    {!loading && totalQuantity > 0 && (
+                        <span className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+                            {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'}
+                        </span>
+                    )}
+                </div>
 
                 {orderConfirmed && (
                     <p className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-on-surface">
@@ -440,7 +457,9 @@ export default function CartPage() {
                                     aria-label="Select all items"
                                 />
                                 <span className="text-sm font-medium text-on-surface-variant">
-                                    Select all ({items.length})
+                                    Select all ({items.length}{' '}
+                                    {items.length === 1 ? 'product' : 'products'}, {totalQuantity}{' '}
+                                    {totalQuantity === 1 ? 'item' : 'items'})
                                 </span>
                             </div>
                             {items.map((item) => (

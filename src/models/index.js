@@ -16,6 +16,9 @@ const Payment = require('./payment.model');
 const Consignment = require('./consignment.model');
 const ConsignmentImage = require('./consignmentImage.model');
 const Promotion = require('./promotion.model');
+const PromotionProduct = require('./promotionProduct.model');
+const PromotionCategory = require('./promotionCategory.model');
+const PromotionRedemption = require('./promotionRedemption.model');
 const Banner = require('./banner.model');
 const ProductReview = require('./productReview.model');
 const PointTransaction = require('./pointTransaction.model');
@@ -95,7 +98,41 @@ Consignment.hasMany(ConsignmentImage, { foreignKey: 'consignmentId', as: 'images
 ConsignmentImage.belongsTo(Consignment, { foreignKey: 'consignmentId', as: 'consignment' });
 
 // --- Promotion ---
-Promotion.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+Promotion.belongsTo(Category, { foreignKey: 'categoryId', as: 'legacyCategory' });
+
+Promotion.belongsToMany(Product, {
+    through: PromotionProduct,
+    foreignKey: 'promotionId',
+    otherKey: 'productId',
+    as: 'products'
+});
+Product.belongsToMany(Promotion, {
+    through: PromotionProduct,
+    foreignKey: 'productId',
+    otherKey: 'promotionId',
+    as: 'promotions'
+});
+
+Promotion.belongsToMany(Category, {
+    through: PromotionCategory,
+    foreignKey: 'promotionId',
+    otherKey: 'categoryId',
+    as: 'categories'
+});
+Category.belongsToMany(Promotion, {
+    through: PromotionCategory,
+    foreignKey: 'categoryId',
+    otherKey: 'promotionId',
+    as: 'promotions'
+});
+
+Promotion.hasMany(PromotionRedemption, { foreignKey: 'promotionId', as: 'redemptions' });
+PromotionRedemption.belongsTo(Promotion, { foreignKey: 'promotionId', as: 'promotion' });
+PromotionRedemption.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+PromotionRedemption.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
+Order.belongsTo(Promotion, { foreignKey: 'appliedPromotionId', as: 'appliedPromotion' });
+OrderItem.belongsTo(Promotion, { foreignKey: 'promotionId', as: 'linePromotion' });
 
 // --- Reviews & Wishlist ---
 Product.hasMany(ProductReview, { foreignKey: 'productId', as: 'reviews' });
@@ -149,6 +186,9 @@ module.exports = {
     Consignment,
     ConsignmentImage,
     Promotion,
+    PromotionProduct,
+    PromotionCategory,
+    PromotionRedemption,
     Banner,
     ProductReview,
     PointTransaction,

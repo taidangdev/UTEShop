@@ -2,10 +2,46 @@
   {
     "code": "BACK2SCHOOL20",
     "name": "Back to School — Merchandise 20%",
+    "description": "20% off merchandise category items in cart",
+    "scope": "category",
     "type": "percentage",
     "value": 20,
     "minOrderAmount": 30,
-    "categorySlug": "merchandise",
+    "categorySlugs": ["merchandise"],
+    "maxUsesPerUser": 3,
+    "isActive": true
+  },
+  {
+    "code": "KIT15",
+    "name": "Engineering Kit 15% Off",
+    "description": "15% off selected engineering starter kit",
+    "scope": "product",
+    "type": "percentage",
+    "value": 15,
+    "minOrderAmount": 0,
+    "productSlugs": ["engineering-starter-kit"],
+    "maxUsesPerUser": 1,
+    "isActive": true
+  },
+  {
+    "code": "TECH10",
+    "name": "Tech accessories 10%",
+    "description": "10% off gaming mouse and mechanical keyboard",
+    "scope": "product",
+    "type": "percentage",
+    "value": 10,
+    "minOrderAmount": 50,
+    "productSlugs": ["chuot-gaming-rgb", "ban-phim-co-bluetooth"],
+    "isActive": true
+  },
+  {
+    "code": "FREESHIPUTE",
+    "name": "Free shipping campus",
+    "description": "Free shipping on entire order (shop-wide)",
+    "scope": "shop",
+    "type": "free_shipping",
+    "value": 0,
+    "minOrderAmount": 25,
     "isActive": true
   }
 ]

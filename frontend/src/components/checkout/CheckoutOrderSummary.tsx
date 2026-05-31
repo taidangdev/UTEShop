@@ -1,18 +1,24 @@
+import { Link } from 'react-router-dom';
 import type { CartLine } from '../../utils/cartStorage';
 import type { CheckoutInformation, CheckoutTotals } from '../../types/checkout';
+import type { ShopPromotion } from '../../types/promotion';
 import type { UserCoupon } from '../../types/review';
 import { formatPrice } from '../../utils/formatPrice';
+import { promotionDiscountLabel } from '../../utils/promotionDisplay';
 
 interface CheckoutOrderSummaryProps {
     items: CartLine[];
     totals: CheckoutTotals;
     information: CheckoutInformation;
     showCoupons?: boolean;
-    onCouponChange?: (coupon: CheckoutInformation['coupon']) => void;
-    onDiscountCodeChange?: (code: string) => void;
-    onApplyDiscount?: () => void;
+    shopPromotions?: ShopPromotion[];
+    promotionsLoading?: boolean;
+    promotionApplying?: boolean;
+    onPromotionSelect?: (code: string) => void;
+    promotionMessage?: string | null;
     userCoupons?: UserCoupon[];
     pointsBalance?: number;
+    maxPointsRedeemable?: number;
     onUserCouponChange?: (code: string) => void;
     onPointsChange?: (points: number) => void;
     compact?: boolean;
@@ -23,18 +29,19 @@ export default function CheckoutOrderSummary({
     totals,
     information,
     showCoupons = false,
-    onCouponChange,
-    onDiscountCodeChange,
-    onApplyDiscount,
+    shopPromotions = [],
+    promotionsLoading = false,
+    promotionApplying = false,
+    onPromotionSelect,
+    promotionMessage,
     userCoupons = [],
     pointsBalance = 0,
+    maxPointsRedeemable = 0,
     onUserCouponChange,
     onPointsChange,
     compact = false
 }: CheckoutOrderSummaryProps) {
-    const showStudentDiscount = information.studentId.trim().length > 0;
-    const showCouponDiscount =
-        information.coupon === 'NEW2024' || information.coupon === 'LABKIT';
+    const pointsCap = Math.min(pointsBalance, maxPointsRedeemable);
 
     return (
         <div
@@ -70,137 +77,146 @@ export default function CheckoutOrderSummary({
                 </div>
             </div>
 
-            {showCoupons && onUserCouponChange && userCoupons.length > 0 && (
-                <div className="space-y-3 border-t border-outline-variant/30 pt-6">
-                    <label className="text-xs font-semibold text-on-surface-variant">
-                        Review reward coupons
-                    </label>
-                    <select
-                        value={information.userCouponCode}
-                        onChange={(e) => onUserCouponChange(e.target.value)}
-                        className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
-                    >
-                        <option value="">No coupon</option>
-                        {userCoupons.map((c) => (
-                            <option key={c.id} value={c.code}>
-                                {c.code} ({c.discountValue}% off)
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
-            {showCoupons && onPointsChange && pointsBalance > 0 && (
-                <div className="space-y-2 border-t border-outline-variant/30 pt-6">
-                    <label className="text-xs font-semibold text-on-surface-variant">
-                        Loyalty points ({pointsBalance} available)
-                    </label>
-                    <input
-                        type="number"
-                        min={0}
-                        max={pointsBalance}
-                        value={information.pointsToRedeem || ''}
-                        onChange={(e) =>
-                            onPointsChange(Math.min(pointsBalance, Math.max(0, Number(e.target.value) || 0)))
-                        }
-                        placeholder="Points to redeem"
-                        className="h-10 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
-                    />
-                </div>
-            )}
-
-            {showCoupons && onCouponChange && onDiscountCodeChange && onApplyDiscount && (
+            {showCoupons && (
                 <div className="space-y-4 border-t border-outline-variant/30 pt-6">
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-on-surface-variant">
-                            Available Coupons
+                        <label
+                            htmlFor="shop-promotion-select"
+                            className="text-xs font-semibold text-on-surface-variant"
+                        >
+                            Mã khuyến mãi cửa hàng
                         </label>
                         <select
-                            value={information.coupon}
-                            onChange={(e) =>
-                                onCouponChange(e.target.value as CheckoutInformation['coupon'])
-                            }
-                            className="h-10 cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            id="shop-promotion-select"
+                            value={information.appliedDiscountCode}
+                            disabled={promotionsLoading || promotionApplying}
+                            onChange={(e) => onPromotionSelect?.(e.target.value)}
+                            className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary disabled:cursor-wait disabled:opacity-60"
                         >
-                            <option value="">Select a coupon...</option>
-                            <option value="NEW2024">Student Welcome (-$150.00)</option>
-                            <option value="FREESHIP">Campus Delivery (FREE)</option>
-                            <option value="LABKIT">Engineering Lab Kit (-5%)</option>
+                            <option value="">
+                                {promotionsLoading
+                                    ? 'Đang tải mã...'
+                                    : promotionApplying
+                                      ? 'Đang áp dụng...'
+                                      : 'Không dùng mã khuyến mãi'}
+                            </option>
+                            {shopPromotions.map((p) => (
+                                <option key={p.id} value={p.code}>
+                                    {p.code} — {promotionDiscountLabel(p)}
+                                    {p.minOrderAmount > 0
+                                        ? ` · đơn từ ${formatPrice(p.minOrderAmount)}`
+                                        : ''}
+                                </option>
+                            ))}
                         </select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-on-surface-variant">
-                            Discount Code
-                        </label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={information.discountCode}
-                                onChange={(e) => onDiscountCodeChange(e.target.value)}
-                                placeholder="Enter code"
-                                className="h-10 flex-1 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                            />
-                            <button
-                                type="button"
-                                onClick={onApplyDiscount}
-                                className="h-10 rounded-lg bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-container"
+                        {!promotionsLoading && shopPromotions.length === 0 && (
+                            <p className="text-xs text-on-surface-variant">
+                                Hiện không có mã khuyến mãi.{' '}
+                                <Link to="/coupons" className="text-primary hover:underline">
+                                    Xem trang Coupons
+                                </Link>
+                            </p>
+                        )}
+                        {information.appliedDiscountCode && totals.promotionName && (
+                            <p className="text-xs font-medium text-primary">
+                                Đang áp dụng: {totals.promotionName}
+                            </p>
+                        )}
+                        {promotionMessage && (
+                            <p
+                                className={`text-xs ${promotionMessage.startsWith('✓') ? 'text-primary' : 'text-error'}`}
                             >
-                                Apply
-                            </button>
-                        </div>
+                                {promotionMessage}
+                            </p>
+                        )}
                     </div>
+
+                    {onUserCouponChange && userCoupons.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-on-surface-variant">
+                                Phiếu giảm giá cá nhân (từ đánh giá)
+                            </label>
+                            <select
+                                value={information.userCouponCode}
+                                onChange={(e) => onUserCouponChange(e.target.value)}
+                                className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
+                            >
+                                <option value="">Không dùng phiếu</option>
+                                {userCoupons.map((c) => (
+                                    <option key={c.id} value={c.code}>
+                                        {c.code} (
+                                        {c.discountType === 'free_shipping'
+                                            ? 'Free ship'
+                                            : `${c.discountValue}%`}
+                                        )
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {onPointsChange && pointsBalance > 0 && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-on-surface-variant">
+                                Điểm tích lũy ({pointsBalance} điểm · tối đa {pointsCap} đơn này)
+                            </label>
+                            <input
+                                type="number"
+                                min={0}
+                                max={pointsCap}
+                                value={information.pointsToRedeem || ''}
+                                onChange={(e) =>
+                                    onPointsChange(
+                                        Math.min(pointsCap, Math.max(0, Number(e.target.value) || 0))
+                                    )
+                                }
+                                placeholder="Nhập điểm đổi"
+                                className="h-10 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
+                            />
+                            <p className="text-[11px] text-on-surface-variant">
+                                100 điểm = $1 giảm giá (tối đa 20% giá trị hàng sau khuyến mãi)
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
             <div className="space-y-3 border-t border-outline-variant/30 pt-6">
                 <div className="flex justify-between text-sm text-on-surface-variant">
-                    <span>Subtotal</span>
+                    <span>Tạm tính</span>
                     <span>{formatPrice(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-on-surface-variant">
-                    <span>Shipping</span>
+                    <span>Phí vận chuyển</span>
                     <span className={totals.shippingFee === 0 ? 'font-bold text-primary' : ''}>
                         {totals.shippingFee === 0 ? 'FREE' : formatPrice(totals.shippingFee)}
                     </span>
                 </div>
-                {showStudentDiscount && totals.discountAmount > 0 && (
+                {(totals.promotionDiscount ?? 0) > 0 && (
                     <div className="flex justify-between text-sm text-on-surface-variant">
-                        <span>Student Discount (15%)</span>
-                        <span className="text-error">
-                            -{formatPrice(totals.subtotal * 0.15)}
+                        <span>
+                            Khuyến mãi
+                            {totals.promotionCode ? ` (${totals.promotionCode})` : ''}
                         </span>
+                        <span className="text-primary">-{formatPrice(totals.promotionDiscount ?? 0)}</span>
                     </div>
                 )}
-                {showCouponDiscount && information.coupon === 'NEW2024' && (
+                {(totals.userCouponDiscount ?? 0) > 0 && (
                     <div className="flex justify-between text-sm text-on-surface-variant">
-                        <span>Student Welcome</span>
-                        <span className="text-primary">-{formatPrice(150)}</span>
-                    </div>
-                )}
-                {information.coupon === 'LABKIT' && (
-                    <div className="flex justify-between text-sm text-on-surface-variant">
-                        <span>Lab Kit (-5%)</span>
+                        <span>Phiếu cá nhân {totals.userCouponCode ? `(${totals.userCouponCode})` : ''}</span>
                         <span className="text-primary">
-                            -{formatPrice(totals.subtotal * 0.05)}
+                            -{formatPrice(totals.userCouponDiscount ?? 0)}
                         </span>
                     </div>
                 )}
                 {(totals.pointsRedeemed ?? 0) > 0 && (
                     <div className="flex justify-between text-sm text-on-surface-variant">
-                        <span>Points redeemed ({totals.pointsRedeemed})</span>
-                        <span className="text-primary">
-                            -{formatPrice(totals.pointsDiscount ?? 0)}
-                        </span>
-                    </div>
-                )}
-                {information.userCouponCode && totals.userCouponCode && (
-                    <div className="flex justify-between text-sm text-on-surface-variant">
-                        <span>Coupon {totals.userCouponCode}</span>
-                        <span className="text-primary">Applied</span>
+                        <span>Điểm đổi ({totals.pointsRedeemed})</span>
+                        <span className="text-primary">-{formatPrice(totals.pointsDiscount ?? 0)}</span>
                     </div>
                 )}
                 <div className="flex justify-between border-t border-outline-variant pt-4 text-2xl font-semibold text-on-surface">
-                    <span>Total</span>
+                    <span>Tổng cộng</span>
                     <span className={compact ? 'text-primary' : ''}>{formatPrice(totals.total)}</span>
                 </div>
             </div>
@@ -208,7 +224,7 @@ export default function CheckoutOrderSummary({
             {!compact && (
                 <div className="flex items-center gap-3 rounded-lg bg-tertiary-fixed p-3 text-on-tertiary-fixed-variant">
                     <span className="material-symbols-outlined text-lg">verified</span>
-                    <p className="text-xs font-semibold">Academic eligibility verified.</p>
+                    <p className="text-xs font-semibold">Mã và điểm được tính khi xác nhận đơn hàng.</p>
                 </div>
             )}
         </div>

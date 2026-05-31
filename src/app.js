@@ -11,6 +11,7 @@ const catalogRoutes = require('./routes/catalog.routes');
 const cartRoutes = require('./routes/cart.routes');
 const checkoutRoutes = require('./routes/checkout.routes');
 const reviewRoutes = require('./routes/review.routes');
+const promotionRoutes = require('./routes/promotion.routes');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/catalog', catalogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/promotions', promotionRoutes);
 
 // Xử lý Route không tồn tại
 app.all('*', (req, res, next) => {

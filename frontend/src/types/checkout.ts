@@ -4,8 +4,6 @@ export type DeliveryType = 'campus' | 'home';
 
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'credit_card';
 
-export type CheckoutCoupon = '' | 'NEW2024' | 'FREESHIP' | 'LABKIT';
-
 export interface CheckoutInformation {
     fullName: string;
     phone: string;
@@ -15,12 +13,11 @@ export interface CheckoutInformation {
     city: string;
     state: string;
     postalCode: string;
-    coupon: CheckoutCoupon;
     discountCode: string;
+    /** Shop promotion code from promotions table */
     appliedDiscountCode: string;
-    /** Personal coupon from review rewards */
+    /** Personal coupon from user_coupons (review rewards) */
     userCouponCode: string;
-    /** Loyalty points to redeem at checkout */
     pointsToRedeem: number;
 }
 
@@ -33,12 +30,19 @@ export interface CheckoutTotals {
     pointsRedeemed?: number;
     pointsDiscount?: number;
     userCouponCode?: string | null;
+    userCouponDiscount?: number;
+    appliedPromotionId?: number | null;
+    promotionCode?: string | null;
+    promotionName?: string | null;
+    promotionDiscount?: number;
 }
 
 export interface CheckoutPreviewData {
     items: CartItemDto[];
     totals: Omit<CheckoutTotals, 'shippingLabel'>;
     information: CheckoutInformation;
+    loyaltyPoints?: number | null;
+    maxPointsRedeemable?: number;
 }
 
 export interface OrderItemDto {
@@ -50,6 +54,8 @@ export interface OrderItemDto {
     quantity: number;
     unitPrice: number;
     lineTotal: number;
+    discountAmount?: number;
+    promotionId?: number | null;
 }
 
 export interface OrderPaymentDto {

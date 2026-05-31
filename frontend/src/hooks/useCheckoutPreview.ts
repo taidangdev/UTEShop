@@ -25,6 +25,8 @@ export function useCheckoutPreview(
     const [totals, setTotals] = useState<CheckoutTotals>(() =>
         apiTotalsToCheckoutTotals(calculateCheckoutTotals(fallbackItems, information))
     );
+    const [loyaltyPoints, setLoyaltyPoints] = useState<number | null>(null);
+    const [maxPointsRedeemable, setMaxPointsRedeemable] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +35,8 @@ export function useCheckoutPreview(
         if (productIds.length === 0) {
             setItems([]);
             setTotals(apiTotalsToCheckoutTotals(calculateCheckoutTotals([], information)));
+            setLoyaltyPoints(null);
+            setMaxPointsRedeemable(0);
             return;
         }
 
@@ -48,6 +52,8 @@ export function useCheckoutPreview(
             const data = await previewCheckout({ productIds, information });
             setItems(data.items.map(cartItemDtoToLine));
             setTotals(apiTotalsToCheckoutTotals(data.totals));
+            setLoyaltyPoints(data.loyaltyPoints ?? null);
+            setMaxPointsRedeemable(data.maxPointsRedeemable ?? 0);
         } catch (err) {
             setItems(fallbackItems);
             setTotals(apiTotalsToCheckoutTotals(calculateCheckoutTotals(fallbackItems, information)));
@@ -68,5 +74,5 @@ export function useCheckoutPreview(
         return () => window.clearTimeout(timer);
     }, [refresh]);
 
-    return { items, totals, loading, error, refresh };
+    return { items, totals, loading, error, refresh, loyaltyPoints, maxPointsRedeemable };
 }

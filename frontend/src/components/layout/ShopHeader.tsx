@@ -4,7 +4,7 @@ import type { Location } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi';
 import ProductSearchBox from '../catalog/ProductSearchBox';
-import { CART_UPDATED_EVENT, getCartCount } from '../../utils/cartStorage';
+import { useCartItemCount } from '../../hooks/useCartItemCount';
 
 const PRIMARY = '#004AC6';
 const TEXT_BODY = '#434655';
@@ -19,6 +19,7 @@ const NAV_LINKS: NavLink[] = [
     { label: 'Home', to: '/' },
     { label: 'Product', to: '/categories', matchPath: true },
     { label: 'Student Life', to: '/categories?category=student-life' },
+    { label: 'Coupons', to: '/coupons' },
     { label: 'Support / Contact', to: '/#support' }
 ];
 
@@ -44,8 +45,8 @@ export default function ShopHeader() {
     const user = useAppSelector((state) => state.auth.user);
     const [search, setSearch] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [cartCount, setCartCount] = useState(getCartCount);
-    
+    const cartCount = useCartItemCount();
+
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,16 +70,6 @@ export default function ShopHeader() {
     useEffect(() => {
         setIsSearchOpen(false);
     }, [location.pathname, location.search]);
-
-    useEffect(() => {
-        const refresh = () => setCartCount(getCartCount());
-        window.addEventListener(CART_UPDATED_EVENT, refresh);
-        window.addEventListener('storage', refresh);
-        return () => {
-            window.removeEventListener(CART_UPDATED_EVENT, refresh);
-            window.removeEventListener('storage', refresh);
-        };
-    }, []);
 
     const handleSearchSubmit = (term: string) => {
         const q = term.trim();
@@ -147,11 +138,13 @@ export default function ShopHeader() {
                     <Link
                         to="/cart"
                         className="relative text-gray-600 transition hover:text-primary"
-                        aria-label="Giỏ hàng"
+                        aria-label={
+                            cartCount > 0 ? `Giỏ hàng, ${cartCount} sản phẩm` : 'Giỏ hàng'
+                        }
                     >
                         <FiShoppingCart className="h-[22px] w-[22px]" strokeWidth={1.5} />
                         {cartCount > 0 && (
-                            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[10px] font-bold text-white">
+                            <span className="absolute -right-2.5 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[10px] font-bold leading-none text-white">
                                 {cartCount > 99 ? '99+' : cartCount}
                             </span>
                         )}

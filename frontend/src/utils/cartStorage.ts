@@ -2,8 +2,12 @@ const CART_KEY = 'uteshop_cart';
 
 export const CART_UPDATED_EVENT = 'uteshop:cart-updated';
 
-export function notifyCartUpdated() {
-    window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT));
+export interface CartUpdatedDetail {
+    itemCount?: number;
+}
+
+export function notifyCartUpdated(detail?: CartUpdatedDetail) {
+    window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT, { detail }));
 }
 
 export interface CartLine {
@@ -44,7 +48,7 @@ export function addToCart(line: Omit<CartLine, 'quantity'> & { quantity: number 
         items.push({ ...line });
     }
     writeCart(items);
-    notifyCartUpdated();
+    notifyCartUpdated({ itemCount: getCartCount() });
     return items;
 }
 
@@ -58,20 +62,20 @@ export function updateCartQuantity(productId: number, quantity: number) {
         items[idx].quantity = quantity;
     }
     writeCart(items);
-    notifyCartUpdated();
+    notifyCartUpdated({ itemCount: getCartCount() });
     return items;
 }
 
 export function removeFromCart(productId: number) {
     const items = readCart().filter((i) => i.productId !== productId);
     writeCart(items);
-    notifyCartUpdated();
+    notifyCartUpdated({ itemCount: getCartCount() });
     return items;
 }
 
 export function clearLocalCart() {
     writeCart([]);
-    notifyCartUpdated();
+    notifyCartUpdated({ itemCount: 0 });
 }
 
 export function getCartCount(): number {

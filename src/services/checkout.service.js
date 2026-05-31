@@ -17,6 +17,7 @@ const {
 } = require('./cart.service');
 const couponService = require('./coupon.service');
 const loyaltyService = require('./loyalty.service');
+const promotionService = require('./promotion.service');
 
 const HOME_SHIPPING_FEE = 12;
 
@@ -42,10 +43,9 @@ function normalizeInformation(raw = {}) {
         city: String(raw.city || '').trim(),
         state: String(raw.state || '').trim(),
         postalCode: String(raw.postalCode || '').trim(),
-        coupon: raw.coupon || '',
         discountCode: String(raw.discountCode || '').trim(),
-        appliedDiscountCode: String(raw.appliedDiscountCode || '').trim(),
-        userCouponCode: String(raw.userCouponCode || raw.appliedDiscountCode || '').trim(),
+        appliedDiscountCode: String(raw.appliedDiscountCode || raw.discountCode || '').trim(),
+        userCouponCode: String(raw.userCouponCode || '').trim(),
         pointsToRedeem: Math.max(0, parseInt(raw.pointsToRedeem, 10) || 0)
     };
 }
@@ -88,25 +88,40 @@ async function calculateCheckoutTotals(lineItems, information, userId) {
     let shippingFee = information.deliveryType === 'campus' ? 0 : HOME_SHIPPING_FEE;
     let discountAmount = 0;
     let appliedUserCouponId = null;
+    let userCouponDiscount = 0;
     let pointsRedeemed = 0;
     let pointsDiscount = 0;
     let userCouponCode = null;
 
-    if (information.coupon === 'FREESHIP') {
-        shippingFee = 0;
+    let appliedPromotionId = null;
+    let promotionCode = null;
+    let promotionName = null;
+    let promotionDiscount = 0;
+    let lineAdjustments = lineItems.map((line) => ({
+        ...line,
+        lineDiscount: 0,
+        promotionId: null
+    }));
+
+    const promoCode = information.appliedDiscountCode;
+    if (promoCode) {
+        const promoResult = await promotionService.resolvePromotionForCheckout(
+            promoCode,
+            lineItems,
+            userId
+        );
+        promotionDiscount = promoResult.promotionDiscount;
+        discountAmount += promotionDiscount;
+        appliedPromotionId = promoResult.promotion.id;
+        promotionCode = promoResult.promotion.code;
+        promotionName = promoResult.promotion.name;
+        lineAdjustments = promoResult.lineAdjustments;
+        if (promoResult.freeShipping) {
+            shippingFee = 0;
+        }
     }
-    if (information.coupon === 'NEW2024') {
-        discountAmount += 150;
-    }
-    if (information.coupon === 'LABKIT') {
-        discountAmount += subtotal * 0.05;
-    }
-    if (information.studentId) {
-        discountAmount += subtotal * 0.15;
-    }
-    if (information.appliedDiscountCode.toUpperCase() === 'STUDENT15') {
-        discountAmount += subtotal * 0.15;
-    }
+
+    const subtotalAfterPromo = Math.max(0, subtotal - promotionDiscount);
 
     if (userId && information.userCouponCode) {
         const coupon = await couponService.findValidUserCoupon(
@@ -117,12 +132,16 @@ async function calculateCheckoutTotals(lineItems, information, userId) {
             if (coupon.discountType === 'free_shipping') {
                 shippingFee = 0;
             } else {
-                discountAmount += couponService.calculateCouponDiscount(coupon, subtotal);
+                userCouponDiscount = couponService.calculateCouponDiscount(
+                    coupon,
+                    subtotalAfterPromo
+                );
+                discountAmount += userCouponDiscount;
             }
             appliedUserCouponId = coupon.id;
             userCouponCode = coupon.code;
         } else {
-            const err = new Error('Invalid or expired coupon code');
+            const err = new Error('Invalid or expired personal coupon');
             err.statusCode = 400;
             err.code = 'INVALID_COUPON';
             throw err;
@@ -131,7 +150,7 @@ async function calculateCheckoutTotals(lineItems, information, userId) {
 
     if (userId && information.pointsToRedeem > 0) {
         const balance = await loyaltyService.getBalance(userId);
-        const maxPoints = loyaltyService.maxRedeemablePoints(subtotal, balance);
+        const maxPoints = loyaltyService.maxRedeemablePoints(subtotalAfterPromo, balance);
         pointsRedeemed = Math.min(information.pointsToRedeem, maxPoints);
         if (pointsRedeemed > 0) {
             pointsDiscount = loyaltyService.pointsToDiscountAmount(pointsRedeemed);
@@ -148,8 +167,14 @@ async function calculateCheckoutTotals(lineItems, information, userId) {
         total: roundMoney(total),
         appliedUserCouponId,
         userCouponCode,
+        userCouponDiscount: roundMoney(userCouponDiscount),
         pointsRedeemed,
-        pointsDiscount: roundMoney(pointsDiscount)
+        pointsDiscount: roundMoney(pointsDiscount),
+        appliedPromotionId,
+        promotionCode,
+        promotionName,
+        promotionDiscount: roundMoney(promotionDiscount),
+        lineAdjustments
     };
 }
 
@@ -195,6 +220,7 @@ async function buildCheckoutLines(cartItems) {
             cartItemId: cartItem.id,
             productId: cartItem.productId,
             variantId: cartItem.variantId,
+            categoryId: product.categoryId,
             quantity: cartItem.quantity,
             unitPrice,
             lineTotal,
@@ -225,11 +251,14 @@ function buildShippingSnapshot(information) {
         city: information.city,
         state: information.state,
         postalCode: information.postalCode,
-        coupon: information.coupon || null,
         discountCode: information.discountCode || null,
         appliedDiscountCode: information.appliedDiscountCode || null,
+        promotionCode: information.appliedDiscountCode || null,
         userCouponCode: information.userCouponCode || null,
-        pointsToRedeem: information.pointsToRedeem || 0
+        pointsToRedeem: information.pointsToRedeem || 0,
+        pointsRedeemed: 0,
+        pointsDiscount: 0,
+        promotionDiscount: 0
     };
 }
 
@@ -241,14 +270,21 @@ async function previewCheckout(cartContext, { productIds, information: rawInform
     const selectedItems = filterCartItems(cart, productIds);
     const lines = await buildCheckoutLines(selectedItems);
     const totals = await calculateCheckoutTotals(lines, information, cartContext.userId);
+    const loyaltyPoints = cartContext.userId ? await loyaltyService.getBalance(cartContext.userId) : null;
+    const maxPointsRedeemable =
+        cartContext.userId && loyaltyPoints != null
+            ? loyaltyService.maxRedeemablePoints(
+                  Math.max(0, totals.subtotal - (totals.promotionDiscount || 0)),
+                  loyaltyPoints
+              )
+            : 0;
 
     return {
         items: lines.map((l) => l.mapped),
         totals,
         information,
-        loyaltyPoints: cartContext.userId
-            ? await loyaltyService.getBalance(cartContext.userId)
-            : null
+        loyaltyPoints,
+        maxPointsRedeemable
     };
 }
 
@@ -319,7 +355,9 @@ function mapOrderResponse(order, items, payment) {
             sku: item.sku,
             quantity: item.quantity,
             unitPrice: Number(item.unitPrice),
-            lineTotal: Number(item.lineTotal)
+            lineTotal: Number(item.lineTotal),
+            discountAmount: Number(item.discountAmount ?? 0),
+            promotionId: item.promotionId ?? null
         })),
         payment: payment
             ? {
@@ -354,7 +392,11 @@ async function placeOrder(
     const totals = await calculateCheckoutTotals(lines, information, userId);
     const shippingSnapshot = {
         ...buildShippingSnapshot(information),
+        promotionCode: totals.promotionCode,
+        promotionName: totals.promotionName,
+        promotionDiscount: totals.promotionDiscount,
         userCouponCode: totals.userCouponCode,
+        userCouponDiscount: totals.userCouponDiscount,
         pointsRedeemed: totals.pointsRedeemed,
         pointsDiscount: totals.pointsDiscount
     };
@@ -382,6 +424,8 @@ async function placeOrder(
                 discountAmount: totals.discountAmount,
                 shippingFee: totals.shippingFee,
                 total: totals.total,
+                appliedPromotionId: totals.appliedPromotionId,
+                promotionCode: totals.promotionCode,
                 note: information.studentId
                     ? `Student ID: ${information.studentId}`
                     : null,
@@ -391,7 +435,9 @@ async function placeOrder(
         );
 
         const orderItems = [];
-        for (const line of lines) {
+        const adjustmentLines = totals.lineAdjustments || lines;
+
+        for (const line of adjustmentLines) {
             const orderItem = await OrderItem.create(
                 {
                     orderId: order.id,
@@ -401,7 +447,9 @@ async function placeOrder(
                     sku: line.sku,
                     quantity: line.quantity,
                     unitPrice: line.unitPrice,
-                    lineTotal: line.lineTotal
+                    lineTotal: line.lineTotal,
+                    discountAmount: line.lineDiscount || 0,
+                    promotionId: line.promotionId || null
                 },
                 { transaction }
             );
@@ -451,6 +499,16 @@ async function placeOrder(
                     referenceId: order.id,
                     note: `Redeemed on order ${order.orderNumber}`
                 },
+                transaction
+            );
+        }
+
+        if (totals.appliedPromotionId) {
+            await promotionService.recordRedemption(
+                totals.appliedPromotionId,
+                userId,
+                order.id,
+                totals.promotionDiscount,
                 transaction
             );
         }
@@ -648,11 +706,22 @@ async function autoConfirmPendingOrders() {
     return count;
 }
 
+async function validatePromotionForCart(cartContext, { productIds, code }) {
+    const cart = await ensureCart(cartContext);
+    const selectedItems = filterCartItems(cart, productIds);
+    const lines = await buildCheckoutLines(selectedItems);
+    return promotionService.previewPromotion(code, lines, cartContext.userId);
+}
+
 module.exports = {
     previewCheckout,
     placeOrder,
     getOrderForUser,
     cancelOrderForUser,
     autoConfirmPendingOrders,
-    normalizeInformation
+    validatePromotionForCart,
+    normalizeInformation,
+    buildCheckoutLines,
+    filterCartItems,
+    ensureCart
 };

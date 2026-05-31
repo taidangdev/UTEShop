@@ -1,7 +1,20 @@
 import axiosInstance from './axiosConfig';
 import type { ApiEnvelope } from '../types/api';
 import type { CartDto, CartResponseData } from '../types/cart';
-import { clearLocalCart, getCart, notifyCartUpdated, type CartLine } from '../utils/cartStorage';
+import {
+    clearLocalCart,
+    getCart,
+    getCartCount,
+    notifyCartUpdated,
+    type CartLine
+} from '../utils/cartStorage';
+
+export function cartItemCount(cart: CartDto): number {
+    if (typeof cart.itemCount === 'number') {
+        return cart.itemCount;
+    }
+    return cart.items.reduce((sum, item) => sum + item.quantity, 0);
+}
 
 export function apiItemsToCartLines(cart: CartDto): CartLine[] {
     return cart.items
@@ -30,28 +43,32 @@ export async function addItemToServerCart(payload: {
     quantity?: number;
 }): Promise<CartDto> {
     const res = await axiosInstance.post<ApiEnvelope<CartResponseData>>('/cart/items', payload);
-    notifyCartUpdated();
-    return res.data.cart;
+    const cart = res.data.cart;
+    notifyCartUpdated({ itemCount: cartItemCount(cart) });
+    return cart;
 }
 
 export async function updateServerCartItem(itemId: number, quantity: number): Promise<CartDto> {
     const res = await axiosInstance.put<ApiEnvelope<CartResponseData>>(`/cart/items/${itemId}`, {
         quantity
     });
-    notifyCartUpdated();
-    return res.data.cart;
+    const cart = res.data.cart;
+    notifyCartUpdated({ itemCount: cartItemCount(cart) });
+    return cart;
 }
 
 export async function removeServerCartItem(itemId: number): Promise<CartDto> {
     const res = await axiosInstance.delete<ApiEnvelope<CartResponseData>>(`/cart/items/${itemId}`);
-    notifyCartUpdated();
-    return res.data.cart;
+    const cart = res.data.cart;
+    notifyCartUpdated({ itemCount: cartItemCount(cart) });
+    return cart;
 }
 
 export async function clearServerCart(): Promise<CartDto> {
     const res = await axiosInstance.delete<ApiEnvelope<CartResponseData>>('/cart');
-    notifyCartUpdated();
-    return res.data.cart;
+    const cart = res.data.cart;
+    notifyCartUpdated({ itemCount: cartItemCount(cart) });
+    return cart;
 }
 
 export async function mergeLocalCartToServer(): Promise<CartDto | null> {
@@ -65,6 +82,16 @@ export async function mergeLocalCartToServer(): Promise<CartDto | null> {
         }))
     });
     clearLocalCart();
-    notifyCartUpdated();
-    return res.data.cart;
+    const cart = res.data.cart;
+    notifyCartUpdated({ itemCount: cartItemCount(cart) });
+    return cart;
+}
+
+export async function fetchCartItemCount(): Promise<number> {
+    try {
+        const cart = await fetchServerCart();
+        return cartItemCount(cart);
+    } catch {
+        return getCartCount();
+    }
 }
