@@ -24,6 +24,7 @@ import { useAppSelector } from '../store/hooks';
 import { formatPrice } from '../utils/formatPrice';
 import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, HomePageData, Major, PromoBanner } from '../types/catalog';
+import ProductCard from '../components/catalog/ProductCard';
 
 const PRIMARY = '#004AC6';
 const TEXT = '#191B23';
@@ -248,49 +249,7 @@ function CategorySection({ categories }: { categories: CategoryWithCount[] }) {
     );
 }
 
-function ProductCard({ product }: { product: CatalogProduct }) {
-    return (
-        <Link to={`/products/${product.slug}`} className="group block">
-            <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-                <div className="h-80 overflow-hidden" style={{ backgroundColor: '#EDE9FA' }}>
-                    <img
-                        src={product.imageUrl || '/PremiumLaptop.png'}
-                        alt={product.imageAlt || product.name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                </div>
-                <div className="flex flex-1 flex-col gap-3 p-6">
-                    <span
-                        className="font-inter text-xs font-medium uppercase tracking-wide"
-                        style={{ color: PRIMARY }}
-                    >
-                        {categoryLabel(product)}
-                    </span>
-                    <h3 className="font-inter text-xl font-semibold leading-8" style={{ color: TEXT }}>
-                        {product.name}
-                    </h3>
-                    <div className="mt-auto flex items-center justify-between pt-2">
-                        <p className="font-inter text-2xl font-semibold" style={{ color: TEXT }}>
-                            {formatPrice(product.price)}
-                        </p>
-                        <span
-                            className="flex h-12 w-12 items-center justify-center rounded-full text-white transition group-hover:opacity-90"
-                            style={{ backgroundColor: PRIMARY }}
-                            aria-hidden
-                        >
-                            <FiShoppingCart className="h-5 w-5" strokeWidth={2} />
-                        </span>
-                    </div>
-                    {(product.soldCount ?? 0) > 0 && (
-                        <p className="font-inter text-xs" style={{ color: TEXT_BODY }}>
-                            {product.soldCount} sold
-                        </p>
-                    )}
-                </div>
-            </article>
-        </Link>
-    );
-}
+// Reusable ProductCard is now imported from components/catalog/ProductCard
 
 function ProductSection({
     id,

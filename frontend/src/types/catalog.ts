@@ -36,6 +36,9 @@ export interface CatalogProduct {
     images?: Array<{ id?: number; url: string; altText?: string; isPrimary?: boolean }>;
     category?: ProductCategory | null;
     majors?: ProductMajor[];
+    isWishlisted?: boolean;
+    buyersCount?: number;
+    commentersCount?: number;
 }
 
 export interface CategoryWithCount {

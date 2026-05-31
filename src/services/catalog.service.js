@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Product, Category, ProductImage, Major, ProductReview, User, Banner } = require('../models');
+const { Product, Category, ProductImage, Major, ProductReview, User, Banner, Wishlist, OrderItem, Order, sequelize } = require('../models');
 
 async function resolveCategoryIds(categorySlug) {
     if (!categorySlug || categorySlug === 'all') return null;
@@ -23,7 +23,7 @@ async function resolveCategoryIds(categorySlug) {
     return [category.id];
 }
 
-function mapProductRow(product) {
+function mapProductRow(product, wishlistIds = new Set()) {
     const json = product.toJSON ? product.toJSON() : product;
     const primaryImage =
         json.images?.find((img) => img.isPrimary) || json.images?.[0] || null;
@@ -51,7 +51,8 @@ function mapProductRow(product) {
                   parentName: parentCategory?.name || null
               }
             : null,
-        majors: (json.majors || []).map((m) => ({ id: m.id, code: m.code, name: m.name }))
+        majors: (json.majors || []).map((m) => ({ id: m.id, code: m.code, name: m.name })),
+        isWishlisted: wishlistIds.has(json.id)
     };
 }
 
@@ -99,11 +100,16 @@ const listProducts = async ({
     sort = 'newest',
     page = 1,
     limit = 12,
-    featured
+    featured,
+    userId
 }) => {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(48, Math.max(1, parseInt(limit, 10) || 12));
     const offset = (pageNum - 1) * limitNum;
+
+    const wishlistIds = userId
+        ? new Set((await Wishlist.findAll({ where: { userId }, attributes: ['productId'] })).map((w) => w.productId))
+        : new Set();
 
     const where = { status: 'active' };
 
@@ -205,7 +211,7 @@ const listProducts = async ({
     });
 
     return {
-        products: rows.map(mapProductRow),
+        products: rows.map((r) => mapProductRow(r, wishlistIds)),
         pagination: {
             page: pageNum,
             limit: limitNum,
@@ -215,7 +221,7 @@ const listProducts = async ({
     };
 };
 
-function mapProductDetail(product) {
+function mapProductDetail(product, isWishlisted = false, buyersCount = 0, commentersCount = 0) {
     const json = product.toJSON ? product.toJSON() : product;
     const images = (json.images || []).map((img) => ({
         id: img.id,
@@ -294,7 +300,10 @@ function mapProductDetail(product) {
         reviewSummary: {
             average: averageRating,
             count: reviewCount
-        }
+        },
+        isWishlisted,
+        buyersCount,
+        commentersCount
     };
 }
 
@@ -353,7 +362,7 @@ const getSimilarProducts = async (productId, categoryId, limit = 4) => {
     return rows.map(mapProductRow);
 };
 
-const getProductBySlug = async (slug) => {
+const getProductBySlug = async (slug, userId) => {
     const product = await Product.findOne({
         where: { slug, status: 'active' },
         include: [
@@ -411,7 +420,32 @@ const getProductBySlug = async (slug) => {
 
     await product.increment('viewCount');
 
-    const mapped = mapProductDetail(product);
+    const isWishlisted = userId
+        ? Boolean(await Wishlist.findOne({ where: { userId, productId: product.id } }))
+        : false;
+
+    const buyersQuery = await sequelize.query(`
+        SELECT COUNT(DISTINCT IFNULL(o.userId, o.guestEmail)) as count
+        FROM order_items oi
+        JOIN orders o ON oi.orderId = o.id
+        WHERE oi.productId = :productId
+          AND o.status NOT IN ('cancelled', 'refunded')
+    `, {
+        replacements: { productId: product.id },
+        type: sequelize.QueryTypes.SELECT
+    });
+    const buyersCount = buyersQuery[0]?.count || 0;
+
+    const commentersCount = await ProductReview.count({
+        distinct: true,
+        col: 'userId',
+        where: {
+            productId: product.id,
+            status: 'approved'
+        }
+    });
+
+    const mapped = mapProductDetail(product, isWishlisted, buyersCount, commentersCount);
     const similarProducts = await getSimilarProducts(
         mapped.id,
         product.categoryId,
@@ -455,14 +489,14 @@ const listActiveBanners = async () => {
     });
 };
 
-const getHomePageData = async () => {
+const getHomePageData = async (userId) => {
     const [banners, categoriesData, featured, newest, bestSellers, mostViewed, majors] = await Promise.all([
         listActiveBanners(),
         listCategoriesWithCounts(),
-        listProducts({ featured: true, limit: 3, sort: 'newest' }),
-        listProducts({ limit: 4, sort: 'newest' }),
-        listProducts({ limit: 10, sort: 'best_seller' }),
-        listProducts({ limit: 10, sort: 'most_viewed' }),
+        listProducts({ featured: true, limit: 3, sort: 'newest', userId }),
+        listProducts({ limit: 4, sort: 'newest', userId }),
+        listProducts({ limit: 10, sort: 'best_seller', userId }),
+        listProducts({ limit: 10, sort: 'most_viewed', userId }),
         Major.findAll({
             where: { isActive: true },
             order: [

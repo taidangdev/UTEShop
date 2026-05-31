@@ -20,7 +20,8 @@ const ForgotPasswordPage = () => {
         resetPasswordLoading,
         forgotPasswordSuccess,
         resetPasswordSuccess,
-        error
+        error,
+        fieldErrors
     } = useAppSelector((state) => state.auth);
 
     const [email, setEmail] = useState('');
@@ -68,12 +69,42 @@ const ForgotPasswordPage = () => {
             setLocalError('Vui lòng điền đầy đủ thông tin.');
             return;
         }
+
+        if (newPassword.length < 8) {
+            setLocalError('Mật khẩu mới phải có ít nhất 8 ký tự.');
+            return;
+        }
+
+        if (!/^(?=.*[A-Za-z])(?=.*\d)/.test(newPassword)) {
+            setLocalError('Mật khẩu mới phải chứa ít nhất một chữ cái và một chữ số.');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setLocalError('Mật khẩu xác nhận không khớp.');
             return;
         }
 
         dispatch(resetPasswordUser({ email, otp, newPassword }));
+    };
+
+    const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+        setOtp(val);
+        if (localError) setLocalError('');
+        dispatch(clearAuthError());
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewPassword(e.target.value);
+        if (localError) setLocalError('');
+        dispatch(clearAuthError());
+    };
+
+    const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setConfirmPassword(e.target.value);
+        if (localError) setLocalError('');
+        dispatch(clearAuthError());
     };
 
     return (
@@ -87,7 +118,7 @@ const ForgotPasswordPage = () => {
                 </div>
 
                 {(error || localError) && (
-                    <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm border border-red-100 rounded-lg">
+                    <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm border border-red-100 rounded-lg whitespace-pre-line">
                         {localError || error}
                     </div>
                 )}
@@ -154,24 +185,27 @@ const ForgotPasswordPage = () => {
                                     label="Mã OTP (6 chữ số)"
                                     name="otp"
                                     value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
+                                    onChange={handleOtpChange}
                                     placeholder="Nhập mã OTP..."
+                                    error={fieldErrors.otp}
                                 />
                                 <InputField
                                     label="Mật khẩu mới"
                                     name="newPassword"
                                     type="password"
                                     value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    onChange={handlePasswordChange}
                                     placeholder="Nhập mật khẩu mới..."
+                                    error={fieldErrors.newPassword}
                                 />
                                 <InputField
                                     label="Xác nhận mật khẩu mới"
                                     name="confirmPassword"
                                     type="password"
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onChange={handleConfirmPasswordChange}
                                     placeholder="Nhập lại mật khẩu..."
+                                    error={fieldErrors.confirmPassword}
                                 />
                                 <div className="pt-2">
                                     <Button

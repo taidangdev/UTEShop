@@ -45,6 +45,30 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
+const optionalVerifyToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.slice(7);
+            const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+            const userId = decoded.sub;
+            const user = await User.findByPk(userId);
+            if (user && user.status === 'active') {
+                req.user = {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    status: user.status
+                };
+            }
+        }
+    } catch (err) {
+        // Ignore token errors for guest experience
+    }
+    next();
+};
+
 /**
  * Cho phép chỉ các role được liệt kê (ví dụ authorizeRoles('admin')).
  */
@@ -84,6 +108,7 @@ const requirePermission = (...requiredPermissions) => (req, res, next) => {
 
 module.exports = {
     verifyToken,
+    optionalVerifyToken,
     authorizeRoles,
     requirePermission
 };
