@@ -347,6 +347,7 @@ function mapOrderResponse(order, items, payment) {
         total: Number(order.total),
         placedAt: order.placedAt,
         shippingSnapshot: order.shippingSnapshot,
+        adminNote: order.adminNote || null,
         items: items.map((item) => ({
             id: item.id,
             productId: item.productId,

@@ -77,6 +77,7 @@ export interface OrderDto {
     shippingSnapshot?: Record<string, unknown>;
     items: OrderItemDto[];
     payment: OrderPaymentDto | null;
+    adminNote?: string | null;
 }
 
 export interface PlaceOrderResponseData {

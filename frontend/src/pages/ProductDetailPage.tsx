@@ -9,6 +9,8 @@ import QuantitySelector from '../components/catalog/QuantitySelector';
 import SimilarProducts from '../components/catalog/SimilarProducts';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { getAccessToken } from '../services/authSession';
+import RecentlyViewed from '../components/catalog/RecentlyViewed';
+import { toggleWishlistApi } from '../services/wishlistApi';
 import { useAppSelector } from '../store/hooks';
 import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, ProductDetail, ProductDetailResponse } from '../types/catalog';
@@ -135,6 +137,52 @@ export default function ProductDetailPage() {
     const [quantity, setQuantity] = useState(1);
     const [cartMessage, setCartMessage] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('specs');
+    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [isWishlistToggling, setIsWishlistToggling] = useState(false);
+
+    useEffect(() => {
+        if (product) {
+            setIsWishlisted(product.isWishlisted ?? false);
+
+            try {
+                const raw = localStorage.getItem('uteshop_recently_viewed');
+                let viewed: CatalogProduct[] = [];
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        viewed = parsed;
+                    }
+                }
+                viewed = viewed.filter((p) => p.id !== product.id);
+                viewed.unshift(product);
+                viewed = viewed.slice(0, 10);
+                localStorage.setItem('uteshop_recently_viewed', JSON.stringify(viewed));
+            } catch {
+                // Ignore
+            }
+        }
+    }, [product]);
+
+    const handleWishlistToggle = async () => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: `/products/${slug}` } });
+            return;
+        }
+        if (!product || isWishlistToggling) return;
+
+        setIsWishlistToggling(true);
+        const nextState = !isWishlisted;
+        setIsWishlisted(nextState);
+
+        try {
+            const res = await toggleWishlistApi(product.id);
+            setIsWishlisted(res.isWishlisted);
+        } catch {
+            setIsWishlisted(!nextState);
+        } finally {
+            setIsWishlistToggling(false);
+        }
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -340,6 +388,22 @@ export default function ProductDetailPage() {
                                     {soldCount.toLocaleString()} sold
                                 </span>
                             )}
+                            {product.buyersCount != null && product.buyersCount > 0 && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-medium text-on-surface">
+                                    <span className="material-symbols-outlined text-[18px] text-primary">
+                                        shopping_bag
+                                    </span>
+                                    {product.buyersCount.toLocaleString()} đã mua
+                                </span>
+                            )}
+                            {product.commentersCount != null && product.commentersCount > 0 && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-medium text-on-surface">
+                                    <span className="material-symbols-outlined text-[18px] text-primary">
+                                        comment
+                                    </span>
+                                    {product.commentersCount.toLocaleString()} bình luận
+                                </span>
+                            )}
                             <span
                                 className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-medium ${
                                     inStock
@@ -385,15 +449,30 @@ export default function ProductDetailPage() {
                             </div>
                         )}
 
-                        <div className="mb-10 space-y-4">
+                        <div className="mb-10 flex gap-4">
                             <button
                                 type="button"
                                 onClick={handleAddToCart}
                                 disabled={!inStock}
-                                className="flex h-14 w-full items-center justify-center gap-2 rounded-[24px] bg-primary text-sm font-bold text-on-primary transition hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[24px] bg-primary text-sm font-bold text-on-primary transition hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <span className="material-symbols-outlined">shopping_cart</span>
                                 {inStock ? 'Add to Cart' : 'Out of Stock'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleWishlistToggle}
+                                disabled={isWishlistToggling}
+                                className="flex h-14 w-14 items-center justify-center rounded-[24px] border border-outline-variant bg-surface-container-low transition hover:bg-surface-container-high active:scale-95 shrink-0"
+                                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                            >
+                                <span
+                                    className={`material-symbols-outlined text-[24px] transition-all ${
+                                        isWishlisted ? 'material-symbols-filled text-red-500 scale-110' : 'text-on-surface-variant'
+                                    }`}
+                                >
+                                    favorite
+                                </span>
                             </button>
                         </div>
 
@@ -547,6 +626,8 @@ export default function ProductDetailPage() {
                 </section>
 
                 <SimilarProducts products={similarProducts} categoryName={categoryName} />
+
+                <RecentlyViewed />
 
                 {/* Reviews */}
                 <section className="mt-20">

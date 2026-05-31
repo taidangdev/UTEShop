@@ -10,16 +10,20 @@ import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
 import type { UserCoupon } from '../types/review';
 import type { AuthUser } from '../types/auth';
 import type { ProfileUser } from '../types/profile';
+import { fetchWishlistApi } from '../services/wishlistApi';
+import ProductCard from '../components/catalog/ProductCard';
+import type { CatalogProduct } from '../types/catalog';
 
 const DEFAULT_AVATAR =
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=faces';
 
-const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'settings'] as const;
+const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'wishlist', 'settings'] as const;
 
 const SIDEBAR_ITEMS = [
     { id: 'overview', label: 'Overview', icon: 'dashboard', filled: true },
     { id: 'orders', label: 'Order History', icon: 'shopping_bag' },
     { id: 'reviews', label: 'My Reviews', icon: 'reviews' },
+    { id: 'wishlist', label: 'Sản phẩm yêu thích', icon: 'favorite' },
     { id: 'settings', label: 'Account Settings', icon: 'settings' }
 ];
 
@@ -127,6 +131,33 @@ const ProfilePage = () => {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [coupons, setCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState<number | null>(null);
+    const [wishlistProducts, setWishlistProducts] = useState<CatalogProduct[]>([]);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
+    const [wishlistError, setWishlistError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (activeSection === 'wishlist') {
+            const loadWishlist = async () => {
+                setWishlistLoading(true);
+                setWishlistError(null);
+                try {
+                    const products = await fetchWishlistApi();
+                    setWishlistProducts(products);
+                } catch {
+                    setWishlistError('Không thể tải danh sách yêu thích');
+                } finally {
+                    setWishlistLoading(false);
+                }
+            };
+            loadWishlist();
+        }
+    }, [activeSection]);
+
+    const handleWishlistToggle = (productId: number, isWishlistedNow: boolean) => {
+        if (!isWishlistedNow) {
+            setWishlistProducts((prev) => prev.filter((p) => p.id !== productId));
+        }
+    };
 
     useEffect(() => {
         dispatch(fetchUserProfile());
@@ -192,6 +223,8 @@ const ProfilePage = () => {
             setActiveSection(id);
             if (id === 'rewards') {
                 navigate('/profile?tab=rewards', { replace: true });
+            } else if (id === 'wishlist') {
+                navigate('/profile?tab=wishlist', { replace: true });
             } else if (searchParams.get('tab')) {
                 navigate('/profile', { replace: true });
             }
@@ -649,6 +682,57 @@ const ProfilePage = () => {
                                                             {new Date(review.createdAt).toLocaleDateString()}
                                                         </p>
                                                     </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </section>
+                                )}
+
+                                {activeSection === 'wishlist' && (
+                                    <section id="section-wishlist">
+                                        <div className="mb-8">
+                                            <h2 className="text-2xl font-semibold text-on-surface">Sản phẩm yêu thích</h2>
+                                            <p className="mt-1 text-sm text-on-surface-variant">Danh sách các sản phẩm bạn đã lưu và yêu thích</p>
+                                        </div>
+                                        {wishlistError && (
+                                            <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-on-error-container">
+                                                {wishlistError}
+                                            </p>
+                                        )}
+                                        {wishlistLoading && (
+                                            <div className="flex justify-center py-12">
+                                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+                                            </div>
+                                        )}
+                                        {!wishlistLoading && wishlistProducts.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
+                                                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                                    <span className="material-symbols-outlined text-[32px]">
+                                                        favorite
+                                                    </span>
+                                                </div>
+                                                <h3 className="mb-2 text-2xl font-semibold text-on-surface">
+                                                    Chưa có sản phẩm yêu thích nào
+                                                </h3>
+                                                <p className="mb-6 text-sm text-on-surface-variant">
+                                                    Hãy khám phá và lưu các sản phẩm bạn yêu thích để dễ dàng mua sắm sau này.
+                                                </p>
+                                                <Link
+                                                    to="/categories"
+                                                    className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-on-primary transition active:scale-95"
+                                                >
+                                                    Khám phá ngay
+                                                </Link>
+                                            </div>
+                                        )}
+                                        {!wishlistLoading && wishlistProducts.length > 0 && (
+                                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                                {wishlistProducts.map((product) => (
+                                                    <ProductCard
+                                                        key={product.id}
+                                                        product={product}
+                                                        onWishlistToggle={handleWishlistToggle}
+                                                    />
                                                 ))}
                                             </div>
                                         )}

@@ -33,7 +33,8 @@ const listProducts = async (req, res, next) => {
             majorId: majorId ? Number(majorId) : undefined,
             sort,
             page,
-            limit
+            limit,
+            userId: req.user?.id
         });
         return successResponse(res, 200, 'OK', data);
     } catch (error) {
@@ -43,7 +44,7 @@ const listProducts = async (req, res, next) => {
 
 const getProduct = async (req, res, next) => {
     try {
-        const data = await catalogService.getProductBySlug(req.params.slug);
+        const data = await catalogService.getProductBySlug(req.params.slug, req.user?.id);
         return successResponse(res, 200, 'OK', data);
     } catch (error) {
         next(error);
@@ -52,7 +53,7 @@ const getProduct = async (req, res, next) => {
 
 const getHome = async (req, res, next) => {
     try {
-        const data = await catalogService.getHomePageData();
+        const data = await catalogService.getHomePageData(req.user?.id);
         return successResponse(res, 200, 'OK', data);
     } catch (error) {
         next(error);

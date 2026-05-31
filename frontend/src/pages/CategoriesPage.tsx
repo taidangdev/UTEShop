@@ -5,6 +5,7 @@ import ProductSearchBox from '../components/catalog/ProductSearchBox';
 import { formatPrice } from '../utils/formatPrice';
 import type { ApiEnvelope, PaginationMeta } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, Major } from '../types/catalog';
+import ProductCard from '../components/catalog/ProductCard';
 
 const SORT_OPTIONS = [
     { value: 'newest', label: 'Newest Arrival' },
@@ -31,43 +32,7 @@ function categoryLabel(product: CatalogProduct) {
     return c.name;
 }
 
-function ProductCard({ product }: { product: CatalogProduct }) {
-    const hasDiscount =
-        product.compareAtPrice != null && product.compareAtPrice > product.price;
-
-    return (
-        <Link to={`/products/${product.slug}`} className="group cursor-pointer">
-            <div className="relative mb-6 aspect-[4/5] overflow-hidden rounded-[24px] bg-surface-container-low shadow-none transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
-                <img
-                    src={product.imageUrl || '/PremiumLaptop.png'}
-                    alt={product.imageAlt || product.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {product.isFeatured && (
-                    <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
-                        Student Pick
-                    </span>
-                )}
-            </div>
-            <div>
-                <h4 className="mb-1 text-lg font-semibold text-on-surface transition-colors group-hover:text-primary">
-                    {product.name}
-                </h4>
-                <p className="mb-2 text-xs text-on-surface-variant">{categoryLabel(product)}</p>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-semibold text-on-surface">
-                        {formatPrice(product.price)}
-                    </span>
-                    {hasDiscount && (
-                        <span className="text-xs text-on-surface-variant line-through">
-                            {formatPrice(product.compareAtPrice)}
-                        </span>
-                    )}
-                </div>
-            </div>
-        </Link>
-    );
-}
+// Reusable ProductCard is now imported from components/catalog/ProductCard
 
 function CategoriesFooter() {
     return (

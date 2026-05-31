@@ -12,6 +12,7 @@ const cartRoutes = require('./routes/cart.routes');
 const checkoutRoutes = require('./routes/checkout.routes');
 const reviewRoutes = require('./routes/review.routes');
 const promotionRoutes = require('./routes/promotion.routes');
+const wishlistRoutes = require('./routes/wishlist.routes');
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/promotions', promotionRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Xử lý Route không tồn tại
 app.all('*', (req, res, next) => {
