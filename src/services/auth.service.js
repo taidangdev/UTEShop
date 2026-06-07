@@ -236,7 +236,7 @@ const loginUser = async ({ email, password }) => {
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken({ sub: user.id });
     
-    const redirectUrl = user.role === 'admin' ? '/admin/profile' : '/user/profile';
+    const redirectUrl = user.role === 'admin' ? '/admin/dashboard' : '/profile';
 
     return {
         accessToken,

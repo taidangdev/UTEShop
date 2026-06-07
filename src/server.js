@@ -15,8 +15,9 @@ const startServer = async () => {
 
         const { syncDatabase } = require('./models');
         const { ensureSchema } = require('./utils/ensureSchema');
-        await ensureSchema(sequelize);
+        // Create base tables first, then run incremental schema patches.
         await syncDatabase({ alter: false });
+        await ensureSchema(sequelize);
         console.log('✅ MySQL tables synchronized.');
 
         // 2. Kết nối Redis

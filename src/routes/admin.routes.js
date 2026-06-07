@@ -8,5 +8,6 @@ router.use(verifyToken);
 router.use(authorizeRoles('admin'));
 
 router.get('/users', adminController.listUsers);
+router.get('/dashboard', adminController.getDashboard);
 
 module.exports = router;

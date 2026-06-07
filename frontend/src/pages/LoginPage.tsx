@@ -7,6 +7,17 @@ import { loginUser, clearAuthError } from '../store/authSlice';
 import AuthShell from '../components/auth/AuthShell';
 
 const REMEMBER_KEY = 'uteshop_remember_email';
+const AUTH_ROUTES = new Set(['/login', '/register', '/activate', '/forgot-password']);
+
+function resolvePostLoginPath(role: string | undefined, fromPath: string) {
+    if (role === 'admin') {
+        return '/admin/dashboard';
+    }
+    if (!fromPath || AUTH_ROUTES.has(fromPath)) {
+        return '/';
+    }
+    return fromPath;
+}
 
 const LoginPage = () => {
     const dispatch = useAppDispatch();
@@ -24,7 +35,7 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (user) {
-            navigate(from, { replace: true });
+            navigate(resolvePostLoginPath(user.role, from), { replace: true });
         }
     }, [user, navigate, from]);
 
@@ -39,7 +50,7 @@ const LoginPage = () => {
             } else {
                 localStorage.removeItem(REMEMBER_KEY);
             }
-            navigate(from, { replace: true });
+            navigate(resolvePostLoginPath(result.payload.user?.role, from), { replace: true });
             return;
         }
         if (loginUser.rejected.match(result)) {
