@@ -24,6 +24,8 @@ const ProductReview = require('./productReview.model');
 const PointTransaction = require('./pointTransaction.model');
 const UserCoupon = require('./userCoupon.model');
 const Wishlist = require('./wishlist.model');
+const Notification = require('./notification.model');
+
 
 // --- User & Major ---
 User.belongsTo(Major, { foreignKey: 'majorId', as: 'major' });
@@ -162,6 +164,11 @@ Product.belongsToMany(User, {
     as: 'wishlistedBy'
 });
 
+// --- Notifications ---
+User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+
 /** Use alter: false to avoid MySQL duplicate-index issues on existing tables. */
 const syncDatabase = async (options = { alter: false }) => {
     await sequelize.sync(options);
@@ -193,5 +200,6 @@ module.exports = {
     ProductReview,
     PointTransaction,
     UserCoupon,
-    Wishlist
+    Wishlist,
+    Notification
 };

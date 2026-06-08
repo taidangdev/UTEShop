@@ -5,6 +5,7 @@ import { useAppSelector } from '../../store/hooks';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi';
 import ProductSearchBox from '../catalog/ProductSearchBox';
 import { useCartItemCount } from '../../hooks/useCartItemCount';
+import NotificationBell from './NotificationBell';
 
 const PRIMARY = '#004AC6';
 const TEXT_BODY = '#434655';
@@ -133,6 +134,9 @@ export default function ShopHeader() {
                     >
                         <FiUser className="h-[22px] w-[22px]" strokeWidth={1.5} />
                     </Link>
+
+                    {/* Notification Bell */}
+                    {user && <NotificationBell />}
 
                     {/* Cart */}
                     <Link

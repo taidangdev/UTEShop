@@ -11,6 +11,8 @@ const {
 const rewardConfig = require('../config/reviewRewards');
 const rewardService = require('./reward.service');
 const loyaltyService = require('./loyalty.service');
+const notificationService = require('./notification.service');
+
 
 const ELIGIBLE_STATUSES = rewardConfig.eligibleOrderStatuses;
 
@@ -177,6 +179,36 @@ async function createReview(userId, payload) {
         );
 
         await transaction.commit();
+
+        // Gửi thông báo realtime và email cho Admin (chạy ngầm)
+        (async () => {
+            try {
+                const reviewer = await User.findByPk(userId);
+                const reviewerName = reviewer?.fullName || reviewer?.username || 'Khách hàng';
+                
+                await notificationService.createNotification({
+                    userId: null, // Gửi cho Admin
+                    title: `⭐ Đánh giá mới từ ${reviewerName}`,
+                    content: `Sản phẩm "${orderItem.product?.name || 'Sản phẩm'}" được đánh giá ${ratingNum} sao.`,
+                    type: 'review_new',
+                    relatedId: review.id,
+                    emailOptions: {
+                        targetRole: 'admin',
+                        subject: `[UTEShop] Đánh giá mới từ ${reviewerName}`,
+                        message: `Khách hàng ${reviewerName} đã đánh giá sản phẩm "${orderItem.product?.name || 'Sản phẩm'}".\n\nĐiểm đánh giá: ${ratingNum}/5 sao\nTiêu đề: ${title || '(Trống)'}\nNội dung: ${comment || '(Trống)'}\n\nVui lòng truy cập trang quản trị để xem chi tiết.`,
+                        html: `<h3>Có đánh giá sản phẩm mới!</h3>
+                               <p><strong>Khách hàng:</strong> ${reviewerName}</p>
+                               <p><strong>Sản phẩm:</strong> ${orderItem.product?.name || 'Sản phẩm'}</p>
+                               <p><strong>Điểm đánh giá:</strong> ${ratingNum}/5 sao</p>
+                               <p><strong>Tiêu đề:</strong> ${title || '(Trống)'}</p>
+                               <p><strong>Nội dung:</strong> ${comment || '(Trống)'}</p>
+                               <p>Vui lòng truy cập hệ thống để duyệt hoặc phản hồi.</p>`
+                    }
+                });
+            } catch (err) {
+                console.error('❌ Error sending review notification:', err);
+            }
+        })();
 
         await review.reload();
         const balance = await loyaltyService.getBalance(userId);

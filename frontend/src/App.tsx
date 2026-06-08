@@ -15,51 +15,57 @@ import RegisterPage from './pages/RegisterPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { SocketProvider } from './context/SocketContext';
+import { ToastNotification } from './components/common/ToastNotification';
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                <Route element={<ShopLayout />}>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/categories" element={<CategoriesPage />} />
-                    <Route path="/coupons" element={<CouponsPage />} />
-                    <Route path="/products/:slug" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/activate" element={<ActivateAccountPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route
-                        path="/profile"
-                        element={
-                            <ProtectedRoute>
-                                <ProfilePage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/profile/orders"
-                        element={
-                            <ProtectedRoute>
-                                <MyOrdersPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/profile/orders/:orderNumber"
-                        element={
-                            <ProtectedRoute>
-                                <OrderTrackingPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Route>
-                <Route path="/checkout" element={<CheckoutInformationPage />} />
-                <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
-            </Routes>
-        </Router>
+        <SocketProvider>
+            <Router>
+                <Routes>
+                    <Route element={<ShopLayout />}>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/categories" element={<CategoriesPage />} />
+                        <Route path="/coupons" element={<CouponsPage />} />
+                        <Route path="/products/:slug" element={<ProductDetailPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/activate" element={<ActivateAccountPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route
+                            path="/profile"
+                            element={
+                                <ProtectedRoute>
+                                    <ProfilePage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile/orders"
+                            element={
+                                <ProtectedRoute>
+                                    <MyOrdersPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile/orders/:orderNumber"
+                            element={
+                                <ProtectedRoute>
+                                    <OrderTrackingPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Route>
+                    <Route path="/checkout" element={<CheckoutInformationPage />} />
+                    <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
+                </Routes>
+            </Router>
+            <ToastNotification />
+        </SocketProvider>
     );
 }
 
 export default App;
+
