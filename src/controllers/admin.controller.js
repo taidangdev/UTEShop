@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const { successResponse } = require('../utils/responseHandler');
 const adminDashboardService = require('../services/adminDashboard.service');
+const adminOrderService = require('../services/adminOrder.service');
 
 /**
  * Ví dụ endpoint chỉ admin: danh sách user (phân quyền qua route).
@@ -31,7 +32,48 @@ const getDashboard = async (req, res, next) => {
     }
 };
 
+const listOrders = async (req, res, next) => {
+    try {
+        const status = req.query.status === 'all' ? undefined : req.query.status;
+        const data = await adminOrderService.listOrders({
+            page: req.query.page,
+            limit: req.query.limit,
+            status,
+            search: req.query.search,
+            from: req.query.from,
+            to: req.query.to
+        });
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getOrderDetail = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.getOrderDetail(req.params.orderNumber);
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateOrderStatus = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.updateOrderStatus(req.params.orderNumber, {
+            status: req.body.status,
+            adminNote: req.body.adminNote
+        });
+        return successResponse(res, 200, 'Order status updated', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     listUsers,
-    getDashboard
+    getDashboard,
+    listOrders,
+    getOrderDetail,
+    updateOrderStatus
 };
