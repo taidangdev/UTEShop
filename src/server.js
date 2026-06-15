@@ -1,9 +1,11 @@
 require('dotenv').config();
+const http = require('http');
 const app = require('./app');
 
 // Import config
 const sequelize = require('./config/db');
 const redisClient = require('./config/redis');
+const socketService = require('./services/socket.service');
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,8 +26,13 @@ const startServer = async () => {
         await redisClient.connect();
         console.log('✅ Redis (Docker) connected successfully.');
 
-        // 3. Khởi động Server Express
-        app.listen(PORT, () => {
+        // 3. Khởi tạo HTTP Server & Socket.io
+        const server = http.createServer(app);
+        socketService.init(server);
+        console.log('✅ Socket.io initialized.');
+
+        // 4. Khởi động Server
+        server.listen(PORT, () => {
             console.log(`🚀 Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
             
             // Khởi chạy scheduler duyệt đơn tự động sau 5 phút
@@ -39,3 +46,4 @@ const startServer = async () => {
 };
 
 startServer();
+

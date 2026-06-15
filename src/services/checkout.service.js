@@ -7,7 +7,8 @@ const {
     Payment,
     Address,
     Product,
-    ProductVariant
+    ProductVariant,
+    User
 } = require('../models');
 const {
     ensureCart,
@@ -18,6 +19,7 @@ const {
 const couponService = require('./coupon.service');
 const loyaltyService = require('./loyalty.service');
 const promotionService = require('./promotion.service');
+const notificationService = require('./notification.service');
 
 const HOME_SHIPPING_FEE = 12;
 
@@ -516,6 +518,55 @@ async function placeOrder(
 
         await transaction.commit();
 
+        // Real-time Notification và Email (chạy ngầm sau khi commit thành công)
+        (async () => {
+            try {
+                // 1. Thông báo cho Admin có đơn hàng mới
+                await notificationService.createNotification({
+                    userId: null,
+                    title: `🛒 Đơn hàng mới: ${order.orderNumber}`,
+                    content: `Có đơn hàng mới trị giá ${totals.total}$ được đặt bởi khách hàng.`,
+                    type: 'order_new',
+                    relatedId: order.orderNumber,
+                    emailOptions: {
+                        targetRole: 'admin',
+                        subject: `[UTEShop] Đơn hàng mới: ${order.orderNumber}`,
+                        message: `Một đơn hàng mới đã được đặt!\n\nSố đơn hàng: ${order.orderNumber}\nTổng tiền: ${totals.total}$\nNgười nhận: ${information.fullName}\nĐiện thoại: ${information.phone}\nPhương thức nhận: ${information.deliveryType === 'campus' ? 'Tại trường' : 'Giao tận nơi'}\n\nVui lòng truy cập trang quản trị để xem chi tiết.`,
+                        html: `<h3>Một đơn hàng mới đã được đặt!</h3>
+                               <p><strong>Số đơn hàng:</strong> ${order.orderNumber}</p>
+                               <p><strong>Tổng tiền:</strong> ${totals.total}$</p>
+                               <p><strong>Người nhận:</strong> ${information.fullName}</p>
+                               <p><strong>Điện thoại:</strong> ${information.phone}</p>
+                               <p><strong>Phương thức nhận:</strong> ${information.deliveryType === 'campus' ? 'Tại trường' : 'Giao tận nơi'}</p>
+                               <p>Vui lòng truy cập hệ thống để duyệt đơn hàng.</p>`
+                    }
+                });
+
+                // 2. Thông báo & Email cho Khách hàng
+                const customerEmail = userId ? (await User.findByPk(userId))?.email : guestEmail;
+                if (customerEmail) {
+                    await notificationService.createNotification({
+                        userId: userId || null,
+                        title: `📦 Đặt hàng thành công!`,
+                        content: `Đơn hàng ${order.orderNumber} của bạn đã được tiếp nhận thành công.`,
+                        type: 'order_status_update',
+                        relatedId: order.orderNumber,
+                        emailOptions: {
+                            email: customerEmail,
+                            subject: `[UTEShop] Đặt hàng thành công - Đơn hàng ${order.orderNumber}`,
+                            message: `Chào bạn ${information.fullName},\n\nĐơn hàng ${order.orderNumber} trị giá ${totals.total}$ của bạn đã đặt thành công và đang chờ xác nhận.\n\nCảm ơn bạn đã mua sắm tại UTEShop!`,
+                            html: `<h3>Chào bạn ${information.fullName},</h3>
+                                   <p>Đơn hàng <strong>${order.orderNumber}</strong> trị giá <strong>${totals.total}$</strong> của bạn đã được đặt thành công.</p>
+                                   <p>Hệ thống đang xử lý và sẽ cập nhật trạng thái đơn hàng sớm nhất.</p>
+                                   <p>Cảm ơn bạn đã tin tưởng UTEShop!</p>`
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('❌ Error in checkout notification hook:', err);
+            }
+        })();
+
         return {
             order: mapOrderResponse(order, orderItems, payment)
         };
@@ -642,6 +693,20 @@ async function cancelOrderForUser(orderNumber, userId) {
 
         await transaction.commit();
 
+        // Real-time notification cho user khi hủy/hoàn tiền đơn hàng
+        if (order.userId) {
+            const isConfirmed = originalStatus === 'confirmed';
+            const titleText = isConfirmed ? '💸 Đơn hàng đã được hoàn tiền' : '❌ Đơn hàng đã bị hủy';
+            const contentText = isConfirmed ? `Đơn hàng ${order.orderNumber} đã được hủy và chuyển trạng thái hoàn tiền.` : `Đơn hàng ${order.orderNumber} đã được hủy thành công.`;
+            notificationService.createNotification({
+                userId: order.userId,
+                title: titleText,
+                content: contentText,
+                type: 'order_status_update',
+                relatedId: order.orderNumber
+            }).catch(err => console.error('Error sending cancel notification:', err));
+        }
+
         const updatedOrder = await Order.findOne({
             where: { orderNumber },
             include: [
@@ -698,6 +763,17 @@ async function autoConfirmPendingOrders() {
             await transaction.commit();
             count++;
             console.log(`[AutoConfirm] Successfully confirmed order: ${order.orderNumber}`);
+
+            // Real-time notification cho user khi đơn hàng tự động duyệt
+            if (order.userId) {
+                notificationService.createNotification({
+                    userId: order.userId,
+                    title: `✅ Đơn hàng đã được xác nhận tự động`,
+                    content: `Đơn hàng ${order.orderNumber} của bạn đã được hệ thống tự động xác nhận.`,
+                    type: 'order_status_update',
+                    relatedId: order.orderNumber
+                }).catch(err => console.error('Error sending auto-confirm notification:', err));
+            }
         } catch (err) {
             await transaction.rollback();
             console.error(`[AutoConfirm] Failed to confirm order ${order.orderNumber}:`, err);

@@ -17,6 +17,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './store/hooks';
+import { SocketProvider } from './context/SocketContext';
+import { ToastNotification } from './components/common/ToastNotification';
 
 function HomeRouteGuard() {
     const user = useAppSelector((state) => state.auth.user);
@@ -28,56 +30,60 @@ function HomeRouteGuard() {
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                <Route element={<ShopLayout />}>
-                    <Route path="/" element={<HomeRouteGuard />} />
-                    <Route path="/categories" element={<CategoriesPage />} />
-                    <Route path="/coupons" element={<CouponsPage />} />
-                    <Route path="/products/:slug" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/activate" element={<ActivateAccountPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <SocketProvider>
+            <Router>
+                <Routes>
+                    <Route element={<ShopLayout />}>
+                        <Route path="/" element={<HomeRouteGuard />} />
+                        <Route path="/categories" element={<CategoriesPage />} />
+                        <Route path="/coupons" element={<CouponsPage />} />
+                        <Route path="/products/:slug" element={<ProductDetailPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/activate" element={<ActivateAccountPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route
+                            path="/profile"
+                            element={
+                                <ProtectedRoute>
+                                    <ProfilePage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile/orders"
+                            element={
+                                <ProtectedRoute>
+                                    <MyOrdersPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile/orders/:orderNumber"
+                            element={
+                                <ProtectedRoute>
+                                    <OrderTrackingPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Route>
+                    <Route path="/checkout" element={<CheckoutInformationPage />} />
+                    <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
                     <Route
-                        path="/profile"
+                        path="/admin/dashboard"
                         element={
-                            <ProtectedRoute>
-                                <ProfilePage />
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminDashboardPage />
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/profile/orders"
-                        element={
-                            <ProtectedRoute>
-                                <MyOrdersPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/profile/orders/:orderNumber"
-                        element={
-                            <ProtectedRoute>
-                                <OrderTrackingPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Route>
-                <Route path="/checkout" element={<CheckoutInformationPage />} />
-                <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
-                <Route
-                    path="/admin/dashboard"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <AdminDashboardPage />
-                        </ProtectedRoute>
-                    }
-                />
-            </Routes>
-        </Router>
+                </Routes>
+            </Router>
+            <ToastNotification />
+        </SocketProvider>
     );
 }
 
 export default App;
+
