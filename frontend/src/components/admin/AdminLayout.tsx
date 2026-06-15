@@ -10,7 +10,7 @@ export const ADMIN_SIDEBAR_ITEMS: Array<{
 }> = [
     { icon: 'dashboard', label: 'Dashboard', path: '/admin/dashboard' },
     { icon: 'shopping_cart', label: 'Đơn hàng', path: '/admin/orders' },
-    { icon: 'inventory_2', label: 'Sản phẩm' },
+    { icon: 'inventory_2', label: 'Sản phẩm', path: '/admin/products' },
     { icon: 'category', label: 'Danh mục' },
     { icon: 'sell', label: 'Khuyến mãi' },
     { icon: 'group', label: 'Khách hàng' },

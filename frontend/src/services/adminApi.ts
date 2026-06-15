@@ -7,6 +7,13 @@ import type {
     AdminOrdersQuery,
     UpdateAdminOrderStatusPayload
 } from '../types/adminOrders';
+import type {
+    AdminProductDetail,
+    AdminProductFormOptions,
+    AdminProductPayload,
+    AdminProductsListData,
+    AdminProductsQuery
+} from '../types/adminProducts';
 
 export interface AdminDashboardQuery {
     from?: string;
@@ -45,5 +52,49 @@ export async function updateAdminOrderStatus(
         `/admin/orders/${orderNumber}/status`,
         payload
     );
+    return response.data;
+}
+
+export async function fetchAdminProducts(query: AdminProductsQuery = {}) {
+    const response = await axiosInstance.get<ApiEnvelope<AdminProductsListData>>('/admin/products', {
+        params: query
+    });
+    return response.data;
+}
+
+export async function fetchAdminProductFormOptions() {
+    const response = await axiosInstance.get<ApiEnvelope<AdminProductFormOptions>>(
+        '/admin/products/form-options'
+    );
+    return response.data;
+}
+
+export async function fetchAdminProductDetail(id: number) {
+    const response = await axiosInstance.get<ApiEnvelope<{ product: AdminProductDetail }>>(
+        `/admin/products/${id}`
+    );
+    return response.data;
+}
+
+export async function createAdminProduct(payload: AdminProductPayload) {
+    const response = await axiosInstance.post<ApiEnvelope<{ product: AdminProductDetail }>>(
+        '/admin/products',
+        payload
+    );
+    return response.data;
+}
+
+export async function updateAdminProduct(id: number, payload: Partial<AdminProductPayload>) {
+    const response = await axiosInstance.patch<ApiEnvelope<{ product: AdminProductDetail }>>(
+        `/admin/products/${id}`,
+        payload
+    );
+    return response.data;
+}
+
+export async function deleteAdminProduct(id: number) {
+    const response = await axiosInstance.delete<
+        ApiEnvelope<{ product: { id: number; status: string; statusLabel: string } }>
+    >(`/admin/products/${id}`);
     return response.data;
 }

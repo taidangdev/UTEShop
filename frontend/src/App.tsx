@@ -16,6 +16,7 @@ import ActivateAccountPage from './pages/ActivateAccountPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
+import AdminProductsPage from './pages/AdminProductsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './store/hooks';
 import { SocketProvider } from './context/SocketContext';
@@ -84,6 +85,14 @@ function App() {
                         element={
                             <ProtectedRoute requiredRole="admin">
                                 <AdminOrdersPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/products"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminProductsPage />
                             </ProtectedRoute>
                         }
                     />

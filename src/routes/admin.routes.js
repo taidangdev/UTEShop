@@ -7,6 +7,12 @@ const {
     orderNumberParamValidation,
     updateOrderStatusValidation
 } = require('../validators/adminOrder.validator');
+const {
+    listProductsValidation,
+    productIdParamValidation,
+    createProductValidation,
+    updateProductValidation
+} = require('../validators/adminProduct.validator');
 
 const router = express.Router();
 
@@ -27,6 +33,28 @@ router.patch(
     updateOrderStatusValidation,
     validate,
     adminController.updateOrderStatus
+);
+
+router.get('/products/form-options', adminController.getProductFormOptions);
+router.get('/products', listProductsValidation, validate, adminController.listProducts);
+router.get(
+    '/products/:id',
+    productIdParamValidation,
+    validate,
+    adminController.getProductDetail
+);
+router.post('/products', createProductValidation, validate, adminController.createProduct);
+router.patch(
+    '/products/:id',
+    updateProductValidation,
+    validate,
+    adminController.updateProduct
+);
+router.delete(
+    '/products/:id',
+    productIdParamValidation,
+    validate,
+    adminController.deleteProduct
 );
 
 module.exports = router;
