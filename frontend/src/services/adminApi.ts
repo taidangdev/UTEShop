@@ -76,3 +76,87 @@ export async function bulkDeleteAdminCategories(ids: number[]) {
     });
     return response.data;
 }
+
+export interface AdminPromotion {
+    id: number;
+    code: string;
+    name: string;
+    scope: 'shop' | 'category' | 'product';
+    description: string | null;
+    type: 'percentage' | 'fixed_amount' | 'free_shipping';
+    value: number;
+    minOrderAmount: number | null;
+    maxDiscountAmount: number | null;
+    maxUsesPerUser: number | null;
+    startsAt: string | null;
+    endsAt: string | null;
+    usageLimit: number | null;
+    usedCount: number;
+    isActive: boolean;
+    createdAt: string;
+    categories?: Array<{ id: number; name: string; slug: string }>;
+    products?: Array<{ id: number; name: string; slug: string }>;
+}
+
+export interface SavePromotionPayload {
+    code?: string;
+    name: string;
+    scope: 'shop' | 'category' | 'product';
+    description?: string | null;
+    type: 'percentage' | 'fixed_amount' | 'free_shipping';
+    value: number;
+    minOrderAmount?: number | null;
+    maxDiscountAmount?: number | null;
+    maxUsesPerUser?: number | null;
+    startsAt?: string | null;
+    endsAt?: string | null;
+    usageLimit?: number | null;
+    isActive?: boolean;
+    categoryIds?: number[];
+    productIds?: number[];
+}
+
+export async function fetchAdminPromotions(page = 1, limit = 10) {
+    const response = await axiosInstance.get<ApiEnvelope<{
+        promotions: AdminPromotion[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>>('/admin/promotions', {
+        params: { page, limit }
+    });
+    return response.data;
+}
+
+export async function createAdminPromotion(payload: SavePromotionPayload) {
+    const response = await axiosInstance.post<ApiEnvelope<{ promotion: AdminPromotion }>>('/admin/promotions', payload);
+    return response.data;
+}
+
+export async function updateAdminPromotion(id: number, payload: SavePromotionPayload) {
+    const response = await axiosInstance.put<ApiEnvelope<{ promotion: AdminPromotion }>>(`/admin/promotions/${id}`, payload);
+    return response.data;
+}
+
+export async function deleteAdminPromotion(id: number) {
+    const response = await axiosInstance.delete<ApiEnvelope<void>>(`/admin/promotions/${id}`);
+    return response.data;
+}
+
+export async function bulkActiveAdminPromotions(ids: number[], isActive: boolean) {
+    const response = await axiosInstance.post<ApiEnvelope<void>>('/admin/promotions/bulk-active', {
+        ids,
+        isActive
+    });
+    return response.data;
+}
+
+export async function bulkDeleteAdminPromotions(ids: number[]) {
+    const response = await axiosInstance.post<ApiEnvelope<{ deletedCount: number; failedCodes: string[] }>>('/admin/promotions/bulk-delete', {
+        ids
+    });
+    return response.data;
+}

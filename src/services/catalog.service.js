@@ -359,7 +359,7 @@ const getSimilarProducts = async (productId, categoryId, limit = 4) => {
         limit: Math.min(12, Math.max(1, parseInt(limit, 10) || 4))
     });
 
-    return rows.map(mapProductRow);
+    return rows.map((r) => mapProductRow(r));
 };
 
 const getProductBySlug = async (slug, userId) => {

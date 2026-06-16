@@ -25,7 +25,8 @@ function mapPromotionPublic(promotion) {
         scope: promotion.scope,
         type: promotion.type,
         value: Number(promotion.value),
-        minOrderAmount: promotion.minOrderAmount != null ? Number(promotion.minOrderAmount) : 0
+        minOrderAmount: promotion.minOrderAmount != null ? Number(promotion.minOrderAmount) : 0,
+        maxDiscountAmount: promotion.maxDiscountAmount != null ? Number(promotion.maxDiscountAmount) : null
     };
 }
 
@@ -123,7 +124,14 @@ function discountFromPromotionType(promotion, amount) {
 
     const value = Number(promotion.value);
     if (promotion.type === 'percentage') {
-        return roundMoney(base * (value / 100));
+        let discount = roundMoney(base * (value / 100));
+        if (promotion.maxDiscountAmount != null) {
+            const maxD = Number(promotion.maxDiscountAmount);
+            if (maxD > 0) {
+                discount = Math.min(discount, maxD);
+            }
+        }
+        return discount;
     }
     if (promotion.type === 'fixed_amount') {
         return roundMoney(Math.min(base, value));
@@ -249,6 +257,46 @@ async function previewPromotion(code, lineItems, userId) {
 }
 
 async function recordRedemption(promotionId, userId, orderId, discountAmount, transaction) {
+    const promotion = await Promotion.findByPk(promotionId, {
+        lock: transaction.LOCK.UPDATE,
+        transaction
+    });
+
+    if (!promotion) {
+        const err = new Error('Không tìm thấy chương trình khuyến mãi');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    // Re-verify startsAt, endsAt, usageLimit, maxUsesPerUser within locking transaction
+    const now = new Date();
+    if (promotion.startsAt && now < new Date(promotion.startsAt)) {
+        const err = new Error('Chương trình khuyến mãi chưa bắt đầu');
+        err.statusCode = 400;
+        throw err;
+    }
+    if (promotion.endsAt && now > new Date(promotion.endsAt)) {
+        const err = new Error('Chương trình khuyến mãi đã hết hạn');
+        err.statusCode = 400;
+        throw err;
+    }
+    if (promotion.usageLimit != null && promotion.usedCount >= promotion.usageLimit) {
+        const err = new Error('Chương trình khuyến mãi đã hết lượt sử dụng');
+        err.statusCode = 400;
+        throw err;
+    }
+    if (promotion.maxUsesPerUser != null && userId) {
+        const count = await PromotionRedemption.count({
+            where: { promotionId: promotion.id, userId },
+            transaction
+        });
+        if (count >= promotion.maxUsesPerUser) {
+            const err = new Error('Bạn đã sử dụng mã khuyến mãi này tối đa số lần cho phép');
+            err.statusCode = 400;
+            throw err;
+        }
+    }
+
     await PromotionRedemption.create(
         {
             promotionId,
@@ -259,9 +307,8 @@ async function recordRedemption(promotionId, userId, orderId, discountAmount, tr
         { transaction }
     );
 
-    await Promotion.increment('usedCount', {
+    await promotion.increment('usedCount', {
         by: 1,
-        where: { id: promotionId },
         transaction
     });
 }

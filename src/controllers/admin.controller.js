@@ -1,4 +1,4 @@
-const { User, Category, Product, sequelize } = require('../models');
+const { User, Category, Product, Promotion, PromotionCategory, PromotionProduct, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
 const adminDashboardService = require('../services/adminDashboard.service');
 
@@ -329,6 +329,458 @@ const bulkDeleteCategories = async (req, res, next) => {
     }
 };
 
+/**
+ * List all promotions with pagination (admin-only)
+ */
+const listPromotions = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+
+        const { count, rows } = await Promotion.findAndCountAll({
+            include: [
+                {
+                    model: Category,
+                    as: 'categories',
+                    attributes: ['id', 'name', 'slug'],
+                    through: { attributes: [] }
+                },
+                {
+                    model: Product,
+                    as: 'products',
+                    attributes: ['id', 'name', 'slug'],
+                    through: { attributes: [] }
+                }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+            distinct: true
+        });
+
+        return successResponse(res, 200, 'Danh sách khuyến mãi', {
+            promotions: rows,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages: Math.ceil(count / limit)
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Create a new promotion (admin-only)
+ */
+const createPromotion = async (req, res, next) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const {
+            code,
+            name,
+            scope,
+            description,
+            type,
+            value,
+            minOrderAmount,
+            maxDiscountAmount,
+            maxUsesPerUser,
+            startsAt,
+            endsAt,
+            usageLimit,
+            isActive,
+            categoryIds,
+            productIds
+        } = req.body;
+
+        if (!name || !name.trim()) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Tên khuyến mãi là bắt buộc');
+        }
+
+        if (!scope || !['shop', 'category', 'product'].includes(scope)) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Phạm vi áp dụng (scope) không hợp lệ');
+        }
+
+        if (!type || !['percentage', 'fixed_amount', 'free_shipping'].includes(type)) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Loại khuyến mãi (type) không hợp lệ');
+        }
+
+        // Validate values
+        const finalValue = type === 'free_shipping' ? 0 : Number(value);
+        if (type !== 'free_shipping' && (isNaN(finalValue) || finalValue <= 0)) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Giá trị khuyến mãi phải lớn hơn 0');
+        }
+
+        if (type === 'percentage' && finalValue > 100) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Phần trăm giảm giá không được vượt quá 100%');
+        }
+
+        let finalCode = code && code.trim() ? code.trim().toUpperCase() : null;
+        if (!finalCode) {
+            // Auto generate unique code
+            finalCode = `PROMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+            let isUnique = false;
+            while (!isUnique) {
+                const existing = await Promotion.findOne({ where: { code: finalCode }, transaction });
+                if (!existing) {
+                    isUnique = true;
+                } else {
+                    finalCode = `PROMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+                }
+            }
+        } else {
+            const existing = await Promotion.findOne({ where: { code: finalCode }, transaction });
+            if (existing) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Mã khuyến mãi đã tồn tại');
+            }
+        }
+
+        // Validate maxDiscountAmount for percentage
+        let finalMaxDiscount = null;
+        if (type === 'percentage' && maxDiscountAmount != null) {
+            finalMaxDiscount = Number(maxDiscountAmount);
+            if (isNaN(finalMaxDiscount) || finalMaxDiscount < 0) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Số tiền giảm tối đa không hợp lệ');
+            }
+        }
+
+        let legacyCategoryId = null;
+        if (scope === 'category' && Array.isArray(categoryIds) && categoryIds.length > 0) {
+            legacyCategoryId = categoryIds[0];
+        }
+
+        const promotion = await Promotion.create({
+            code: finalCode,
+            name: name.trim(),
+            scope,
+            description: description || null,
+            type,
+            value: finalValue,
+            minOrderAmount: minOrderAmount != null ? Number(minOrderAmount) : null,
+            maxDiscountAmount: finalMaxDiscount,
+            maxUsesPerUser: maxUsesPerUser != null ? parseInt(maxUsesPerUser, 10) : null,
+            startsAt: startsAt ? new Date(startsAt) : null,
+            endsAt: endsAt ? new Date(endsAt) : null,
+            usageLimit: usageLimit != null ? parseInt(usageLimit, 10) : null,
+            isActive: isActive !== false,
+            categoryId: legacyCategoryId
+        }, { transaction });
+
+        if (scope === 'category' && Array.isArray(categoryIds) && categoryIds.length > 0) {
+            const mappings = categoryIds.map(catId => ({
+                promotionId: promotion.id,
+                categoryId: catId
+            }));
+            await PromotionCategory.bulkCreate(mappings, { transaction });
+        } else if (scope === 'product' && Array.isArray(productIds) && productIds.length > 0) {
+            const mappings = productIds.map(prodId => ({
+                promotionId: promotion.id,
+                productId: prodId
+            }));
+            await PromotionProduct.bulkCreate(mappings, { transaction });
+        }
+
+        await transaction.commit();
+
+        const reloaded = await Promotion.findByPk(promotion.id, {
+            include: [
+                { model: Category, as: 'categories', attributes: ['id', 'name', 'slug'], through: { attributes: [] } },
+                { model: Product, as: 'products', attributes: ['id', 'name', 'slug'], through: { attributes: [] } }
+            ]
+        });
+
+        return successResponse(res, 201, 'Tạo khuyến mãi thành công', { promotion: reloaded });
+    } catch (error) {
+        await transaction.rollback();
+        next(error);
+    }
+};
+
+/**
+ * Update an existing promotion (admin-only)
+ */
+const updatePromotion = async (req, res, next) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const { id } = req.params;
+        const {
+            code,
+            name,
+            scope,
+            description,
+            type,
+            value,
+            minOrderAmount,
+            maxDiscountAmount,
+            maxUsesPerUser,
+            startsAt,
+            endsAt,
+            usageLimit,
+            isActive,
+            categoryIds,
+            productIds
+        } = req.body;
+
+        const promotion = await Promotion.findByPk(id, { transaction });
+        if (!promotion) {
+            await transaction.rollback();
+            return errorResponse(res, 404, 'Khuyến mãi không tồn tại');
+        }
+
+        if (name !== undefined && (!name || !name.trim())) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Tên khuyến mãi không được để trống');
+        }
+
+        const isRedeemed = promotion.usedCount > 0;
+        if (isRedeemed) {
+            // Lock core fields
+            if (code !== undefined && code.trim().toUpperCase() !== promotion.code) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Không thể thay đổi mã khuyến mãi khi đã có người sử dụng');
+            }
+            if (scope !== undefined && scope !== promotion.scope) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Không thể thay đổi phạm vi áp dụng khi đã có người sử dụng');
+            }
+            if (type !== undefined && type !== promotion.type) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Không thể thay đổi loại khuyến mãi khi đã có người sử dụng');
+            }
+            if (value !== undefined && Number(value) !== Number(promotion.value)) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Không thể thay đổi giá trị khi đã có người sử dụng');
+            }
+        }
+
+        const updates = {};
+        if (name !== undefined) updates.name = name.trim();
+        if (description !== undefined) updates.description = description || null;
+        if (minOrderAmount !== undefined) updates.minOrderAmount = minOrderAmount != null ? Number(minOrderAmount) : null;
+        if (maxUsesPerUser !== undefined) updates.maxUsesPerUser = maxUsesPerUser != null ? parseInt(maxUsesPerUser, 10) : null;
+        if (startsAt !== undefined) updates.startsAt = startsAt ? new Date(startsAt) : null;
+        if (endsAt !== undefined) updates.endsAt = endsAt ? new Date(endsAt) : null;
+        if (usageLimit !== undefined) updates.usageLimit = usageLimit != null ? parseInt(usageLimit, 10) : null;
+        if (isActive !== undefined) updates.isActive = !!isActive;
+
+        if (!isRedeemed) {
+            if (code !== undefined) {
+                const finalCode = code.trim().toUpperCase();
+                if (!finalCode) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Mã khuyến mãi không được để trống');
+                }
+                if (finalCode !== promotion.code) {
+                    const existing = await Promotion.findOne({ where: { code: finalCode }, transaction });
+                    if (existing) {
+                        await transaction.rollback();
+                        return errorResponse(res, 400, 'Mã khuyến mãi mới đã tồn tại');
+                    }
+                    updates.code = finalCode;
+                }
+            }
+
+            if (scope !== undefined) {
+                if (!['shop', 'category', 'product'].includes(scope)) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Phạm vi không hợp lệ');
+                }
+                updates.scope = scope;
+            }
+
+            if (type !== undefined) {
+                if (!['percentage', 'fixed_amount', 'free_shipping'].includes(type)) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Loại khuyến mãi không hợp lệ');
+                }
+                updates.type = type;
+            }
+
+            if (value !== undefined) {
+                const finalType = type || promotion.type;
+                const finalVal = finalType === 'free_shipping' ? 0 : Number(value);
+                if (finalType !== 'free_shipping' && (isNaN(finalVal) || finalVal <= 0)) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Giá trị khuyến mãi phải lớn hơn 0');
+                }
+                if (finalType === 'percentage' && finalVal > 100) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Phần trăm giảm giá không được vượt quá 100%');
+                }
+                updates.value = finalVal;
+            }
+        }
+
+        // Handle maxDiscountAmount updates for percentage type
+        const finalType = updates.type || promotion.type;
+        if (finalType === 'percentage') {
+            if (maxDiscountAmount !== undefined) {
+                updates.maxDiscountAmount = maxDiscountAmount != null ? Number(maxDiscountAmount) : null;
+                if (updates.maxDiscountAmount != null && (isNaN(updates.maxDiscountAmount) || updates.maxDiscountAmount < 0)) {
+                    await transaction.rollback();
+                    return errorResponse(res, 400, 'Số tiền giảm tối đa không hợp lệ');
+                }
+            }
+        } else {
+            updates.maxDiscountAmount = null;
+        }
+
+        // Sync relationships if not redeemed
+        const finalScope = updates.scope || promotion.scope;
+        let legacyCategoryId = promotion.categoryId;
+
+        if (!isRedeemed) {
+            await PromotionCategory.destroy({ where: { promotionId: id }, transaction });
+            await PromotionProduct.destroy({ where: { promotionId: id }, transaction });
+
+            if (finalScope === 'category' && Array.isArray(categoryIds)) {
+                legacyCategoryId = categoryIds[0] || null;
+                if (categoryIds.length > 0) {
+                    const mappings = categoryIds.map(catId => ({
+                        promotionId: id,
+                        categoryId: catId
+                    }));
+                    await PromotionCategory.bulkCreate(mappings, { transaction });
+                }
+            } else if (finalScope === 'product' && Array.isArray(productIds)) {
+                legacyCategoryId = null;
+                if (productIds.length > 0) {
+                    const mappings = productIds.map(prodId => ({
+                        promotionId: id,
+                        productId: prodId
+                    }));
+                    await PromotionProduct.bulkCreate(mappings, { transaction });
+                }
+            } else {
+                legacyCategoryId = null;
+            }
+        }
+        updates.categoryId = legacyCategoryId;
+
+        await promotion.update(updates, { transaction });
+        await transaction.commit();
+
+        const reloaded = await Promotion.findByPk(id, {
+            include: [
+                { model: Category, as: 'categories', attributes: ['id', 'name', 'slug'], through: { attributes: [] } },
+                { model: Product, as: 'products', attributes: ['id', 'name', 'slug'], through: { attributes: [] } }
+            ]
+        });
+
+        return successResponse(res, 200, 'Cập nhật khuyến mãi thành công', { promotion: reloaded });
+    } catch (error) {
+        await transaction.rollback();
+        next(error);
+    }
+};
+
+/**
+ * Delete an existing promotion (admin-only)
+ */
+const deletePromotion = async (req, res, next) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const { id } = req.params;
+        const promotion = await Promotion.findByPk(id, { transaction });
+        if (!promotion) {
+            await transaction.rollback();
+            return errorResponse(res, 404, 'Khuyến mãi không tồn tại');
+        }
+
+        if (promotion.usedCount > 0) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Không thể xóa khuyến mãi này vì đã được áp dụng trong đơn hàng');
+        }
+
+        await PromotionCategory.destroy({ where: { promotionId: id }, transaction });
+        await PromotionProduct.destroy({ where: { promotionId: id }, transaction });
+        await promotion.destroy({ transaction });
+
+        await transaction.commit();
+        return successResponse(res, 200, 'Xóa khuyến mãi thành công');
+    } catch (error) {
+        await transaction.rollback();
+        next(error);
+    }
+};
+
+/**
+ * Bulk toggle active status for promotions (admin-only)
+ */
+const bulkActivePromotions = async (req, res, next) => {
+    try {
+        const { ids, isActive } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return errorResponse(res, 400, 'Danh sách ID khuyến mãi không hợp lệ');
+        }
+        if (isActive === undefined) {
+            return errorResponse(res, 400, 'Trạng thái hoạt động isActive là bắt buộc');
+        }
+
+        await Promotion.update(
+            { isActive: !!isActive },
+            { where: { id: ids } }
+        );
+
+        return successResponse(res, 200, 'Cập nhật trạng thái khuyến mãi hàng loạt thành công');
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Bulk delete promotions with safety checks (admin-only)
+ */
+const bulkDeletePromotions = async (req, res, next) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Danh sách ID khuyến mãi không hợp lệ');
+        }
+
+        const promotions = await Promotion.findAll({ where: { id: ids }, transaction });
+        const safeIds = [];
+        const failedCodes = [];
+
+        for (const promo of promotions) {
+            if (promo.usedCount > 0) {
+                failedCodes.push(promo.code);
+            } else {
+                safeIds.push(promo.id);
+            }
+        }
+
+        if (safeIds.length > 0) {
+            await PromotionCategory.destroy({ where: { promotionId: safeIds }, transaction });
+            await PromotionProduct.destroy({ where: { promotionId: safeIds }, transaction });
+            await Promotion.destroy({ where: { id: safeIds }, transaction });
+        }
+
+        await transaction.commit();
+
+        return successResponse(res, 200, 'Xóa khuyến mãi hàng loạt hoàn tất', {
+            deletedCount: safeIds.length,
+            failedCodes
+        });
+    } catch (error) {
+        await transaction.rollback();
+        next(error);
+    }
+};
+
 module.exports = {
     listUsers,
     getDashboard,
@@ -337,5 +789,11 @@ module.exports = {
     updateCategory,
     deleteCategory,
     bulkActiveCategories,
-    bulkDeleteCategories
+    bulkDeleteCategories,
+    listPromotions,
+    createPromotion,
+    updatePromotion,
+    deletePromotion,
+    bulkActivePromotions,
+    bulkDeletePromotions
 };

@@ -94,6 +94,7 @@ const ensurePromotionColumns = async (sequelize) => {
     });
     await addIfMissing('description', { type: DataTypes.STRING(500), allowNull: true });
     await addIfMissing('maxUsesPerUser', { type: DataTypes.INTEGER, allowNull: true });
+    await addIfMissing('maxDiscountAmount', { type: DataTypes.DECIMAL(12, 2), allowNull: true });
 
     const { Promotion, PromotionCategory } = require('../models');
     const withCategory = await Promotion.findAll({

@@ -5,6 +5,7 @@ import type { AdminDashboardData } from '../types/adminDashboard';
 import { useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
 import CategoriesTab from '../components/admin/CategoriesTab';
+import PromotionsTab from '../components/admin/PromotionsTab';
 
 const PRESET_OPTIONS = [
     { value: '7d', label: '7 ngày' },
@@ -566,8 +567,9 @@ export default function AdminDashboardPage() {
             )}
 
             {activeTab === 'category' && <CategoriesTab />}
+            {activeTab === 'sell' && <PromotionsTab />}
 
-            {activeTab !== 'dashboard' && activeTab !== 'category' && (
+            {activeTab !== 'dashboard' && activeTab !== 'category' && activeTab !== 'sell' && (
                 <div className="rounded-[32px] bg-surface-container-lowest p-8 shadow-sm text-center py-20">
                     <span className="material-symbols-outlined text-outline text-6xl mb-4 text-[#ff8b66]">construction</span>
                     <h3 className="text-2xl font-bold mb-2">Tính năng đang phát triển</h3>
