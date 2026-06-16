@@ -19,6 +19,8 @@ export interface CheckoutInformation {
     /** Personal coupon from user_coupons (review rewards) */
     userCouponCode: string;
     pointsToRedeem: number;
+    addressId?: number | null;
+    saveAddress?: boolean;
 }
 
 export interface CheckoutTotals {

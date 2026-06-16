@@ -19,9 +19,7 @@ const TABS = [
   { id: "refunded", label: "Đã hoàn tiền" },
 ];
 
-function orderProductPath(order: { productSlug?: string | null }) {
-  return order.productSlug ? `/products/${order.productSlug}` : null;
-}
+
 
 export default function MyOrdersPage() {
   const navigate = useNavigate();
@@ -225,7 +223,6 @@ export default function MyOrdersPage() {
                 const canCancel =
                   order.status === "pending" || order.status === "confirmed";
                 const canReview = canReviewOrder(order.orderNumber, order.status);
-                const productPath = orderProductPath(order);
 
                 return (
                   <div
@@ -233,16 +230,11 @@ export default function MyOrdersPage() {
                     className="soft-shadow rounded-[28px] border border-outline-variant/30 bg-surface-container-lowest p-6 transition-all hover:border-primary/20"
                   >
                     <div className="flex flex-col justify-between gap-6 md:flex-row">
-                      {/* Left: click → product detail */}
+                      {/* Left: click → order detail */}
                       <button
                         type="button"
-                        disabled={!productPath}
-                        onClick={() => productPath && navigate(productPath)}
-                        className={`flex min-w-0 flex-1 gap-4 text-left transition ${
-                          productPath
-                            ? "cursor-pointer hover:opacity-90"
-                            : "cursor-default opacity-80"
-                        }`}
+                        onClick={() => navigate(`/profile/orders/${order.orderNumber}`)}
+                        className="flex min-w-0 flex-1 cursor-pointer gap-4 text-left transition hover:opacity-90"
                       >
                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high border border-outline-variant/20">
                           <img
@@ -271,11 +263,6 @@ export default function MyOrdersPage() {
                           <p className="text-sm text-on-surface-variant">
                             {order.detail}
                           </p>
-                          {productPath && (
-                            <p className="mt-1 text-xs font-medium text-primary">
-                              Xem chi tiết sản phẩm →
-                            </p>
-                          )}
                         </div>
                       </button>
 
@@ -321,23 +308,16 @@ export default function MyOrdersPage() {
                               Hủy đơn
                             </button>
                           )}
-                          {productPath ? (
-                            <Link
-                              to={productPath}
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex h-10 items-center justify-center rounded-full border border-outline-variant px-5 text-xs font-semibold text-on-surface-variant transition hover:bg-surface-container-high active:scale-95"
-                            >
-                              Xem sản phẩm
-                            </Link>
-                          ) : (
-                            <Link
+                          <Link
                               to={`/profile/orders/${order.orderNumber}`}
                               onClick={(e) => e.stopPropagation()}
-                              className={`flex h-10 items-center justify-center rounded-full px-5 text-xs font-semibold transition active:scale-95 ${order.actionClass}`}
+                              className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-outline-variant px-5 text-xs font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary active:scale-95"
                             >
-                              {order.action}
+                              <span className="material-symbols-outlined text-[16px]">
+                                receipt_long
+                              </span>
+                              Chi tiết đơn hàng
                             </Link>
-                          )}
                         </div>
                       </div>
                     </div>

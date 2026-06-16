@@ -1,21 +1,48 @@
 const { body, param } = require('express-validator');
 
 const checkoutInformationValidation = [
-    body('information.fullName').trim().notEmpty().withMessage('Full name is required'),
-    body('information.phone').trim().notEmpty().withMessage('Phone is required'),
+    body('information.addressId').optional({ nullable: true }).isInt({ min: 1 }).withMessage('ID địa chỉ không hợp lệ'),
+    body('information.saveAddress').optional().isBoolean().withMessage('Lưu địa chỉ phải là giá trị boolean'),
+
+    body('information.fullName')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Họ và tên là bắt buộc'),
+    body('information.phone')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Số điện thoại là bắt buộc'),
     body('information.deliveryType')
         .optional()
         .isIn(['campus', 'home'])
-        .withMessage('deliveryType must be campus or home'),
-    body('information.street').trim().notEmpty().withMessage('Street address is required'),
-    body('information.city').trim().notEmpty().withMessage('City is required'),
-    body('information.state').trim().notEmpty().withMessage('State is required'),
-    body('information.postalCode').trim().notEmpty().withMessage('Postal code is required'),
+        .withMessage('Phương thức giao hàng phải là campus hoặc home'),
+    body('information.street')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Địa chỉ chi tiết là bắt buộc'),
+    body('information.city')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Thành phố là bắt buộc'),
+    body('information.state')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Tỉnh/Thành phố là bắt buộc'),
+    body('information.postalCode')
+        .if((value, { req }) => !req.body?.information?.addressId)
+        .trim()
+        .notEmpty()
+        .withMessage('Mã bưu điện là bắt buộc'),
     body('information.studentId').optional().isString(),
     body('information.coupon')
         .optional()
         .isIn(['', 'NEW2024', 'FREESHIP', 'LABKIT'])
-        .withMessage('Invalid coupon'),
+        .withMessage('Mã giảm giá không hợp lệ'),
     body('information.discountCode').optional().isString(),
     body('information.appliedDiscountCode').optional().isString(),
     body('information.userCouponCode').optional().isString(),
