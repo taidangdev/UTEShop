@@ -122,11 +122,31 @@ const isUserOnline = (userId) => {
     return userSockets.has(userId);
 };
 
+/**
+ * Ngắt toàn bộ kết nối socket đang hoạt động của một user cụ thể (ví dụ khi bị khóa)
+ */
+const disconnectUser = (userId) => {
+    if (io && userSockets.has(userId)) {
+        const socketIds = userSockets.get(userId);
+        const idsArray = Array.from(socketIds);
+        idsArray.forEach((socketId) => {
+            const socket = io.sockets.sockets.get(socketId);
+            if (socket) {
+                socket.emit('account_banned', { message: 'Tài khoản của bạn đã bị khóa bởi quản trị viên.' });
+                socket.disconnect(true);
+            }
+        });
+        userSockets.delete(userId);
+        console.log(`🔌 Banned user ${userId}: disconnected all sockets.`);
+    }
+};
+
 module.exports = {
     init,
     getIO,
     sendToUser,
     sendToAdmins,
     broadcast,
-    isUserOnline
+    isUserOnline,
+    disconnectUser
 };

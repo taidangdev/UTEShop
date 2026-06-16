@@ -4,6 +4,9 @@ import { fetchAdminDashboard } from '../services/adminApi';
 import type { AdminDashboardData } from '../types/adminDashboard';
 import { useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
+import CategoriesTab from '../components/admin/CategoriesTab';
+import PromotionsTab from '../components/admin/PromotionsTab';
+import CustomersTab from '../components/admin/CustomersTab';
 
 const PRESET_OPTIONS = [
     { value: '7d', label: '7 ngày' },
@@ -59,6 +62,7 @@ const SIDEBAR_ITEMS = [
 export default function AdminDashboardPage() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('dashboard');
     const [data, setData] = useState<AdminDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -135,8 +139,9 @@ export default function AdminDashboardPage() {
                         <button
                             key={item.label}
                             type="button"
+                            onClick={() => setActiveTab(item.icon)}
                             className={`flex w-full items-center rounded-lg px-4 py-3 text-left text-sm transition ${
-                                item.active ? 'bg-primary font-semibold text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                activeTab === item.icon ? 'bg-primary font-semibold text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
                             }`}
                         >
                             <span className="material-symbols-outlined mr-3 text-[20px]">{item.icon}</span>
@@ -191,12 +196,14 @@ export default function AdminDashboardPage() {
                 </header>
 
                 <div className="mx-auto max-w-[1280px] space-y-6 p-6 lg:p-8">
-                    <section>
-                        <h2 className="text-3xl font-bold">Chào buổi sáng, Admin!</h2>
-                        <p className="mt-1 text-sm text-on-surface-variant">
-                            Theo dõi doanh thu, đơn hàng và dòng tiền theo thời gian thực.
-                        </p>
-                    </section>
+                    {activeTab === 'dashboard' && (
+                        <>
+                            <section>
+                                <h2 className="text-3xl font-bold">Chào buổi sáng, Admin!</h2>
+                                <p className="mt-1 text-sm text-on-surface-variant">
+                                    Theo dõi doanh thu, đơn hàng và dòng tiền theo thời gian thực.
+                                </p>
+                            </section>
 
                     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <div className="rounded-[24px] bg-surface-container-lowest p-6 shadow-sm">
@@ -557,7 +564,23 @@ export default function AdminDashboardPage() {
                             </section>
                         </>
                     )}
+                </>
+            )}
+
+            {activeTab === 'category' && <CategoriesTab />}
+            {activeTab === 'sell' && <PromotionsTab />}
+            {activeTab === 'group' && <CustomersTab />}
+
+            {activeTab !== 'dashboard' && activeTab !== 'category' && activeTab !== 'sell' && activeTab !== 'group' && (
+                <div className="rounded-[32px] bg-surface-container-lowest p-8 shadow-sm text-center py-20">
+                    <span className="material-symbols-outlined text-outline text-6xl mb-4 text-[#ff8b66]">construction</span>
+                    <h3 className="text-2xl font-bold mb-2">Tính năng đang phát triển</h3>
+                    <p className="text-on-surface-variant max-w-md mx-auto">
+                        Chức năng quản lý này đang được thiết kế và xây dựng. Vui lòng quay lại sau!
+                    </p>
                 </div>
+            )}
+        </div>
             </main>
         </div>
     );

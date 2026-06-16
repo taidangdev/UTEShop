@@ -94,6 +94,7 @@ const ensurePromotionColumns = async (sequelize) => {
     });
     await addIfMissing('description', { type: DataTypes.STRING(500), allowNull: true });
     await addIfMissing('maxUsesPerUser', { type: DataTypes.INTEGER, allowNull: true });
+    await addIfMissing('maxDiscountAmount', { type: DataTypes.DECIMAL(12, 2), allowNull: true });
 
     const { Promotion, PromotionCategory } = require('../models');
     const withCategory = await Promotion.findAll({
@@ -263,16 +264,62 @@ const ensurePromotionJoinTables = async (sequelize) => {
     }
 };
 
+const ensureCategoryIndexes = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+    try {
+        await qi.describeTable('categories');
+    } catch {
+        return;
+    }
+
+    try {
+        await qi.addIndex('categories', {
+            fields: ['parentId'],
+            name: 'categories_parent_id'
+        });
+        console.log('  + Index categories.parentId');
+    } catch (err) {
+        // index already exists
+    }
+};
+
+const ensureUserIndexes = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+    try {
+        await qi.describeTable('users');
+    } catch {
+        return;
+    }
+
+    const addIndexIfMissing = async (fields, name) => {
+        try {
+            await qi.addIndex('users', { fields, name });
+            console.log(`  + Index users.${fields.join(',')}`);
+        } catch (err) {
+            // Index already exists
+        }
+    };
+
+    await addIndexIfMissing(['email'], 'users_email_idx');
+    await addIndexIfMissing(['phone'], 'users_phone_idx');
+    await addIndexIfMissing(['studentId'], 'users_student_id_idx');
+    await addIndexIfMissing(['status'], 'users_status_idx');
+    await addIndexIfMissing(['role'], 'users_role_idx');
+};
+
 const ensureSchema = async (sequelize) => {
     await ensureUserColumns(sequelize);
+    await ensureUserIndexes(sequelize);
     await ensureProductReviewColumns(sequelize);
     await ensurePromotionJoinTables(sequelize);
     await ensurePromotionColumns(sequelize);
     await ensureOrderPromotionColumns(sequelize);
+    await ensureCategoryIndexes(sequelize);
 };
 
 module.exports = {
     ensureUserColumns,
+    ensureUserIndexes,
     ensureProductReviewColumns,
     ensurePromotionColumns,
     ensureOrderPromotionColumns,

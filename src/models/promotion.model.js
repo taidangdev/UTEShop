@@ -40,6 +40,10 @@ const Promotion = sequelize.define(
             type: DataTypes.DECIMAL(12, 2),
             allowNull: true
         },
+        maxDiscountAmount: {
+            type: DataTypes.DECIMAL(12, 2),
+            allowNull: true
+        },
         /** @deprecated Prefer promotion_categories — kept for backward compatibility */
         categoryId: {
             type: DataTypes.INTEGER,

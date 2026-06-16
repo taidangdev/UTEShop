@@ -16,14 +16,7 @@ const SORT_OPTIONS = [
 
 const HERO_IMAGE = '/PremiumLaptop.png';
 
-const CATEGORY_DISPLAY: Record<string, string> = {
-    all: 'All Products',
-    merchandise: 'Merchandise',
-    'study-tools': 'Study Tools',
-    technology: 'Technology',
-    'student-life': 'Student Life',
-    'second-hand': 'Second-hand'
-};
+
 
 function categoryLabel(product: CatalogProduct) {
     const c = product.category;
@@ -270,7 +263,7 @@ export default function CategoriesPage() {
                                         }`}
                                     >
                                         <span className="text-sm font-medium">
-                                            {CATEGORY_DISPLAY[cat.slug] || cat.name}
+                                            {cat.name}
                                         </span>
                                         <span className="text-xs opacity-60">{cat.productCount}</span>
                                     </button>
