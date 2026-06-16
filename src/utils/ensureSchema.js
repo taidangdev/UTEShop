@@ -263,12 +263,32 @@ const ensurePromotionJoinTables = async (sequelize) => {
     }
 };
 
+const ensureCategoryIndexes = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+    try {
+        await qi.describeTable('categories');
+    } catch {
+        return;
+    }
+
+    try {
+        await qi.addIndex('categories', {
+            fields: ['parentId'],
+            name: 'categories_parent_id'
+        });
+        console.log('  + Index categories.parentId');
+    } catch (err) {
+        // index already exists
+    }
+};
+
 const ensureSchema = async (sequelize) => {
     await ensureUserColumns(sequelize);
     await ensureProductReviewColumns(sequelize);
     await ensurePromotionJoinTables(sequelize);
     await ensurePromotionColumns(sequelize);
     await ensureOrderPromotionColumns(sequelize);
+    await ensureCategoryIndexes(sequelize);
 };
 
 module.exports = {
