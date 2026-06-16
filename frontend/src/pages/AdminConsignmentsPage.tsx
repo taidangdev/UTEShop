@@ -333,7 +333,7 @@ export default function AdminConsignmentsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span
-                                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
                                                     STATUS_STYLES[item.status] || ''
                                                 }`}
                                             >

@@ -23,7 +23,8 @@ async function resolveCategoryIds(categorySlug) {
     return [category.id];
 }
 
-function mapProductRow(product, wishlistIds = new Set()) {
+function mapProductRow(product, wishlistIds) {
+    const idsSet = wishlistIds instanceof Set ? wishlistIds : new Set();
     const json = product.toJSON ? product.toJSON() : product;
     const primaryImage =
         json.images?.find((img) => img.isPrimary) || json.images?.[0] || null;
@@ -52,7 +53,7 @@ function mapProductRow(product, wishlistIds = new Set()) {
               }
             : null,
         majors: (json.majors || []).map((m) => ({ id: m.id, code: m.code, name: m.name })),
-        isWishlisted: wishlistIds.has(json.id)
+        isWishlisted: idsSet.has(json.id)
     };
 }
 
@@ -341,7 +342,7 @@ const productListInclude = [
     }
 ];
 
-const getSimilarProducts = async (productId, categoryId, limit = 4) => {
+const getSimilarProducts = async (productId, categoryId, limit = 4, wishlistIds = new Set()) => {
     if (!categoryId) return [];
 
     const rows = await Product.findAll({
@@ -359,7 +360,7 @@ const getSimilarProducts = async (productId, categoryId, limit = 4) => {
         limit: Math.min(12, Math.max(1, parseInt(limit, 10) || 4))
     });
 
-    return rows.map(mapProductRow);
+    return rows.map((r) => mapProductRow(r, wishlistIds));
 };
 
 const getProductBySlug = async (slug, userId) => {
@@ -420,9 +421,11 @@ const getProductBySlug = async (slug, userId) => {
 
     await product.increment('viewCount');
 
-    const isWishlisted = userId
-        ? Boolean(await Wishlist.findOne({ where: { userId, productId: product.id } }))
-        : false;
+    const wishlistIds = userId
+        ? new Set((await Wishlist.findAll({ where: { userId }, attributes: ['productId'] })).map((w) => w.productId))
+        : new Set();
+
+    const isWishlisted = wishlistIds.has(product.id);
 
     const buyersQuery = await sequelize.query(`
         SELECT COUNT(DISTINCT IFNULL(o.userId, o.guestEmail)) as count
@@ -449,7 +452,8 @@ const getProductBySlug = async (slug, userId) => {
     const similarProducts = await getSimilarProducts(
         mapped.id,
         product.categoryId,
-        4
+        4,
+        wishlistIds
     );
 
     return { product: mapped, similarProducts };

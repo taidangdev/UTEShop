@@ -296,7 +296,7 @@ export default function ConsignmentPage() {
                                                 <div className="min-w-0 flex-1">
                                                     <div className="mb-1.5 flex flex-wrap items-center gap-2">
                                                         <span
-                                                            className={`rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${ui.bgClass} ${ui.textClass}`}
+                                                            className={`inline-block whitespace-nowrap rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${ui.bgClass} ${ui.textClass}`}
                                                         >
                                                             {ui.label}
                                                         </span>
