@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../components/admin/AdminLayout';
+import AdminPagination from '../components/admin/AdminPagination';
 import {
     createAdminProduct,
     deleteAdminProduct,
@@ -188,6 +189,17 @@ export default function AdminProductsPage() {
         loadFormOptions();
     }, [loadFormOptions]);
 
+    // Debounce search input to filter automatically as the user types
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setSearch(searchInput.trim());
+        }, 300);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchInput]);
+
     useEffect(() => {
         loadProducts(1);
     }, [statusFilter, search, categoryFilter]);
@@ -300,23 +312,6 @@ export default function AdminProductsPage() {
         <AdminLayout
             title="Quản lý sản phẩm"
             subtitle="Thêm, chỉnh sửa và quản lý danh mục sản phẩm trên cửa hàng."
-            headerExtra={
-                <div className="relative w-full max-w-md">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-                        search
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Tìm tên, SKU, slug..."
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') setSearch(searchInput.trim());
-                        }}
-                        className="h-10 w-full rounded-full border-none bg-surface-container-low pl-10 pr-4 text-sm outline-none ring-1 ring-transparent focus:ring-primary/40"
-                    />
-                </div>
-            }
         >
             <section className="rounded-[24px] bg-surface-container-lowest p-5 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -358,38 +353,69 @@ export default function AdminProductsPage() {
                     </button>
                 </div>
 
-                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
-                    <select
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="h-10 rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm"
-                    >
-                        <option value="">Tất cả danh mục</option>
-                        {leafCategories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                                {category.label}
-                            </option>
-                        ))}
-                    </select>
-                    <button
-                        type="button"
-                        onClick={() => setSearch(searchInput.trim())}
-                        className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary"
-                    >
-                        Tìm kiếm
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSearchInput('');
-                            setSearch('');
-                            setCategoryFilter('');
-                            setStatusFilter('all');
-                        }}
-                        className="h-10 rounded-xl border border-outline-variant/50 px-4 text-sm font-semibold"
-                    >
-                        Xóa bộ lọc
-                    </button>
+                <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+                    <div className="relative flex-1">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                            search
+                        </span>
+                        <input
+                            type="text"
+                            placeholder="Tìm tên, SKU, slug..."
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') setSearch(searchInput.trim());
+                            }}
+                            className="h-10 w-full rounded-xl border border-outline-variant/40 bg-surface pl-10 pr-10 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                        />
+                        {searchInput && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearchInput('');
+                                    setSearch('');
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">
+                                    close
+                                </span>
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            className="h-10 rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                        >
+                            <option value="">Tất cả danh mục</option>
+                            {leafCategories.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.label}
+                                </option>
+                            ))}
+                        </select>
+                        <button
+                            type="button"
+                            onClick={() => setSearch(searchInput.trim())}
+                            className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-on-primary hover:bg-primary/90 transition"
+                        >
+                            Tìm kiếm
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearchInput('');
+                                setSearch('');
+                                setCategoryFilter('');
+                                setStatusFilter('all');
+                            }}
+                            className="h-10 rounded-xl border border-outline-variant/50 px-4 text-sm font-semibold hover:bg-surface-container-low transition"
+                        >
+                            Xóa bộ lọc
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -414,7 +440,7 @@ export default function AdminProductsPage() {
                                     <th className="px-6 py-4 text-outline">Danh mục</th>
                                     <th className="px-6 py-4 text-outline">Giá</th>
                                     <th className="px-6 py-4 text-outline">Tồn kho</th>
-                                    <th className="px-6 py-4 text-outline">Trạng thái</th>
+                                    <th className="whitespace-nowrap px-6 py-4 text-outline">Trạng thái</th>
                                     <th className="px-6 py-4 text-outline">Cập nhật</th>
                                     <th className="px-6 py-4 text-outline">Thao tác</th>
                                 </tr>
@@ -465,9 +491,9 @@ export default function AdminProductsPage() {
                                             {formatCurrency(product.price)}
                                         </td>
                                         <td className="px-6 py-4">{product.stockQuantity}</td>
-                                        <td className="px-6 py-4">
+                                        <td className="whitespace-nowrap px-6 py-4">
                                             <span
-                                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                                className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${
                                                     STATUS_STYLES[product.status] ||
                                                     STATUS_STYLES.draft
                                                 }`}
@@ -512,32 +538,13 @@ export default function AdminProductsPage() {
                         )}
                     </div>
 
-                    {pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-between border-t border-surface-container px-6 py-4">
-                            <p className="text-sm text-on-surface-variant">
-                                Trang {pagination.page}/{pagination.totalPages} — {pagination.total}{' '}
-                                sản phẩm
-                            </p>
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    disabled={pagination.page <= 1}
-                                    onClick={() => loadProducts(pagination.page - 1)}
-                                    className="rounded-xl border border-outline-variant/50 px-4 py-2 text-sm font-semibold disabled:opacity-40"
-                                >
-                                    Trước
-                                </button>
-                                <button
-                                    type="button"
-                                    disabled={pagination.page >= pagination.totalPages}
-                                    onClick={() => loadProducts(pagination.page + 1)}
-                                    className="rounded-xl border border-outline-variant/50 px-4 py-2 text-sm font-semibold disabled:opacity-40"
-                                >
-                                    Sau
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <AdminPagination
+                        page={pagination.page}
+                        totalPages={pagination.totalPages}
+                        total={pagination.total}
+                        itemLabel="sản phẩm"
+                        onPageChange={loadProducts}
+                    />
                 </section>
             )}
 

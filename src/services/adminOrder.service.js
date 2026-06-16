@@ -154,7 +154,7 @@ function mapAdminOrderRow(order) {
         deliveryFailCount: order.deliveryFailCount || 0,
         maxDeliveryAttempts: MAX_DELIVERY_ATTEMPTS,
         deliveryType: snapshot.deliveryType || null,
-        itemCount: order.items?.length || 0,
+        itemCount: order.getDataValue ? (order.getDataValue('itemCount') || 0) : (order.items?.length || 0),
         allowedNextStatuses: getAllowedNextStatuses(order)
     };
 }
@@ -266,6 +266,18 @@ async function listOrders({
 
     const { rows, count } = await Order.findAndCountAll({
         where,
+        attributes: {
+            include: [
+                [
+                    sequelize.literal(`(
+                        SELECT COUNT(*)
+                        FROM order_items AS items
+                        WHERE items.orderId = Order.id
+                    )`),
+                    'itemCount'
+                ]
+            ]
+        },
         include: [
             {
                 model: User,
@@ -277,17 +289,13 @@ async function listOrders({
                 model: Payment,
                 as: 'payment',
                 required: false
-            },
-            {
-                model: OrderItem,
-                as: 'items',
-                attributes: ['id']
             }
         ],
         order: [['placedAt', 'DESC']],
         limit: safeLimit,
         offset,
-        distinct: true
+        distinct: true,
+        subQuery: false
     });
 
     const statusCounts = await Order.findAll({
