@@ -263,12 +263,46 @@ const ensurePromotionJoinTables = async (sequelize) => {
     }
 };
 
+const ensureOrderDeliveryColumns = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+
+    try {
+        const orders = await qi.describeTable('orders');
+        const addOrderCol = async (name, spec) => {
+            if (!orders[name]) {
+                await qi.addColumn('orders', name, spec);
+                console.log(`  + orders.${name}`);
+                orders[name] = spec;
+            }
+        };
+
+        await addOrderCol('deliveryFailCount', {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        });
+        await addOrderCol('returnedAt', { type: DataTypes.DATE, allowNull: true });
+
+        try {
+            await sequelize.query(
+                "ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'delivered', 'returned', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending'"
+            );
+            console.log('  + Verified orders.status ENUM values');
+        } catch (err) {
+            console.warn('  ! Warning updating orders.status ENUM:', err.message);
+        }
+    } catch {
+        // orders table missing
+    }
+};
+
 const ensureSchema = async (sequelize) => {
     await ensureUserColumns(sequelize);
     await ensureProductReviewColumns(sequelize);
     await ensurePromotionJoinTables(sequelize);
     await ensurePromotionColumns(sequelize);
     await ensureOrderPromotionColumns(sequelize);
+    await ensureOrderDeliveryColumns(sequelize);
 };
 
 module.exports = {
@@ -276,6 +310,7 @@ module.exports = {
     ensureProductReviewColumns,
     ensurePromotionColumns,
     ensureOrderPromotionColumns,
+    ensureOrderDeliveryColumns,
     ensurePromotionJoinTables,
     ensureSchema
 };

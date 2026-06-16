@@ -12,7 +12,9 @@ const STATUS_STYLES: Record<string, string> = {
     confirmed: 'bg-primary/10 text-primary',
     processing: 'bg-secondary-container text-on-secondary-container',
     shipping: 'bg-tertiary-container text-on-tertiary-container',
+    delivery_failed: 'bg-error-container/70 text-on-error-container',
     delivered: 'bg-primary/10 text-primary',
+    returned: 'bg-error-container text-on-error-container',
     cancelled: 'bg-error-container text-on-error-container',
     refunded: 'bg-error-container text-on-error-container'
 };
@@ -29,6 +31,8 @@ const ACTION_STYLES: Record<string, string> = {
     processing: 'bg-primary text-on-primary hover:bg-primary/90',
     shipping: 'bg-tertiary text-on-tertiary hover:bg-tertiary/90',
     delivered: 'bg-primary text-on-primary hover:bg-primary/90',
+    delivery_failed: 'border border-error text-error hover:bg-error-container',
+    returned: 'border border-error text-error hover:bg-error-container',
     cancelled: 'border border-error text-error hover:bg-error-container',
     refunded: 'border border-error text-error hover:bg-error-container'
 };
@@ -520,6 +524,21 @@ export default function AdminOrdersPage() {
                                                 {formatDate(selectedOrder.deliveredAt)}
                                             </p>
                                         )}
+                                        {selectedOrder.returnedAt && (
+                                            <p>
+                                                <span className="text-on-surface-variant">
+                                                    Hoàn trả:
+                                                </span>{' '}
+                                                {formatDate(selectedOrder.returnedAt)}
+                                            </p>
+                                        )}
+                                        {(selectedOrder.deliveryFailCount > 0 ||
+                                            selectedOrder.status === 'delivery_failed') && (
+                                            <p className="mt-2 font-semibold text-error">
+                                                Lần giao thất bại: {selectedOrder.deliveryFailCount}/
+                                                {selectedOrder.maxDeliveryAttempts}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="mb-2 block text-xs font-semibold uppercase text-on-surface-variant">
@@ -537,9 +556,23 @@ export default function AdminOrdersPage() {
 
                                 {selectedOrder.allowedNextStatuses.length > 0 && (
                                     <div className="rounded-2xl border border-outline-variant/30 p-4">
-                                        <p className="mb-3 text-sm font-semibold">
+                                        <p className="mb-1 text-sm font-semibold">
                                             Cập nhật trạng thái
                                         </p>
+                                        {selectedOrder.status === 'shipping' && (
+                                            <p className="mb-3 text-xs text-on-surface-variant">
+                                                Nếu giao thất bại lần thứ 3, đơn sẽ tự chuyển sang
+                                                Hoàn trả hàng.
+                                            </p>
+                                        )}
+                                        {selectedOrder.status === 'delivery_failed' && (
+                                            <p className="mb-3 text-xs text-on-surface-variant">
+                                                {selectedOrder.deliveryFailCount <
+                                                selectedOrder.maxDeliveryAttempts
+                                                    ? `Còn ${selectedOrder.maxDeliveryAttempts - selectedOrder.deliveryFailCount} lần giao lại trước khi hoàn trả tự động.`
+                                                    : 'Đã đạt giới hạn giao lại — chỉ có thể hoàn trả hàng.'}
+                                            </p>
+                                        )}
                                         <div className="flex flex-wrap gap-2">
                                             {selectedOrder.allowedNextStatuses.map((action) => (
                                                 <button

@@ -12,7 +12,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: string; colorClass: s
     confirmed: { label: 'Đã xác nhận đơn hàng', icon: 'check_circle', colorClass: 'bg-primary/10 text-primary', step: 2 },
     processing: { label: 'Đang chuẩn bị hàng', icon: 'inventory_2', colorClass: 'bg-secondary-container text-on-secondary-container', step: 3 },
     shipping: { label: 'Đang giao hàng', icon: 'local_shipping', colorClass: 'bg-tertiary-container text-on-tertiary-container', step: 4 },
+    delivery_failed: { label: 'Giao hàng thất bại', icon: 'error', colorClass: 'bg-error-container text-on-error-container', step: 4 },
     delivered: { label: 'Đã giao thành công', icon: 'task_alt', colorClass: 'bg-success/10 text-success', step: 5 },
+    returned: { label: 'Hoàn trả hàng', icon: 'undo', colorClass: 'bg-error-container text-on-error-container', step: 0 },
     cancelled: { label: 'Đã hủy đơn hàng', icon: 'cancel', colorClass: 'bg-error-container text-on-error-container', step: 0 },
     refunded: { label: 'Đã hoàn tiền', icon: 'keyboard_return', colorClass: 'bg-error-container text-on-error-container', step: 0 }
 };
@@ -116,9 +118,13 @@ export default function OrderTrackingPage() {
     }
 
     const currentStatus = order.status;
-    const isCancelledOrRefunded = currentStatus === 'cancelled' || currentStatus === 'refunded';
+    const isTerminalFailure =
+        currentStatus === 'cancelled' ||
+        currentStatus === 'refunded' ||
+        currentStatus === 'returned';
     const statusConfig = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.pending;
     const currentStep = statusConfig.step;
+    const deliveryFailCount = order.deliveryFailCount || 0;
 
     // Helper to format date
     const formatDate = (dateStr: string | null) => {
@@ -179,16 +185,42 @@ export default function OrderTrackingPage() {
 
                     {/* Order Tracking Progress Stepper */}
                     <div className="p-8 border-b border-outline-variant/30">
-                        {isCancelledOrRefunded ? (
+                        {currentStatus === 'delivery_failed' && (
+                            <div className="mb-6 rounded-2xl border border-error/20 bg-error-container/20 p-4">
+                                <p className="text-sm font-semibold text-error">
+                                    Giao hàng không thành công ({deliveryFailCount}/3 lần)
+                                </p>
+                                <p className="mt-1 text-sm text-on-surface-variant">
+                                    Shop đang sắp xếp giao lại. Nếu sau 3 lần vẫn không giao được,
+                                    đơn hàng sẽ được hoàn trả.
+                                </p>
+                            </div>
+                        )}
+                        {isTerminalFailure ? (
                             <div className="flex flex-col items-center justify-center rounded-2xl bg-error-container/20 p-8 text-center border border-error/10">
                                 <span className="material-symbols-outlined text-[48px] text-error">
-                                    {currentStatus === 'cancelled' ? 'cancel' : 'keyboard_return'}
+                                    {currentStatus === 'cancelled'
+                                        ? 'cancel'
+                                        : currentStatus === 'returned'
+                                          ? 'undo'
+                                          : 'keyboard_return'}
                                 </span>
                                 <h3 className="mt-3 text-lg font-bold text-error">
-                                    {currentStatus === 'cancelled' ? 'Đơn hàng đã bị Hủy' : 'Đơn hàng đã Hoàn tiền'}
+                                    {currentStatus === 'cancelled'
+                                        ? 'Đơn hàng đã bị Hủy'
+                                        : currentStatus === 'returned'
+                                          ? 'Đơn hàng đã Hoàn trả'
+                                          : 'Đơn hàng đã Hoàn tiền'}
                                 </h3>
                                 <p className="mt-1 max-w-lg text-sm text-on-error-container">
-                                    Đơn hàng này được cập nhật trạng thái lúc: {formatDate(order.placedAt || new Date().toISOString())}.
+                                    {currentStatus === 'returned' && order.returnedAt
+                                        ? `Hoàn trả lúc: ${formatDate(order.returnedAt)}.`
+                                        : `Đơn hàng này được cập nhật trạng thái lúc: ${formatDate(order.placedAt || new Date().toISOString())}.`}
+                                    {deliveryFailCount > 0 && currentStatus === 'returned' && (
+                                        <span className="block mt-1">
+                                            Đã giao thất bại {deliveryFailCount} lần trước khi hoàn trả.
+                                        </span>
+                                    )}
                                     {order.adminNote && (
                                         <span className="block mt-2 italic font-medium">Lý do: &quot;{order.adminNote}&quot;</span>
                                     )}

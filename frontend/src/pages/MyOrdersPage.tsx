@@ -14,7 +14,9 @@ const TABS = [
   { id: "confirmed", label: "Đã xác nhận" },
   { id: "processing", label: "Chuẩn bị hàng" },
   { id: "shipping", label: "Đang giao" },
+  { id: "delivery_failed", label: "Giao thất bại" },
   { id: "delivered", label: "Đã giao" },
+  { id: "returned", label: "Hoàn trả" },
   { id: "cancelled", label: "Đã hủy" },
   { id: "refunded", label: "Đã hoàn tiền" },
 ];

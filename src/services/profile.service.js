@@ -28,6 +28,11 @@ const STATUS_UI = {
         statusClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant',
         progress: 3
     },
+    delivery_failed: {
+        label: 'Giao thất bại',
+        statusClass: 'bg-error-container/60 text-on-error-container',
+        progress: 3
+    },
     delivered: {
         label: 'Đã giao thành công',
         statusClass: 'bg-surface-container-highest text-on-surface-variant',
@@ -40,6 +45,11 @@ const STATUS_UI = {
     },
     refunded: {
         label: 'Đã hoàn tiền',
+        statusClass: 'bg-error-container text-on-error-container',
+        progress: 0
+    },
+    returned: {
+        label: 'Hoàn trả hàng',
         statusClass: 'bg-error-container text-on-error-container',
         progress: 0
     }
@@ -75,6 +85,15 @@ function orderDetailText(order) {
     if (order.status === 'shipping') {
         return placed ? `Shipped — placed ${placed}` : 'On the way to you';
     }
+    if (order.status === 'delivery_failed') {
+        const count = order.deliveryFailCount || 0;
+        return `Giao thất bại (${count}/3 lần) — shop sẽ giao lại`;
+    }
+    if (order.status === 'returned') {
+        return order.returnedAt
+            ? `Hoàn trả ngày ${formatDate(order.returnedAt)}`
+            : 'Đơn hàng đã hoàn trả';
+    }
     if (order.status === 'cancelled') {
         return order.cancelledAt
             ? `Cancelled on ${formatDate(order.cancelledAt)}`
@@ -106,7 +125,9 @@ function mapOrderRow(order) {
             : first.productName
         : 'Order items';
 
-    const isActive = ['pending', 'confirmed', 'processing', 'shipping'].includes(order.status);
+    const isActive = ['pending', 'confirmed', 'processing', 'shipping', 'delivery_failed'].includes(
+        order.status
+    );
 
     return {
         id: order.id,

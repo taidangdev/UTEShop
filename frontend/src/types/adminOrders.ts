@@ -22,6 +22,9 @@ export interface AdminOrderListItem {
     shippedAt: string | null;
     deliveredAt: string | null;
     cancelledAt: string | null;
+    returnedAt: string | null;
+    deliveryFailCount: number;
+    maxDeliveryAttempts: number;
     deliveryType: string | null;
     itemCount: number;
     allowedNextStatuses: AdminOrderStatusOption[];

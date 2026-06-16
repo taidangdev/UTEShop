@@ -78,6 +78,11 @@ export interface OrderDto {
     items: OrderItemDto[];
     payment: OrderPaymentDto | null;
     adminNote?: string | null;
+    deliveryFailCount?: number;
+    shippedAt?: string | null;
+    deliveredAt?: string | null;
+    returnedAt?: string | null;
+    cancelledAt?: string | null;
 }
 
 export interface PlaceOrderResponseData {

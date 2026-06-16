@@ -11,14 +11,25 @@ const {
 const { STATUS_LABELS, ORDER_STATUSES } = require('./adminDashboard.service');
 const notificationService = require('./notification.service');
 
+const MAX_DELIVERY_ATTEMPTS = 3;
+
 const ADMIN_TRANSITIONS = {
     pending: ['confirmed', 'cancelled'],
     confirmed: ['processing', 'cancelled', 'refunded'],
     processing: ['shipping', 'cancelled'],
-    shipping: ['delivered'],
+    shipping: ['delivered', 'delivery_failed'],
+    delivery_failed: ['shipping', 'returned'],
     delivered: [],
+    returned: [],
     cancelled: [],
     refunded: []
+};
+
+/** Nhãn nút hành động admin (ưu tiên hơn STATUS_LABELS cho một số chuyển trạng thái) */
+const ACTION_LABELS = {
+    delivery_failed: 'Giao thất bại',
+    shipping: 'Giao lại',
+    returned: 'Hoàn trả hàng'
 };
 
 const STATUS_NOTIFICATIONS = {
@@ -50,6 +61,16 @@ const STATUS_NOTIFICATIONS = {
         title: '💸 Đơn hàng đã được hoàn tiền',
         content: (orderNumber) =>
             `Đơn hàng ${orderNumber} đã được hủy và chuyển trạng thái hoàn tiền.`
+    },
+    delivery_failed: {
+        title: '⚠️ Giao hàng không thành công',
+        content: (orderNumber) =>
+            `Đơn hàng ${orderNumber} giao không thành công. Shop sẽ liên hệ và giao lại sớm nhất.`
+    },
+    returned: {
+        title: '📦 Đơn hàng đã hoàn trả',
+        content: (orderNumber) =>
+            `Đơn hàng ${orderNumber} đã được hoàn trả sau nhiều lần giao không thành công.`
     }
 };
 
@@ -65,8 +86,41 @@ function parseDateInput(value) {
     return parsed;
 }
 
-function getAllowedNextStatuses(currentStatus) {
-    return ADMIN_TRANSITIONS[currentStatus] || [];
+function getAllowedNextStatuses(order) {
+    const currentStatus = order.status;
+    const failCount = order.deliveryFailCount || 0;
+    const base = ADMIN_TRANSITIONS[currentStatus] || [];
+
+    return base
+        .filter((nextStatus) => {
+            if (currentStatus === 'delivery_failed' && nextStatus === 'shipping') {
+                return failCount < MAX_DELIVERY_ATTEMPTS;
+            }
+            return true;
+        })
+        .map((nextStatus) => ({
+            status: nextStatus,
+            label:
+                currentStatus === 'delivery_failed' && nextStatus === 'shipping'
+                    ? ACTION_LABELS.shipping
+                    : currentStatus === 'shipping' && nextStatus === 'delivery_failed'
+                      ? ACTION_LABELS.delivery_failed
+                      : ACTION_LABELS[nextStatus] || STATUS_LABELS[nextStatus] || nextStatus
+        }));
+}
+
+function resolveStatusTransition(order, requestedStatus) {
+    const currentStatus = order.status;
+
+    if (currentStatus === 'shipping' && requestedStatus === 'delivery_failed') {
+        const nextCount = (order.deliveryFailCount || 0) + 1;
+        if (nextCount >= MAX_DELIVERY_ATTEMPTS) {
+            return { resolvedStatus: 'returned', incrementFailCount: true };
+        }
+        return { resolvedStatus: 'delivery_failed', incrementFailCount: true };
+    }
+
+    return { resolvedStatus: requestedStatus, incrementFailCount: false };
 }
 
 function mapAdminOrderRow(order) {
@@ -96,12 +150,12 @@ function mapAdminOrderRow(order) {
         shippedAt: order.shippedAt,
         deliveredAt: order.deliveredAt,
         cancelledAt: order.cancelledAt,
+        returnedAt: order.returnedAt,
+        deliveryFailCount: order.deliveryFailCount || 0,
+        maxDeliveryAttempts: MAX_DELIVERY_ATTEMPTS,
         deliveryType: snapshot.deliveryType || null,
         itemCount: order.items?.length || 0,
-        allowedNextStatuses: getAllowedNextStatuses(order.status).map((status) => ({
-            status,
-            label: STATUS_LABELS[status] || status
-        }))
+        allowedNextStatuses: getAllowedNextStatuses(order)
     };
 }
 
@@ -302,9 +356,19 @@ async function getOrderDetail(orderNumber) {
     return { order: mapAdminOrderDetail(order) };
 }
 
-async function applyStatusSideEffects(order, payment, newStatus, transaction) {
+async function applyStatusSideEffects(
+    order,
+    payment,
+    newStatus,
+    { previousStatus, incrementFailCount },
+    transaction
+) {
     const now = new Date();
     const orderUpdates = { status: newStatus };
+
+    if (incrementFailCount) {
+        orderUpdates.deliveryFailCount = (order.deliveryFailCount || 0) + 1;
+    }
 
     if (newStatus === 'confirmed') {
         if (payment) {
@@ -328,6 +392,14 @@ async function applyStatusSideEffects(order, payment, newStatus, transaction) {
         if (payment && payment.method === 'cod' && payment.status === 'pending') {
             await payment.update({ status: 'paid', paidAt: now }, { transaction });
             orderUpdates.paidAt = now;
+        }
+    }
+
+    if (newStatus === 'returned') {
+        orderUpdates.returnedAt = now;
+        if (payment) {
+            const paymentStatus = payment.status === 'paid' ? 'refunded' : 'failed';
+            await payment.update({ status: paymentStatus }, { transaction });
         }
     }
 
@@ -378,7 +450,13 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             throw err;
         }
 
-        const allowedNext = ADMIN_TRANSITIONS[order.status] || [];
+        const allowedNext = (ADMIN_TRANSITIONS[order.status] || []).filter((nextStatus) => {
+            if (order.status === 'delivery_failed' && nextStatus === 'shipping') {
+                return (order.deliveryFailCount || 0) < MAX_DELIVERY_ATTEMPTS;
+            }
+            return true;
+        });
+
         if (!allowedNext.includes(newStatus)) {
             const err = new Error(
                 `Cannot transition from "${order.status}" to "${newStatus}"`
@@ -387,7 +465,14 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             throw err;
         }
 
-        const shouldRestoreStock = ['cancelled', 'refunded'].includes(newStatus);
+        const { resolvedStatus, incrementFailCount } = resolveStatusTransition(
+            order,
+            newStatus
+        );
+
+        const shouldRestoreStock = ['cancelled', 'refunded', 'returned'].includes(
+            resolvedStatus
+        );
         if (shouldRestoreStock) {
             for (const item of order.items) {
                 await incrementStock(
@@ -405,7 +490,10 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             await order.update({ adminNote: adminNote || null }, { transaction });
         }
 
-        await applyStatusSideEffects(order, order.payment, newStatus, transaction);
+        await applyStatusSideEffects(order, order.payment, resolvedStatus, {
+            previousStatus: order.status,
+            incrementFailCount
+        }, transaction);
 
         await transaction.commit();
 
@@ -423,7 +511,7 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             ]
         });
 
-        const notification = STATUS_NOTIFICATIONS[newStatus];
+        const notification = STATUS_NOTIFICATIONS[resolvedStatus];
         if (notification && order.userId) {
             notificationService
                 .createNotification({
@@ -450,5 +538,6 @@ module.exports = {
     getOrderDetail,
     updateOrderStatus,
     getAllowedNextStatuses,
-    ADMIN_TRANSITIONS
+    ADMIN_TRANSITIONS,
+    MAX_DELIVERY_ATTEMPTS
 };
