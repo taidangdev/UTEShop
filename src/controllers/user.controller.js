@@ -2,6 +2,7 @@ const userService = require('../services/user.service');
 const profileService = require('../services/profile.service');
 const loyaltyService = require('../services/loyalty.service');
 const couponService = require('../services/coupon.service');
+const addressService = require('../services/address.service');
 const { successResponse } = require('../utils/responseHandler');
 
 const getMe = async (req, res, next) => {
@@ -103,6 +104,42 @@ const editProfile = async (req, res, next) => {
     }
 };
 
+const getMyAddresses = async (req, res, next) => {
+    try {
+        const addresses = await addressService.listAddresses(req.user.id);
+        return successResponse(res, 200, 'Lấy danh sách địa chỉ thành công', { addresses });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const createAddress = async (req, res, next) => {
+    try {
+        const address = await addressService.createAddress(req.user.id, req.body);
+        return successResponse(res, 201, 'Thêm địa chỉ thành công', { address });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const setDefaultAddress = async (req, res, next) => {
+    try {
+        const address = await addressService.setDefaultAddress(req.user.id, req.params.id);
+        return successResponse(res, 200, 'Thiết lập địa chỉ mặc định thành công', { address });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteAddress = async (req, res, next) => {
+    try {
+        await addressService.deleteAddress(req.user.id, req.params.id);
+        return successResponse(res, 200, 'Xóa địa chỉ thành công');
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getMe,
     getMyOrders,
@@ -110,5 +147,9 @@ module.exports = {
     getMyPoints,
     getMyCoupons,
     requestEditProfileOtp,
-    editProfile
+    editProfile,
+    getMyAddresses,
+    createAddress,
+    setDefaultAddress,
+    deleteAddress
 };

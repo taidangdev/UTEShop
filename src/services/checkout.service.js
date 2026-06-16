@@ -48,11 +48,16 @@ function normalizeInformation(raw = {}) {
         discountCode: String(raw.discountCode || '').trim(),
         appliedDiscountCode: String(raw.appliedDiscountCode || raw.discountCode || '').trim(),
         userCouponCode: String(raw.userCouponCode || '').trim(),
-        pointsToRedeem: Math.max(0, parseInt(raw.pointsToRedeem, 10) || 0)
+        pointsToRedeem: Math.max(0, parseInt(raw.pointsToRedeem, 10) || 0),
+        addressId: raw.addressId ? parseInt(raw.addressId, 10) : null,
+        saveAddress: !!raw.saveAddress
     };
 }
 
 function validateInformation(info) {
+    if (info.addressId) {
+        return;
+    }
     if (!info.fullName) {
         const err = new Error('Full name is required');
         err.statusCode = 400;
@@ -266,6 +271,25 @@ function buildShippingSnapshot(information) {
 
 async function previewCheckout(cartContext, { productIds, information: rawInformation }) {
     const information = normalizeInformation(rawInformation);
+    
+    if (cartContext.userId && information.addressId) {
+        const addr = await Address.findOne({
+            where: { id: information.addressId, userId: cartContext.userId }
+        });
+        if (!addr) {
+            const err = new Error('Địa chỉ không tồn tại hoặc không thuộc về bạn');
+            err.statusCode = 400;
+            throw err;
+        }
+        information.fullName = addr.recipientName;
+        information.phone = addr.phone;
+        information.street = addr.line1;
+        information.city = addr.city;
+        information.state = addr.district || '';
+        information.postalCode = addr.line2 || '';
+        information.deliveryType = addr.ward === 'Campus Delivery' ? 'campus' : 'home';
+    }
+    
     validateInformation(information);
 
     const cart = await ensureCart(cartContext);
@@ -379,6 +403,25 @@ async function placeOrder(
     { productIds, information: rawInformation, paymentMethod: rawPaymentMethod }
 ) {
     const information = normalizeInformation(rawInformation);
+    
+    if (userId && information.addressId) {
+        const addr = await Address.findOne({
+            where: { id: information.addressId, userId }
+        });
+        if (!addr) {
+            const err = new Error('Địa chỉ không tồn tại hoặc không thuộc về bạn');
+            err.statusCode = 400;
+            throw err;
+        }
+        information.fullName = addr.recipientName;
+        information.phone = addr.phone;
+        information.street = addr.line1;
+        information.city = addr.city;
+        information.state = addr.district || '';
+        information.postalCode = addr.line2 || '';
+        information.deliveryType = addr.ward === 'Campus Delivery' ? 'campus' : 'home';
+    }
+    
     validateInformation(information);
 
     const paymentMethod = rawPaymentMethod || 'cash';
@@ -409,8 +452,12 @@ async function placeOrder(
     try {
         let shippingAddressId = null;
         if (userId) {
-            const address = await saveUserAddress(userId, information, transaction);
-            shippingAddressId = address.id;
+            if (information.addressId) {
+                shippingAddressId = information.addressId;
+            } else if (information.saveAddress) {
+                const address = await saveUserAddress(userId, information, transaction);
+                shippingAddressId = address.id;
+            }
         }
 
         const now = new Date();
@@ -722,61 +769,69 @@ async function cancelOrderForUser(orderNumber, userId) {
     }
 }
 
-async function autoConfirmPendingOrders() {
+async function autoCancelPendingOrders() {
     const { Op } = require('sequelize');
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const ordersToConfirm = await Order.findAll({
+    const ordersToCancel = await Order.findAll({
         where: {
             status: 'pending',
             placedAt: {
-                [Op.lte]: fiveMinutesAgo
+                [Op.lte]: twentyFourHoursAgo
             }
         },
-        include: [{ model: Payment, as: 'payment' }]
+        include: [
+            { model: OrderItem, as: 'items' },
+            { model: Payment, as: 'payment' }
+        ]
     });
 
-    if (ordersToConfirm.length === 0) return 0;
+    if (ordersToCancel.length === 0) return 0;
 
     let count = 0;
-    for (const order of ordersToConfirm) {
+    for (const order of ordersToCancel) {
         const transaction = await sequelize.transaction();
         try {
             await order.update({
-                status: 'confirmed'
+                status: 'cancelled',
+                cancelledAt: new Date()
             }, { transaction });
 
             if (order.payment) {
-                const nonCodMethods = ['bank_transfer', 'momo', 'vnpay'];
-                if (nonCodMethods.includes(order.payment.method)) {
-                    await order.payment.update({
-                        status: 'paid',
-                        paidAt: new Date()
-                    }, { transaction });
+                await order.payment.update({
+                    status: 'failed'
+                }, { transaction });
+            }
 
-                    await order.update({
-                        paidAt: new Date()
-                    }, { transaction });
-                }
+            // Restore stock
+            for (const item of order.items) {
+                await incrementStock(
+                    {
+                        productId: item.productId,
+                        variantId: item.variantId,
+                        quantity: item.quantity
+                    },
+                    transaction
+                );
             }
 
             await transaction.commit();
             count++;
-            console.log(`[AutoConfirm] Successfully confirmed order: ${order.orderNumber}`);
+            console.log(`[AutoCancel] Successfully cancelled unpaid order: ${order.orderNumber}`);
 
-            // Real-time notification cho user khi đơn hàng tự động duyệt
+            // Send notification to customer
             if (order.userId) {
                 notificationService.createNotification({
                     userId: order.userId,
-                    title: `✅ Đơn hàng đã được xác nhận tự động`,
-                    content: `Đơn hàng ${order.orderNumber} của bạn đã được hệ thống tự động xác nhận.`,
+                    title: `❌ Đơn hàng đã bị hủy tự động`,
+                    content: `Đơn hàng ${order.orderNumber} của bạn đã bị hủy tự động do quá thời hạn thanh toán 24 giờ.`,
                     type: 'order_status_update',
                     relatedId: order.orderNumber
-                }).catch(err => console.error('Error sending auto-confirm notification:', err));
+                }).catch(err => console.error('Error sending auto-cancel notification:', err));
             }
         } catch (err) {
             await transaction.rollback();
-            console.error(`[AutoConfirm] Failed to confirm order ${order.orderNumber}:`, err);
+            console.error(`[AutoCancel] Failed to cancel order ${order.orderNumber}:`, err);
         }
     }
 
@@ -795,7 +850,7 @@ module.exports = {
     placeOrder,
     getOrderForUser,
     cancelOrderForUser,
-    autoConfirmPendingOrders,
+    autoCancelPendingOrders,
     validatePromotionForCart,
     normalizeInformation,
     buildCheckoutLines,

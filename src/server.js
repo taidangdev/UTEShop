@@ -35,9 +35,9 @@ const startServer = async () => {
         server.listen(PORT, () => {
             console.log(`🚀 Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
             
-            // Khởi chạy scheduler duyệt đơn tự động sau 5 phút
-            const { startAutoConfirmScheduler } = require('./services/orderScheduler.service');
-            startAutoConfirmScheduler();
+            // Khởi chạy scheduler tự động hủy đơn sau 24h nếu chưa thanh toán
+            const { startAutoCancelScheduler } = require('./services/orderScheduler.service');
+            startAutoCancelScheduler();
         });
     } catch (error) {
         console.error('❌ Failed to connect to services:', error);

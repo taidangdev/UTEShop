@@ -122,12 +122,10 @@ export default function CheckoutPaymentPage() {
 
             clearCheckoutSession();
             clearLocalCart();
-            navigate('/cart', {
+            navigate(`/profile/orders/${result.order.orderNumber}`, {
                 replace: true,
                 state: {
-                    orderConfirmed: true,
-                    orderTotal: result.order.total,
-                    orderNumber: result.order.orderNumber
+                    justOrdered: true
                 }
             });
         } catch (err) {

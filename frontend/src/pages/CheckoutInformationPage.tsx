@@ -19,6 +19,8 @@ import {
     hasCheckoutSelection,
     saveCheckoutInformation
 } from '../utils/checkoutStorage';
+import { fetchMyAddresses } from '../services/addressApi';
+import type { UserAddress } from '../types/address';
 
 interface ProfileUser {
     fullName?: string | null;
@@ -35,6 +37,11 @@ export default function CheckoutInformationPage() {
     const { items: cartItems, loading: cartLoading } = useCheckoutCart();
     const [information, setInformation] = useState<CheckoutInformation>(() => getCheckoutInformation());
     const [formError, setFormError] = useState<string | null>(null);
+    const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+    const [showAddressForm, setShowAddressForm] = useState(true);
+    const [saveNewAddress, setSaveNewAddress] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userCoupons, setUserCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState(0);
     const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
@@ -57,27 +64,97 @@ export default function CheckoutInformationPage() {
 
     useEffect(() => {
         let cancelled = false;
-        async function prefillProfile() {
+        async function loadProfileAndAddresses() {
+            const token = getAccessToken();
+            if (!token) {
+                setShowAddressForm(true);
+                return;
+            }
+            setIsLoggedIn(true);
             try {
-                const res = await axiosInstance.get<ApiEnvelope<{ user: ProfileUser }>>('/users/me');
+                // Fetch profile
+                const profileRes = await axiosInstance.get<ApiEnvelope<{ user: ProfileUser }>>('/users/me');
                 if (cancelled) return;
-                const u = res.data.user;
-                setInformation((prev) => ({
-                    ...prev,
-                    fullName: prev.fullName || u.fullName || '',
-                    phone: prev.phone || u.phone || '',
-                    studentId: prev.studentId || u.studentId || '',
-                    street: prev.street || u.address || ''
-                }));
-            } catch {
-                // Guest or profile unavailable
+                const u = profileRes.data.user;
+
+                // Fetch addresses
+                const list = await fetchMyAddresses();
+                if (cancelled) return;
+
+                setSavedAddresses(list);
+                if (list.length > 0) {
+                    const defaultAddr = list.find((a) => a.isDefault) || list[0];
+                    setSelectedAddressId(defaultAddr.id);
+                    setShowAddressForm(false);
+                    setInformation((prev) => ({
+                        ...prev,
+                        addressId: defaultAddr.id,
+                        fullName: prev.fullName || defaultAddr.recipientName || u.fullName || '',
+                        phone: prev.phone || defaultAddr.phone || u.phone || '',
+                        street: prev.street || defaultAddr.line1 || u.address || '',
+                        city: prev.city || defaultAddr.city || '',
+                        state: prev.state || defaultAddr.district || '',
+                        postalCode: prev.postalCode || defaultAddr.line2 || '',
+                        deliveryType: defaultAddr.ward === 'Campus Delivery' ? 'campus' : 'home',
+                        studentId: prev.studentId || u.studentId || ''
+                    }));
+                } else {
+                    setShowAddressForm(true);
+                    setInformation((prev) => ({
+                        ...prev,
+                        fullName: prev.fullName || u.fullName || '',
+                        phone: prev.phone || u.phone || '',
+                        street: prev.street || u.address || '',
+                        studentId: prev.studentId || u.studentId || ''
+                    }));
+                }
+            } catch (err) {
+                if (cancelled) return;
+                setShowAddressForm(true);
             }
         }
-        prefillProfile();
+        loadProfileAndAddresses();
         return () => {
             cancelled = true;
         };
     }, []);
+
+    const handleSelectSavedAddress = (addr: UserAddress) => {
+        setSelectedAddressId(addr.id);
+        setShowAddressForm(false);
+        setInformation((prev) => ({
+            ...prev,
+            addressId: addr.id,
+            fullName: addr.recipientName,
+            phone: addr.phone,
+            street: addr.line1,
+            city: addr.city,
+            state: addr.district || '',
+            postalCode: addr.line2 || '',
+            deliveryType: addr.ward === 'Campus Delivery' ? 'campus' : 'home'
+        }));
+    };
+
+    const handleSelectNewAddress = () => {
+        setSelectedAddressId(null);
+        setShowAddressForm(true);
+        setInformation((prev) => ({
+            ...prev,
+            addressId: null,
+            fullName: '',
+            phone: '',
+            street: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            deliveryType: 'home'
+        }));
+    };
+
+    const handleSaveNewAddressChange = (checked: boolean) => {
+        setSaveNewAddress(checked);
+        updateField('saveAddress', checked);
+    };
 
     useEffect(() => {
         if (!getAccessToken()) return;
@@ -177,12 +254,13 @@ export default function CheckoutInformationPage() {
     };
 
     const validate = () => {
-        if (!information.fullName.trim()) return 'Full name is required';
-        if (!information.phone.trim()) return 'Phone number is required';
-        if (!information.street.trim()) return 'Street address is required';
-        if (!information.city.trim()) return 'City is required';
-        if (!information.state.trim()) return 'State / Province is required';
-        if (!information.postalCode.trim()) return 'Postal code is required';
+        if (selectedAddressId !== null) return null;
+        if (!information.fullName.trim()) return 'Họ và tên là bắt buộc';
+        if (!information.phone.trim()) return 'Số điện thoại là bắt buộc';
+        if (!information.street.trim()) return 'Địa chỉ chi tiết / Tòa nhà là bắt buộc';
+        if (!information.city.trim()) return 'Thành phố là bắt buộc';
+        if (!information.state.trim()) return 'Tỉnh / Thành phố là bắt buộc';
+        if (!information.postalCode.trim()) return 'Mã bưu điện là bắt buộc';
         return null;
     };
 
@@ -298,97 +376,189 @@ export default function CheckoutInformationPage() {
                                     <span className="material-symbols-outlined text-primary">local_shipping</span>
                                     <h2 className="text-3xl font-semibold text-on-surface">Delivery Address</h2>
                                 </div>
-                                <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => updateField('deliveryType', 'campus')}
-                                        className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 text-left transition-all ${
-                                            information.deliveryType === 'campus'
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-outline-variant bg-white hover:border-primary/50'
-                                        }`}
-                                    >
-                                        <span
-                                            className="material-symbols-outlined text-primary"
-                                            style={{ fontVariationSettings: "'FILL' 1" }}
-                                        >
-                                            school
-                                        </span>
-                                        <div>
-                                            <p className="text-sm font-bold text-on-surface">Campus Delivery</p>
-                                            <p className="text-xs text-on-surface-variant">Free internal logistics</p>
+
+                                {isLoggedIn && savedAddresses.length > 0 && (
+                                    <div className="mb-8 space-y-4">
+                                        <label className="px-1 text-sm font-medium text-on-surface-variant">
+                                            Chọn địa chỉ giao hàng đã lưu
+                                        </label>
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            {savedAddresses.map((addr) => {
+                                                const isSelected = selectedAddressId === addr.id;
+                                                return (
+                                                    <button
+                                                        key={addr.id}
+                                                        type="button"
+                                                        onClick={() => handleSelectSavedAddress(addr)}
+                                                        className={`group relative flex flex-col rounded-xl border-2 p-5 text-left transition-all ${
+                                                            isSelected
+                                                                ? 'border-primary bg-primary/5 shadow-sm'
+                                                                : 'border-outline-variant bg-white hover:border-primary/50'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-start justify-between w-full">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`material-symbols-outlined text-lg ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>
+                                                                    {addr.label === 'campus' ? 'school' : addr.label === 'work' ? 'work' : 'home'}
+                                                                </span>
+                                                                <span className="font-bold text-on-surface text-base">
+                                                                    {addr.label === 'campus' ? 'Trường học' : addr.label === 'work' ? 'Công ty' : 'Nhà riêng'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                {addr.isDefault && (
+                                                                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                                                                        Mặc định
+                                                                    </span>
+                                                                )}
+                                                                <span className={`material-symbols-outlined text-lg ${isSelected ? 'text-primary' : 'text-outline-variant group-hover:text-outline'}`}>
+                                                                    {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-3 space-y-1 text-sm text-on-surface-variant">
+                                                            <p className="font-semibold text-on-surface">{addr.recipientName}</p>
+                                                            <p>{addr.phone}</p>
+                                                            <p className="line-clamp-2">
+                                                                {addr.line1}
+                                                                {addr.ward ? `, ${addr.ward}` : ''}
+                                                                {addr.district ? `, ${addr.district}` : ''}
+                                                                {addr.city ? `, ${addr.city}` : ''}
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+
+                                            <button
+                                                type="button"
+                                                onClick={handleSelectNewAddress}
+                                                className={`group flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-5 text-center transition-all ${
+                                                    selectedAddressId === null
+                                                        ? 'border-primary bg-primary/5 shadow-md'
+                                                        : 'border-outline-variant bg-white hover:border-primary/50'
+                                                }`}
+                                            >
+                                                <span className={`material-symbols-outlined text-2xl mb-2 ${selectedAddressId === null ? 'text-primary' : 'text-outline'}`}>
+                                                    add_circle
+                                                </span>
+                                                <p className="text-sm font-bold text-on-surface">Nhập địa chỉ mới</p>
+                                                <p className="text-xs text-on-surface-variant mt-1">Sử dụng địa chỉ giao hàng khác</p>
+                                            </button>
                                         </div>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => updateField('deliveryType', 'home')}
-                                        className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 text-left transition-all ${
-                                            information.deliveryType === 'home'
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-outline-variant bg-white hover:border-primary/50'
-                                        }`}
-                                    >
-                                        <span className="material-symbols-outlined text-outline">home</span>
-                                        <div>
-                                            <p className="text-sm font-bold text-on-surface">Home Delivery</p>
-                                            <p className="text-xs text-on-surface-variant">Standard shipping rates</p>
+                                    </div>
+                                )}
+
+                                {showAddressForm && (
+                                    <div className="space-y-6">
+                                        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => updateField('deliveryType', 'campus')}
+                                                className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 text-left transition-all ${
+                                                    information.deliveryType === 'campus'
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-outline-variant bg-white hover:border-primary/50'
+                                                }`}
+                                            >
+                                                <span
+                                                    className="material-symbols-outlined text-primary"
+                                                    style={{ fontVariationSettings: "'FILL' 1" }}
+                                                >
+                                                    school
+                                                </span>
+                                                <div>
+                                                    <p className="text-sm font-bold text-on-surface">Campus Delivery</p>
+                                                    <p className="text-xs text-on-surface-variant">Free internal logistics</p>
+                                                </div>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateField('deliveryType', 'home')}
+                                                className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 text-left transition-all ${
+                                                    information.deliveryType === 'home'
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-outline-variant bg-white hover:border-primary/50'
+                                                }`}
+                                            >
+                                                <span className="material-symbols-outlined text-outline">home</span>
+                                                <div>
+                                                    <p className="text-sm font-bold text-on-surface">Home Delivery</p>
+                                                    <p className="text-xs text-on-surface-variant">Standard shipping rates</p>
+                                                </div>
+                                            </button>
                                         </div>
-                                    </button>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="px-1 text-sm font-medium text-on-surface-variant">
-                                        Street Address / Campus Building
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={information.street}
-                                        onChange={(e) => updateField('street', e.target.value)}
-                                        placeholder="123 Engineering Way or Building A, Rm 402"
-                                        className={inputClass}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="px-1 text-sm font-medium text-on-surface-variant">
-                                            City
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={information.city}
-                                            onChange={(e) => updateField('city', e.target.value)}
-                                            placeholder="Tech City"
-                                            className={inputClass}
-                                        />
+                                        <div className="flex flex-col gap-2">
+                                            <label className="px-1 text-sm font-medium text-on-surface-variant">
+                                                Street Address / Campus Building
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={information.street}
+                                                onChange={(e) => updateField('street', e.target.value)}
+                                                placeholder="123 Engineering Way or Building A, Rm 402"
+                                                className={inputClass}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                                            <div className="flex flex-col gap-2">
+                                                <label className="px-1 text-sm font-medium text-on-surface-variant">
+                                                    City
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={information.city}
+                                                    onChange={(e) => updateField('city', e.target.value)}
+                                                    placeholder="Tech City"
+                                                    className={inputClass}
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="px-1 text-sm font-medium text-on-surface-variant">
+                                                    State / Province
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={information.state}
+                                                    onChange={(e) => updateField('state', e.target.value)}
+                                                    placeholder="State"
+                                                    className={inputClass}
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="px-1 text-sm font-medium text-on-surface-variant">
+                                                    Postal Code
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={information.postalCode}
+                                                    onChange={(e) => updateField('postalCode', e.target.value)}
+                                                    placeholder="00000"
+                                                    className={inputClass}
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        {isLoggedIn && (
+                                            <div className="flex items-center gap-3 px-1 pt-2">
+                                                <input
+                                                    id="saveAddressCheckbox"
+                                                    type="checkbox"
+                                                    checked={saveNewAddress}
+                                                    onChange={(e) => handleSaveNewAddressChange(e.target.checked)}
+                                                    className="h-5 w-5 cursor-pointer rounded border-outline-variant text-primary focus:ring-primary"
+                                                />
+                                                <label htmlFor="saveAddressCheckbox" className="cursor-pointer text-sm font-medium text-on-surface-variant select-none">
+                                                    Lưu địa chỉ này vào sổ địa chỉ của tôi để dùng cho lần sau
+                                                </label>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="px-1 text-sm font-medium text-on-surface-variant">
-                                            State / Province
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={information.state}
-                                            onChange={(e) => updateField('state', e.target.value)}
-                                            placeholder="State"
-                                            className={inputClass}
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="px-1 text-sm font-medium text-on-surface-variant">
-                                            Postal Code
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={information.postalCode}
-                                            onChange={(e) => updateField('postalCode', e.target.value)}
-                                            placeholder="00000"
-                                            className={inputClass}
-                                        />
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </section>
 

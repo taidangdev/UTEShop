@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchOrder, cancelOrder } from '../services/checkoutApi';
 import { fetchEligibleReviewItems } from '../services/reviewApi';
@@ -33,6 +33,9 @@ const PAYMENT_STATUSES: Record<string, { label: string; class: string }> = {
 
 export default function OrderTrackingPage() {
     const { orderNumber } = useParams<{ orderNumber: string }>();
+    const location = useLocation();
+    const justOrdered = Boolean((location.state as { justOrdered?: boolean } | null)?.justOrdered);
+    const [showSuccessBanner, setShowSuccessBanner] = useState(justOrdered);
     const [order, setOrder] = useState<OrderDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -159,6 +162,42 @@ export default function OrderTrackingPage() {
                     <span className="material-symbols-outlined text-[16px]">chevron_right</span>
                     <span className="font-medium text-on-surface">Theo dõi đơn hàng #{order.orderNumber}</span>
                 </div>
+
+                {/* Order Success Celebration Banner */}
+                {showSuccessBanner && (
+                    <div className="mb-8 overflow-hidden rounded-[28px] border border-primary/20 bg-gradient-to-br from-primary/5 via-surface-container-low to-tertiary-container/20 p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+                        <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+                            <span className="material-symbols-outlined animate-[bounce_1s_ease-in-out_3] text-[48px] text-primary">
+                                check_circle
+                            </span>
+                            <div className="absolute inset-0 animate-ping rounded-full bg-primary/10" style={{ animationDuration: '2s', animationIterationCount: '3' }} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-on-surface">Đặt hàng thành công! 🎉</h2>
+                        <p className="mt-2 text-sm text-on-surface-variant">
+                            Cảm ơn bạn đã mua sắm tại UTEShop. Đơn hàng <span className="font-semibold text-primary">#{order.orderNumber}</span> đã được tiếp nhận và đang chờ xử lý.
+                        </p>
+                        <p className="mt-1 text-xs text-on-surface-variant">
+                            Bạn có thể theo dõi trạng thái đơn hàng ngay bên dưới.
+                        </p>
+                        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                            <Link
+                                to="/categories"
+                                className="inline-flex h-11 items-center gap-2 rounded-full border border-outline-variant px-6 text-sm font-semibold text-on-surface-variant transition hover:border-primary hover:text-primary active:scale-95"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
+                                Tiếp tục mua sắm
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => setShowSuccessBanner(false)}
+                                className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-on-primary transition hover:opacity-90 active:scale-95"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                                Theo dõi đơn hàng
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Main panel card */}
                 <div className="soft-shadow overflow-hidden rounded-[28px] bg-surface-container-lowest border border-outline-variant/30">
