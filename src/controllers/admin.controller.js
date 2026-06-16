@@ -3,6 +3,7 @@ const { successResponse } = require('../utils/responseHandler');
 const adminDashboardService = require('../services/adminDashboard.service');
 const adminOrderService = require('../services/adminOrder.service');
 const adminProductService = require('../services/adminProduct.service');
+const adminConsignmentService = require('../services/adminConsignment.service');
 
 /**
  * Ví dụ endpoint chỉ admin: danh sách user (phân quyền qua route).
@@ -132,6 +133,36 @@ const deleteProduct = async (req, res, next) => {
     }
 };
 
+const listConsignments = async (req, res, next) => {
+    try {
+        const { page, limit, status, search } = req.query;
+        const data = await adminConsignmentService.listConsignments({ page, limit, status, search });
+        return successResponse(res, 200, 'Danh sách ký gửi', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateConsignment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const data = await adminConsignmentService.updateConsignment(Number(id), req.body);
+        return successResponse(res, 200, 'Cập nhật yêu cầu ký gửi thành công', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteConsignment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const data = await adminConsignmentService.deleteConsignment(Number(id));
+        return successResponse(res, 200, data.message || 'Xóa ký gửi thành công', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     listUsers,
     getDashboard,
@@ -143,5 +174,8 @@ module.exports = {
     getProductDetail,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    listConsignments,
+    updateConsignment,
+    deleteConsignment
 };

@@ -21,6 +21,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './store/hooks';
 import { SocketProvider } from './context/SocketContext';
 import { ToastNotification } from './components/common/ToastNotification';
+import ConsignmentPage from './pages/ConsignmentPage';
+import AdminConsignmentsPage from './pages/AdminConsignmentsPage';
 
 function HomeRouteGuard() {
     const user = useAppSelector((state) => state.auth.user);
@@ -69,6 +71,14 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route
+                            path="/consignments"
+                            element={
+                                <ProtectedRoute>
+                                    <ConsignmentPage />
+                                </ProtectedRoute>
+                            }
+                        />
                     </Route>
                     <Route path="/checkout" element={<CheckoutInformationPage />} />
                     <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
@@ -93,6 +103,14 @@ function App() {
                         element={
                             <ProtectedRoute requiredRole="admin">
                                 <AdminProductsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/consignments"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminConsignmentsPage />
                             </ProtectedRoute>
                         }
                     />

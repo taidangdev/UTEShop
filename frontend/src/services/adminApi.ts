@@ -98,3 +98,47 @@ export async function deleteAdminProduct(id: number) {
     >(`/admin/products/${id}`);
     return response.data;
 }
+
+// --- Consignment Management ---
+import type { Consignment } from '../types/consignment';
+
+export interface AdminConsignmentsQuery {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+}
+
+export interface AdminConsignmentListData {
+    consignments: Consignment[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
+export interface UpdateAdminConsignmentPayload {
+    status?: string;
+    approvedPrice?: number;
+    adminNote?: string;
+    productId?: number;
+}
+
+export async function fetchAdminConsignments(query: AdminConsignmentsQuery = {}) {
+    const response = await axiosInstance.get<ApiEnvelope<AdminConsignmentListData>>('/admin/consignments', {
+        params: query
+    });
+    return response.data;
+}
+
+export async function updateAdminConsignment(id: number, payload: UpdateAdminConsignmentPayload) {
+    const response = await axiosInstance.patch<ApiEnvelope<Consignment>>(`/admin/consignments/${id}`, payload);
+    return response.data;
+}
+
+export async function deleteAdminConsignment(id: number) {
+    const response = await axiosInstance.delete<ApiEnvelope<{ message: string }>>(`/admin/consignments/${id}`);
+    return response.data;
+}

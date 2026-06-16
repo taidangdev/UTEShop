@@ -33,15 +33,40 @@ const Consignment = sequelize.define(
             type: DataTypes.DECIMAL(12, 2),
             allowNull: true
         },
+        consignmentFee: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                const price = this.getDataValue('approvedPrice');
+                if (price === null || price === undefined) return null;
+                return parseFloat((Number(price) * 0.1).toFixed(2));
+            }
+        },
+        receiveAmount: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                const price = this.getDataValue('approvedPrice');
+                if (price === null || price === undefined) return null;
+                return parseFloat((Number(price) * 0.9).toFixed(2));
+            }
+        },
         condition: {
             type: DataTypes.ENUM('new', 'like_new', 'used', 'refurbished'),
             allowNull: false,
             defaultValue: 'used'
         },
         status: {
-            type: DataTypes.ENUM('pending', 'approved', 'rejected', 'listed', 'sold', 'returned'),
+            type: DataTypes.ENUM(
+                'PENDING',
+                'APPROVED_SHIPPING',
+                'RECEIVED',
+                'ON_SALE',
+                'SOLD',
+                'COMPLETED',
+                'RETURNED',
+                'REJECTED'
+            ),
             allowNull: false,
-            defaultValue: 'pending'
+            defaultValue: 'PENDING'
         },
         adminNote: {
             type: DataTypes.TEXT,

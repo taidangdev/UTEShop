@@ -28,7 +28,7 @@ function isNavActive(location: Location, link: NavLink): boolean {
     if (link.matchPath) {
         return location.pathname === '/categories' && !location.search.includes('category=');
     }
-    if (link.to.startsWith('/categories?')) {
+    if (link.to.includes('?')) {
         return `${location.pathname}${location.search}` === link.to;
     }
     if (link.to === '/') {
@@ -97,7 +97,12 @@ export default function ShopHeader() {
 
                 {/* Center: Navigation Bar */}
                 <nav className="hidden items-center gap-8 md:flex">
-                    {NAV_LINKS.map((link) => {
+                    {[
+                        ...NAV_LINKS,
+                        ...(user && user.role !== 'admin'
+                            ? [{ label: 'Ký gửi', to: '/consignments' }]
+                            : [])
+                    ].map((link) => {
                         const active = isNavActive(location, link);
                         return (
                             <Link

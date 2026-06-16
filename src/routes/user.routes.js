@@ -41,4 +41,55 @@ router.put(
     userController.editProfile
 );
 
+// --- Consignments ---
+const consignmentController = require('../controllers/consignment.controller');
+
+const consignmentValidation = [
+    body('title').notEmpty().withMessage('Tiêu đề ký gửi là bắt buộc'),
+    body('categoryId').isInt().withMessage('Danh mục ký gửi không hợp lệ'),
+    body('suggestedPrice').isFloat({ min: 0 }).withMessage('Giá đề xuất phải là số dương'),
+    body('condition')
+        .isIn(['new', 'like_new', 'used', 'refurbished'])
+        .withMessage('Tình trạng sản phẩm không hợp lệ'),
+    body('contactPhone')
+        .optional({ nullable: true, checkFalsy: true })
+        .isString()
+        .withMessage('Số điện thoại liên hệ phải là chuỗi ký tự'),
+    body('images').optional().isArray().withMessage('Danh sách hình ảnh phải là một mảng')
+];
+
+router.get(
+    '/me/consignments',
+    requirePermission('consignments:read'),
+    consignmentController.getMyConsignments
+);
+
+router.get(
+    '/me/consignments/form-options',
+    requirePermission('consignments:read'),
+    consignmentController.getFormOptions
+);
+
+router.post(
+    '/me/consignments',
+    requirePermission('consignments:write'),
+    consignmentValidation,
+    validate,
+    consignmentController.createConsignment
+);
+
+router.put(
+    '/me/consignments/:id',
+    requirePermission('consignments:write'),
+    consignmentValidation,
+    validate,
+    consignmentController.updateConsignment
+);
+
+router.delete(
+    '/me/consignments/:id',
+    requirePermission('consignments:write'),
+    consignmentController.deleteConsignment
+);
+
 module.exports = router;

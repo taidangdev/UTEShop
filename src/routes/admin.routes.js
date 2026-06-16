@@ -57,4 +57,9 @@ router.delete(
     adminController.deleteProduct
 );
 
+// --- Consignments ---
+router.get('/consignments', adminController.listConsignments);
+router.patch('/consignments/:id', adminController.updateConsignment);
+router.delete('/consignments/:id', adminController.deleteConsignment);
+
 module.exports = router;
