@@ -6,6 +6,7 @@ import { useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
 import CategoriesTab from '../components/admin/CategoriesTab';
 import PromotionsTab from '../components/admin/PromotionsTab';
+import CustomersTab from '../components/admin/CustomersTab';
 
 const PRESET_OPTIONS = [
     { value: '7d', label: '7 ngày' },
@@ -568,8 +569,9 @@ export default function AdminDashboardPage() {
 
             {activeTab === 'category' && <CategoriesTab />}
             {activeTab === 'sell' && <PromotionsTab />}
+            {activeTab === 'group' && <CustomersTab />}
 
-            {activeTab !== 'dashboard' && activeTab !== 'category' && activeTab !== 'sell' && (
+            {activeTab !== 'dashboard' && activeTab !== 'category' && activeTab !== 'sell' && activeTab !== 'group' && (
                 <div className="rounded-[32px] bg-surface-container-lowest p-8 shadow-sm text-center py-20">
                     <span className="material-symbols-outlined text-outline text-6xl mb-4 text-[#ff8b66]">construction</span>
                     <h3 className="text-2xl font-bold mb-2">Tính năng đang phát triển</h3>

@@ -1,4 +1,4 @@
-const { User, Category, Product, Promotion, PromotionCategory, PromotionProduct, sequelize } = require('../models');
+const { User, Category, Product, Promotion, PromotionCategory, PromotionProduct, Major, Address, Order, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
 const adminDashboardService = require('../services/adminDashboard.service');
 
@@ -40,14 +40,222 @@ const isDescendant = async (parentCandidateId, categoryId) => {
 };
 
 /**
- * List all users (admin-only)
+ * List all users with pagination, search, and filters (admin-only)
  */
 const listUsers = async (req, res, next) => {
     try {
-        const users = await User.findAll({
-            attributes: ['id', 'username', 'email', 'role', 'status', 'createdAt']
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+        const { q, role, status } = req.query;
+
+        const where = {};
+        if (role) where.role = role;
+        if (status) where.status = status;
+
+        if (q && q.trim()) {
+            const { Op } = require('sequelize');
+            const like = `%${q.trim()}%`;
+            where[Op.or] = [
+                { username: { [Op.like]: like } },
+                { email: { [Op.like]: like } },
+                { fullName: { [Op.like]: like } },
+                { phone: { [Op.like]: like } },
+                { studentId: { [Op.like]: like } }
+            ];
+        }
+
+        const { count, rows } = await User.findAndCountAll({
+            where,
+            attributes: ['id', 'username', 'email', 'fullName', 'phone', 'address', 'role', 'status', 'studentId', 'loyaltyPoints', 'createdAt'],
+            include: [
+                {
+                    model: Major,
+                    as: 'major',
+                    attributes: ['id', 'code', 'name']
+                }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+            distinct: true
         });
-        return successResponse(res, 200, 'Danh sách người dùng', { users });
+
+        const userIds = rows.map((u) => u.id);
+        const orderCountMap = {};
+        if (userIds.length > 0) {
+            const orderCounts = await Order.findAll({
+                attributes: ['userId', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+                where: { userId: userIds },
+                group: ['userId']
+            });
+            orderCounts.forEach((oc) => {
+                orderCountMap[oc.userId] = parseInt(oc.get('count'), 10) || 0;
+            });
+        }
+
+        const mappedUsers = rows.map((u) => {
+            const json = u.toJSON();
+            return {
+                ...json,
+                orderCount: orderCountMap[u.id] || 0
+            };
+        });
+
+        return successResponse(res, 200, 'Danh sách người dùng', {
+            users: mappedUsers,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages: Math.ceil(count / limit)
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get detailed customer profile, including addresses and recent orders (admin-only)
+ */
+const getUserDetail = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: Major,
+                    as: 'major',
+                    attributes: ['id', 'code', 'name']
+                },
+                {
+                    model: Address,
+                    as: 'addresses'
+                }
+            ]
+        });
+
+        if (!user) {
+            return errorResponse(res, 404, 'Người dùng không tồn tại');
+        }
+
+        // Fetch top 10 recent orders
+        const orders = await Order.findAll({
+            where: { userId: id },
+            order: [['createdAt', 'DESC']],
+            limit: 10
+        });
+
+        return successResponse(res, 200, 'Chi tiết người dùng', { user, orders });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Update user status and ban active socket sessions if banned (admin-only)
+ */
+const updateUserStatus = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        if (!['active', 'inactive', 'banned'].includes(status)) {
+            return errorResponse(res, 400, 'Trạng thái không hợp lệ');
+        }
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return errorResponse(res, 404, 'Người dùng không tồn tại');
+        }
+
+        if (user.role === 'admin' && status === 'banned') {
+            return errorResponse(res, 400, 'Không thể khóa tài khoản Admin');
+        }
+
+        await user.update({ status });
+
+        // If banned, disconnect any active socket connections
+        if (status === 'banned') {
+            const socketService = require('../services/socket.service');
+            socketService.disconnectUser(user.id);
+        }
+
+        return successResponse(res, 200, 'Cập nhật trạng thái người dùng thành công', { user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Update user role (admin-only, prevent self-role modification)
+ */
+const updateUserRole = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+        if (!['admin', 'customer', 'user'].includes(role)) {
+            return errorResponse(res, 400, 'Vai trò không hợp lệ');
+        }
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return errorResponse(res, 404, 'Người dùng không tồn tại');
+        }
+
+        if (req.user.id === user.id) {
+            return errorResponse(res, 400, 'Bạn không thể tự thay đổi quyền hạn của chính mình');
+        }
+
+        await user.update({ role });
+        return successResponse(res, 200, 'Cập nhật vai trò người dùng thành công', { user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Bulk updates user statuses and disconnects sockets for banned users (admin-only)
+ */
+const bulkUpdateUserStatus = async (req, res, next) => {
+    try {
+        const { ids, status } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return errorResponse(res, 400, 'Danh sách ID không hợp lệ');
+        }
+        if (!['active', 'inactive', 'banned'].includes(status)) {
+            return errorResponse(res, 400, 'Trạng thái không hợp lệ');
+        }
+
+        const users = await User.findAll({ where: { id: ids } });
+        const safeIds = [];
+        const failedNames = [];
+
+        users.forEach((u) => {
+            if (u.role === 'admin' && status === 'banned') {
+                failedNames.push(u.username);
+            } else {
+                safeIds.push(u.id);
+            }
+        });
+
+        if (safeIds.length > 0) {
+            await User.update({ status }, { where: { id: safeIds } });
+
+            // If banning, disconnect sockets for all safeIds
+            if (status === 'banned') {
+                const socketService = require('../services/socket.service');
+                safeIds.forEach((userId) => {
+                    socketService.disconnectUser(userId);
+                });
+            }
+        }
+
+        return successResponse(res, 200, 'Cập nhật trạng thái hàng loạt thành công', {
+            updatedCount: safeIds.length,
+            failedNames
+        });
     } catch (error) {
         next(error);
     }
@@ -795,5 +1003,9 @@ module.exports = {
     updatePromotion,
     deletePromotion,
     bulkActivePromotions,
-    bulkDeletePromotions
+    bulkDeletePromotions,
+    getUserDetail,
+    updateUserStatus,
+    updateUserRole,
+    bulkUpdateUserStatus
 };

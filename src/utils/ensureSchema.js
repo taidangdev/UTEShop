@@ -283,8 +283,33 @@ const ensureCategoryIndexes = async (sequelize) => {
     }
 };
 
+const ensureUserIndexes = async (sequelize) => {
+    const qi = sequelize.getQueryInterface();
+    try {
+        await qi.describeTable('users');
+    } catch {
+        return;
+    }
+
+    const addIndexIfMissing = async (fields, name) => {
+        try {
+            await qi.addIndex('users', { fields, name });
+            console.log(`  + Index users.${fields.join(',')}`);
+        } catch (err) {
+            // Index already exists
+        }
+    };
+
+    await addIndexIfMissing(['email'], 'users_email_idx');
+    await addIndexIfMissing(['phone'], 'users_phone_idx');
+    await addIndexIfMissing(['studentId'], 'users_student_id_idx');
+    await addIndexIfMissing(['status'], 'users_status_idx');
+    await addIndexIfMissing(['role'], 'users_role_idx');
+};
+
 const ensureSchema = async (sequelize) => {
     await ensureUserColumns(sequelize);
+    await ensureUserIndexes(sequelize);
     await ensureProductReviewColumns(sequelize);
     await ensurePromotionJoinTables(sequelize);
     await ensurePromotionColumns(sequelize);
@@ -294,6 +319,7 @@ const ensureSchema = async (sequelize) => {
 
 module.exports = {
     ensureUserColumns,
+    ensureUserIndexes,
     ensureProductReviewColumns,
     ensurePromotionColumns,
     ensureOrderPromotionColumns,

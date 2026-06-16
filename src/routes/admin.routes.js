@@ -7,8 +7,14 @@ const router = express.Router();
 router.use(verifyToken);
 router.use(authorizeRoles('admin'));
 
-router.get('/users', adminController.listUsers);
 router.get('/dashboard', adminController.getDashboard);
+
+// Customer Management
+router.get('/users', adminController.listUsers);
+router.post('/users/bulk-status', adminController.bulkUpdateUserStatus);
+router.get('/users/:id', adminController.getUserDetail);
+router.put('/users/:id/status', adminController.updateUserStatus);
+router.put('/users/:id/role', adminController.updateUserRole);
 
 // Category CRUD
 router.get('/categories', adminController.listCategories);

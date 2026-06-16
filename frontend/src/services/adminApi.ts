@@ -160,3 +160,84 @@ export async function bulkDeleteAdminPromotions(ids: number[]) {
     });
     return response.data;
 }
+
+export interface AdminUser {
+    id: number;
+    username: string;
+    email: string;
+    fullName: string | null;
+    phone: string | null;
+    address: string | null;
+    role: 'admin' | 'customer' | 'user';
+    status: 'active' | 'inactive' | 'banned';
+    studentId: string | null;
+    loyaltyPoints: number;
+    createdAt: string;
+    orderCount?: number;
+    major?: {
+        id: number;
+        code: string;
+        name: string;
+    } | null;
+}
+
+export interface AdminUserDetail {
+    user: AdminUser & {
+        addresses: Array<{
+            id: number;
+            userId: number;
+            receiverName: string;
+            receiverPhone: string;
+            region: string;
+            district: string;
+            ward: string;
+            detailAddress: string;
+            isDefault: boolean;
+        }>;
+    };
+    orders: Array<{
+        id: number;
+        orderNumber: string;
+        placedAt: string;
+        status: string;
+        total: number;
+    }>;
+}
+
+export async function fetchAdminUsers(page = 1, limit = 10, q = '', status = '', role = '') {
+    const response = await axiosInstance.get<ApiEnvelope<{
+        users: AdminUser[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>>('/admin/users', {
+        params: { page, limit, q: q || undefined, status: status || undefined, role: role || undefined }
+    });
+    return response.data;
+}
+
+export async function fetchAdminUserDetail(id: number) {
+    const response = await axiosInstance.get<ApiEnvelope<AdminUserDetail>>(`/admin/users/${id}`);
+    return response.data;
+}
+
+export async function updateAdminUserStatus(id: number, status: 'active' | 'inactive' | 'banned') {
+    const response = await axiosInstance.put<ApiEnvelope<{ user: AdminUser }>>(`/admin/users/${id}/status`, { status });
+    return response.data;
+}
+
+export async function updateAdminUserRole(id: number, role: 'admin' | 'customer' | 'user') {
+    const response = await axiosInstance.put<ApiEnvelope<{ user: AdminUser }>>(`/admin/users/${id}/role`, { role });
+    return response.data;
+}
+
+export async function bulkUpdateAdminUserStatus(ids: number[], status: 'active' | 'inactive' | 'banned') {
+    const response = await axiosInstance.post<ApiEnvelope<{ updatedCount: number; failedNames: string[] }>>('/admin/users/bulk-status', {
+        ids,
+        status
+    });
+    return response.data;
+}
