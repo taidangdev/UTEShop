@@ -5,6 +5,7 @@ import { fetchMyOrders, fetchMyReviews, fetchUserProfile } from '../store/profil
 import { logout } from '../store/authSlice';
 import ProfileEditModal from '../components/profile/ProfileEditModal';
 import ProfileRewardsPanel from '../components/profile/ProfileRewardsPanel';
+import ProfileAddressesTab from '../components/profile/ProfileAddressesTab';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
 import type { UserCoupon } from '../types/review';
@@ -17,13 +18,14 @@ import type { CatalogProduct } from '../types/catalog';
 const DEFAULT_AVATAR =
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=faces';
 
-const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'wishlist', 'settings'] as const;
+const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'wishlist', 'addresses', 'settings'] as const;
 
 const SIDEBAR_ITEMS = [
     { id: 'overview', label: 'Overview', icon: 'dashboard', filled: true },
     { id: 'orders', label: 'Order History', icon: 'shopping_bag' },
     { id: 'reviews', label: 'My Reviews', icon: 'reviews' },
     { id: 'wishlist', label: 'Sản phẩm yêu thích', icon: 'favorite' },
+    { id: 'addresses', label: 'Sổ địa chỉ', icon: 'location_on' },
     { id: 'settings', label: 'Account Settings', icon: 'settings' }
 ];
 
@@ -225,6 +227,8 @@ const ProfilePage = () => {
                 navigate('/profile?tab=rewards', { replace: true });
             } else if (id === 'wishlist') {
                 navigate('/profile?tab=wishlist', { replace: true });
+            } else if (id === 'addresses') {
+                navigate('/profile?tab=addresses', { replace: true });
             } else if (searchParams.get('tab')) {
                 navigate('/profile', { replace: true });
             }
@@ -736,6 +740,12 @@ const ProfilePage = () => {
                                                 ))}
                                             </div>
                                         )}
+                                    </section>
+                                )}
+
+                                {activeSection === 'addresses' && (
+                                    <section id="section-addresses">
+                                        <ProfileAddressesTab />
                                     </section>
                                 )}
 
