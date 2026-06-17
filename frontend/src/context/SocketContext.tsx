@@ -9,20 +9,12 @@ import {
     markAllAsReadApi
 } from '../services/notificationApi';
 import type { AppNotification } from '../types/notification';
-
-interface ToastData {
-    id: string;
-    title: string;
-    content: string;
-    type: AppNotification['type'];
-}
+import { useNotification } from './NotificationContext';
 
 interface SocketContextProps {
     socket: Socket | null;
     notifications: AppNotification[];
     unreadCount: number;
-    toasts: ToastData[];
-    removeToast: (id: string) => void;
     fetchNotifications: () => Promise<void>;
     markAsRead: (id: number) => Promise<void>;
     markAllAsRead: () => Promise<void>;
@@ -40,25 +32,11 @@ export const useSocket = () => {
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const user = useSelector((state: RootState) => state.auth.user);
+    const { showToast } = useNotification();
     const [socket, setSocket] = useState<Socket | null>(null);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState<number>(0);
-    const [toasts, setToasts] = useState<ToastData[]>([]);
     const socketRef = useRef<Socket | null>(null);
-
-    const removeToast = (id: string) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
-
-    const addToast = (title: string, content: string, type: AppNotification['type']) => {
-        const id = Math.random().toString(36).substring(2, 9);
-        setToasts((prev) => [...prev, { id, title, content, type }]);
-        
-        // Auto remove toast after 5 seconds
-        setTimeout(() => {
-            removeToast(id);
-        }, 5000);
-    };
 
     const fetchNotifications = async () => {
         if (!user) return;
@@ -123,8 +101,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 // Tăng số lượng tin chưa đọc
                 setUnreadCount((prev) => prev + 1);
 
-                // Hiển thị popup toast
-                addToast(notification.title, notification.content, notification.type);
+                // Hiển thị popup toast toàn cục
+                showToast(notification.content, notification.type, { title: notification.title });
             });
 
             newSocket.on('connect_error', (err) => {
@@ -141,7 +119,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             // Clear notifications when logged out
             setNotifications([]);
             setUnreadCount(0);
-            setToasts([]);
             if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
@@ -156,8 +133,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 socket,
                 notifications,
                 unreadCount,
-                toasts,
-                removeToast,
                 fetchNotifications,
                 markAsRead,
                 markAllAsRead

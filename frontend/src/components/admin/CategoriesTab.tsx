@@ -8,6 +8,7 @@ import {
     bulkDeleteAdminCategories,
     type AdminCategory
 } from '../../services/adminApi';
+import { useNotification } from '../../context/NotificationContext';
 
 const COMMON_ICONS = [
     { value: 'category', label: 'Mặc định (Category)' },
@@ -30,8 +31,7 @@ export default function CategoriesTab() {
     // Selected items for bulk action
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-    // Toast notification
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { toast: globalToast, showConfirm } = useNotification();
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -51,8 +51,11 @@ export default function CategoriesTab() {
     });
 
     const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
+        if (type === 'success') {
+            globalToast.success(message);
+        } else {
+            globalToast.error(message);
+        }
     };
 
     const loadCategories = async () => {
@@ -176,7 +179,12 @@ export default function CategoriesTab() {
             return;
         }
 
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`);
+        const confirmDelete = await showConfirm({
+            title: 'Xác nhận xóa',
+            message: `Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`,
+            type: 'danger',
+            confirmText: 'Xóa danh mục'
+        });
         if (!confirmDelete) return;
 
         try {
@@ -208,7 +216,12 @@ export default function CategoriesTab() {
 
     const handleBulkDelete = async () => {
         if (selectedIds.length === 0) return;
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.length} danh mục đã chọn?`);
+        const confirmDelete = await showConfirm({
+            title: 'Xóa hàng loạt',
+            message: `Bạn có chắc chắn muốn xóa ${selectedIds.length} danh mục đã chọn?`,
+            type: 'danger',
+            confirmText: 'Xóa tất cả'
+        });
         if (!confirmDelete) return;
 
         try {
@@ -277,20 +290,6 @@ export default function CategoriesTab() {
 
     return (
         <div className="space-y-6 pb-20">
-            {/* Custom Toast Alert */}
-            {toast && (
-                <div className={`fixed right-6 top-24 z-50 flex items-start gap-3 rounded-2xl p-4 shadow-xl border backdrop-blur-md transition-all duration-300 max-w-md ${
-                    toast.type === 'success' 
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
-                        : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                }`}>
-                    <span className="material-symbols-outlined mt-0.5">
-                        {toast.type === 'success' ? 'check_circle' : 'error'}
-                    </span>
-                    <span className="text-sm font-semibold">{toast.message}</span>
-                </div>
-            )}
-
             {/* Header section */}
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-surface-container-lowest p-6 shadow-sm">
                 <div>

@@ -7,6 +7,7 @@ import {
     updateAdminOrderStatus
 } from '../services/adminApi';
 import type { AdminOrderDetail, AdminOrderListItem } from '../types/adminOrders';
+import { useNotification } from '../context/NotificationContext';
 
 const STATUS_STYLES: Record<string, string> = {
     pending: 'bg-surface-container-high text-on-surface-variant',
@@ -76,6 +77,8 @@ export default function AdminOrdersPage() {
     const [detailError, setDetailError] = useState<string | null>(null);
     const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
     const [adminNote, setAdminNote] = useState('');
+
+    const { toast } = useNotification();
 
     const loadOrders = useCallback(
         async (page = pagination.page) => {
@@ -154,13 +157,14 @@ export default function AdminOrdersPage() {
                 adminNote: adminNote.trim() || null
             });
             setSelectedOrder(data.order);
+            toast.success(`Đã cập nhật trạng thái đơn hàng #${orderNumber} thành công`);
             await loadOrders(pagination.page);
         } catch (err: unknown) {
             const message =
                 typeof err === 'object' && err && 'message' in err
                     ? String((err as { message?: string }).message || '')
                     : '';
-            alert(message || 'Không thể cập nhật trạng thái đơn hàng');
+            toast.error(message || 'Không thể cập nhật trạng thái đơn hàng');
         } finally {
             setUpdatingStatus(null);
         }

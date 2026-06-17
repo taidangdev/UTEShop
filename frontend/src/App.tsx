@@ -20,7 +20,7 @@ import AdminProductsPage from './pages/AdminProductsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './store/hooks';
 import { SocketProvider } from './context/SocketContext';
-import { ToastNotification } from './components/common/ToastNotification';
+import { NotificationProvider } from './context/NotificationContext';
 import ConsignmentPage from './pages/ConsignmentPage';
 import AdminConsignmentsPage from './pages/AdminConsignmentsPage';
 
@@ -34,7 +34,8 @@ function HomeRouteGuard() {
 
 function App() {
     return (
-        <SocketProvider>
+        <NotificationProvider>
+            <SocketProvider>
             <Router>
                 <Routes>
                     <Route element={<ShopLayout />}>
@@ -116,8 +117,8 @@ function App() {
                     />
                 </Routes>
             </Router>
-            <ToastNotification />
         </SocketProvider>
+    </NotificationProvider>
     );
 }
 

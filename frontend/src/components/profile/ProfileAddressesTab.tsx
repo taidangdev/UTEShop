@@ -6,6 +6,7 @@ import {
     deleteUserAddress
 } from '../../services/addressApi';
 import type { UserAddress, UserAddressPayload } from '../../types/address';
+import { useNotification } from '../../context/NotificationContext';
 
 const inputClass =
     'h-12 w-full rounded-lg border border-outline-variant bg-white px-4 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary text-sm';
@@ -16,6 +17,8 @@ export default function ProfileAddressesTab() {
     const [error, setError] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState<number | null>(null); // tracks id of setting default or deleting
     const [showAddForm, setShowAddForm] = useState(false);
+
+    const { toast, showConfirm } = useNotification();
 
     // Form states
     const [recipientName, setRecipientName] = useState('');
@@ -51,26 +54,35 @@ export default function ProfileAddressesTab() {
         setActionLoading(id);
         try {
             await setDefaultAddress(id);
+            toast.success('Thiết lập địa chỉ mặc định thành công.');
             // Refresh address list
             const list = await fetchMyAddresses();
             setAddresses(list);
         } catch {
-            alert('Không thể thiết lập địa chỉ mặc định.');
+            toast.error('Không thể thiết lập địa chỉ mặc định.');
         } finally {
             setActionLoading(null);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) return;
+        const confirmDelete = await showConfirm({
+            title: 'Xóa địa chỉ',
+            message: 'Bạn có chắc chắn muốn xóa địa chỉ này?',
+            type: 'warning',
+            confirmText: 'Xóa địa chỉ'
+        });
+        if (!confirmDelete) return;
+
         setActionLoading(id);
         try {
             await deleteUserAddress(id);
+            toast.success('Xóa địa chỉ thành công.');
             // Refresh list
             const list = await fetchMyAddresses();
             setAddresses(list);
         } catch {
-            alert('Không thể xóa địa chỉ.');
+            toast.error('Không thể xóa địa chỉ.');
         } finally {
             setActionLoading(null);
         }
