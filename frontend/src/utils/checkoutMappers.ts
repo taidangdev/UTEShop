@@ -12,7 +12,8 @@ export function cartItemDtoToLine(item: CartItemDto): CartLine {
         imageUrl: item.product?.imageUrl ?? null,
         quantity: item.quantity,
         inStock: item.inStock,
-        priceChanged: item.priceChanged
+        priceChanged: item.priceChanged,
+        categoryId: item.product?.categoryId
     };
 }
 

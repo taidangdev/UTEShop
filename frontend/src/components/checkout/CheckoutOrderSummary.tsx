@@ -6,6 +6,24 @@ import type { UserCoupon } from '../../types/review';
 import { formatPrice } from '../../utils/formatPrice';
 import { promotionDiscountLabel } from '../../utils/promotionDisplay';
 
+function isPromotionUsableForCart(p: ShopPromotion, items: CartLine[]) {
+    if (p.scope === 'shop') return true;
+    if (p.scope === 'category') {
+        const promoCatIds = p.categoryIds || [];
+        if (promoCatIds.length === 0) return false;
+        return items.some((item) => {
+            const catId = item.categoryId;
+            return catId && promoCatIds.includes(catId);
+        });
+    }
+    if (p.scope === 'product') {
+        const promoProdIds = p.productIds || [];
+        if (promoProdIds.length === 0) return false;
+        return items.some((item) => promoProdIds.includes(item.productId));
+    }
+    return false;
+}
+
 interface CheckoutOrderSummaryProps {
     items: CartLine[];
     totals: CheckoutTotals;
@@ -42,6 +60,17 @@ export default function CheckoutOrderSummary({
     compact = false
 }: CheckoutOrderSummaryProps) {
     const pointsCap = Math.min(pointsBalance, maxPointsRedeemable);
+
+    const usablePromotions = shopPromotions.filter(
+        (p) =>
+            (totals.subtotal >= (p.minOrderAmount || 0) && isPromotionUsableForCart(p, items)) ||
+            p.code === information.appliedDiscountCode
+    );
+
+    const subtotalAfterPromo = totals.subtotal - (totals.promotionDiscount || 0);
+    const usableCoupons = userCoupons.filter(
+        (c) => subtotalAfterPromo >= (c.minOrderAmount || 0) || c.code === information.userCouponCode
+    );
 
     return (
         <div
@@ -100,7 +129,7 @@ export default function CheckoutOrderSummary({
                                       ? 'Đang áp dụng...'
                                       : 'Không dùng mã khuyến mãi'}
                             </option>
-                            {shopPromotions.map((p) => (
+                            {usablePromotions.map((p) => (
                                 <option key={p.id} value={p.code}>
                                     {p.code} — {promotionDiscountLabel(p)}
                                     {p.minOrderAmount > 0
@@ -136,22 +165,28 @@ export default function CheckoutOrderSummary({
                             <label className="text-xs font-semibold text-on-surface-variant">
                                 Phiếu giảm giá cá nhân (từ đánh giá)
                             </label>
-                            <select
-                                value={information.userCouponCode}
-                                onChange={(e) => onUserCouponChange(e.target.value)}
-                                className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
-                            >
-                                <option value="">Không dùng phiếu</option>
-                                {userCoupons.map((c) => (
-                                    <option key={c.id} value={c.code}>
-                                        {c.code} (
-                                        {c.discountType === 'free_shipping'
-                                            ? 'Free ship'
-                                            : `${c.discountValue}%`}
-                                        )
-                                    </option>
-                                ))}
-                            </select>
+                            {usableCoupons.length > 0 ? (
+                                <select
+                                    value={information.userCouponCode}
+                                    onChange={(e) => onUserCouponChange(e.target.value)}
+                                    className="h-10 w-full cursor-pointer rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
+                                >
+                                    <option value="">Không dùng phiếu</option>
+                                    {usableCoupons.map((c) => (
+                                        <option key={c.id} value={c.code}>
+                                            {c.code} (
+                                            {c.discountType === 'free_shipping'
+                                                ? 'Free ship'
+                                                : `${c.discountValue}%`}
+                                            )
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <p className="text-xs text-on-surface-variant italic">
+                                    Không có phiếu giảm giá nào đủ điều kiện cho đơn hàng này.
+                                </p>
+                            )}
                         </div>
                     )}
 

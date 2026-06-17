@@ -20,6 +20,7 @@ export interface CartLine {
     quantity: number;
     inStock?: boolean;
     priceChanged?: boolean;
+    categoryId?: number;
 }
 
 function readCart(): CartLine[] {

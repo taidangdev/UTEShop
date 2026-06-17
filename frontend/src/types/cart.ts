@@ -2,6 +2,7 @@ export interface CartProductSnapshot {
     id: number;
     name: string;
     slug: string;
+    categoryId?: number;
     shortDescription: string | null;
     price: number;
     status: string;

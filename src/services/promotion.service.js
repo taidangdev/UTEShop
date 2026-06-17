@@ -323,13 +323,34 @@ async function listActivePromotions() {
                 { [Op.or]: [{ endsAt: null }, { endsAt: { [Op.gte]: now } }] }
             ]
         },
+        include: [
+            {
+                model: Category,
+                as: 'categories',
+                attributes: ['id'],
+                through: { attributes: [] }
+            },
+            {
+                model: Product,
+                as: 'products',
+                attributes: ['id'],
+                through: { attributes: [] }
+            }
+        ],
         order: [['createdAt', 'DESC']],
         limit: 20
     });
 
     return rows
         .filter((p) => p.usageLimit == null || p.usedCount < p.usageLimit)
-        .map(mapPromotionPublic);
+        .map((p) => {
+            const mapped = mapPromotionPublic(p);
+            return {
+                ...mapped,
+                categoryIds: (p.categories || []).map((c) => c.id),
+                productIds: (p.products || []).map((prod) => prod.id)
+            };
+        });
 }
 
 module.exports = {

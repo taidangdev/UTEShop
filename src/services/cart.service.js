@@ -55,6 +55,7 @@ function mapCartItemRow(item) {
                   id: product.id,
                   name: product.name,
                   slug: product.slug,
+                  categoryId: product.categoryId,
                   shortDescription: product.shortDescription,
                   price: Number(product.price),
                   status: product.status,

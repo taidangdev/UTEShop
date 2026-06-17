@@ -13,8 +13,7 @@ const ProfileForm = () => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phone: '',
-        address: ''
+        phone: ''
     });
 
     useEffect(() => {
@@ -22,8 +21,7 @@ const ProfileForm = () => {
             setFormData({
                 fullName: user.fullName || '',
                 email: user.email || '',
-                phone: user.phone || '',
-                address: user.address || ''
+                phone: user.phone || ''
             });
         }
     }, [user]);
@@ -40,8 +38,7 @@ const ProfileForm = () => {
         e.preventDefault();
         const payload: ProfileUpdatePayload = {
             fullName: formData.fullName,
-            phone: formData.phone,
-            address: formData.address
+            phone: formData.phone
         };
         dispatch(updateUserProfile(payload));
     };
@@ -83,13 +80,7 @@ const ProfileForm = () => {
                     placeholder="Nhập số điện thoại..."
                 />
 
-                <InputField
-                    label="Địa chỉ"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Nhập địa chỉ của bạn..."
-                />
+
 
                 <div className="mt-6 flex justify-end">
                     <Button type="submit" variant="primary" isLoading={isUpdating}>

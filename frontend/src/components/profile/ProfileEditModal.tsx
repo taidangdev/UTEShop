@@ -15,16 +15,14 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
 
     const [formData, setFormData] = useState<ProfileUpdatePayload>({
         fullName: '',
-        phone: '',
-        address: ''
+        phone: ''
     });
 
     useEffect(() => {
         if (user && open) {
             setFormData({
                 fullName: user.fullName || '',
-                phone: user.phone || '',
-                address: user.address || ''
+                phone: user.phone || ''
             });
         }
     }, [user, open]);
@@ -129,18 +127,7 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
                             placeholder="Phone number"
                         />
                     </div>
-                    <div>
-                        <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Address
-                        </label>
-                        <input
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className={inputClass}
-                            placeholder="Shipping address"
-                        />
-                    </div>
+
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"

@@ -7,6 +7,8 @@ export interface ShopPromotion {
     type: 'percentage' | 'fixed_amount' | 'free_shipping';
     value: number;
     minOrderAmount: number;
+    categoryIds?: number[];
+    productIds?: number[];
 }
 
 export interface PromotionValidateResult {

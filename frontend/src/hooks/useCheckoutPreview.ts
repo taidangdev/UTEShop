@@ -7,6 +7,9 @@ import { getCheckoutProductIds } from '../utils/checkoutStorage';
 import type { CartLine } from '../utils/cartStorage';
 
 function isInformationComplete(info: CheckoutInformation) {
+    if (info.addressId) {
+        return true;
+    }
     return Boolean(
         info.fullName.trim() &&
             info.phone.trim() &&
