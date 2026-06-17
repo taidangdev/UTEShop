@@ -3,7 +3,8 @@ import {
     fetchMyAddresses,
     createUserAddress,
     setDefaultAddress,
-    deleteUserAddress
+    deleteUserAddress,
+    updateUserAddress
 } from '../../services/addressApi';
 import type { UserAddress, UserAddressPayload } from '../../types/address';
 import { useNotification } from '../../context/NotificationContext';
@@ -21,6 +22,7 @@ export default function ProfileAddressesTab() {
     const { toast, showConfirm } = useNotification();
 
     // Form states
+    const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
     const [recipientName, setRecipientName] = useState('');
     const [phone, setPhone] = useState('');
     const [line1, setLine1] = useState('');
@@ -32,6 +34,128 @@ export default function ProfileAddressesTab() {
     const [label, setLabel] = useState<'home' | 'campus' | 'work' | 'other'>('home');
     const [formError, setFormError] = useState<string | null>(null);
     const [formSubmitting, setFormSubmitting] = useState(false);
+
+    // Vietnam Administrative Divisions States
+    const [provincesList, setProvincesList] = useState<Array<{ code: number; name: string }>>([]);
+    const [districtsList, setDistrictsList] = useState<Array<{ code: number; name: string }>>([]);
+    const [wardsList, setWardsList] = useState<Array<{ code: number; name: string }>>([]);
+
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState<string>('');
+    const [selectedDistrictCode, setSelectedDistrictCode] = useState<string>('');
+
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
+
+    // Fetch provinces when form is shown
+    useEffect(() => {
+        if (!showAddForm) return;
+
+        const fetchProvinces = async () => {
+            setLoadingProvinces(true);
+            try {
+                const res = await fetch('https://provinces.open-api.vn/api/p/');
+                const data = await res.json();
+                setProvincesList(data || []);
+            } catch (err) {
+                console.error('Failed to fetch provinces', err);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+        fetchProvinces();
+    }, [showAddForm]);
+
+    // Fetch districts when selected province changes
+    useEffect(() => {
+        if (!selectedProvinceCode) {
+            setDistrictsList([]);
+            setWardsList([]);
+            setSelectedDistrictCode('');
+            return;
+        }
+
+        const fetchDistricts = async () => {
+            setLoadingDistricts(true);
+            try {
+                const res = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvinceCode}?depth=2`);
+                const data = await res.json();
+                setDistrictsList(data.districts || []);
+                setWardsList([]);
+                setSelectedDistrictCode('');
+            } catch (err) {
+                console.error('Failed to fetch districts', err);
+            } finally {
+                setLoadingDistricts(false);
+            }
+        };
+        fetchDistricts();
+    }, [selectedProvinceCode]);
+
+    // Fetch wards when selected district changes
+    useEffect(() => {
+        if (!selectedDistrictCode) {
+            setWardsList([]);
+            return;
+        }
+
+        const fetchWards = async () => {
+            setLoadingWards(true);
+            try {
+                const res = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrictCode}?depth=2`);
+                const data = await res.json();
+                setWardsList(data.wards || []);
+            } catch (err) {
+                console.error('Failed to fetch wards', err);
+            } finally {
+                setLoadingWards(false);
+            }
+        };
+        fetchWards();
+    }, [selectedDistrictCode]);
+
+    // Sync selectedProvinceCode when city is populated (for editing)
+    useEffect(() => {
+        if (provincesList.length > 0 && city && !selectedProvinceCode) {
+            const found = provincesList.find((p) => p.name === city);
+            if (found) {
+                setSelectedProvinceCode(String(found.code));
+            }
+        }
+    }, [provincesList, city]);
+
+    // Sync selectedDistrictCode when district is populated (for editing)
+    useEffect(() => {
+        if (districtsList.length > 0 && district && !selectedDistrictCode) {
+            const found = districtsList.find((d) => d.name === district);
+            if (found) {
+                setSelectedDistrictCode(String(found.code));
+            }
+        }
+    }, [districtsList, district]);
+
+    const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        setSelectedProvinceCode(code);
+        const prov = provincesList.find((p) => String(p.code) === code);
+        setCity(prov ? prov.name : '');
+        setDistrict('');
+        setWard('');
+    };
+
+    const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        setSelectedDistrictCode(code);
+        const dist = districtsList.find((d) => String(d.code) === code);
+        setDistrict(dist ? dist.name : '');
+        setWard('');
+    };
+
+    const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        const wd = wardsList.find((w) => String(w.code) === code);
+        setWard(wd ? wd.name : '');
+    };
 
     const loadAddresses = async () => {
         setLoading(true);
@@ -88,7 +212,27 @@ export default function ProfileAddressesTab() {
         }
     };
 
+    const handleEdit = (addr: UserAddress) => {
+        setEditingAddressId(addr.id);
+        setRecipientName(addr.recipientName);
+        setPhone(addr.phone);
+        setLine1(addr.line1);
+        setLine2(addr.line2 || '');
+        setWard(addr.ward || '');
+        setDistrict(addr.district || '');
+        setCity(addr.city);
+        setIsDefault(addr.isDefault);
+        if (addr.label === 'home' || addr.label === 'work' || addr.label === 'campus' || addr.label === 'other') {
+            setLabel(addr.label);
+        } else {
+            setLabel('home');
+        }
+        setFormError(null);
+        setShowAddForm(true);
+    };
+
     const resetForm = () => {
+        setEditingAddressId(null);
         setRecipientName('');
         setPhone('');
         setLine1('');
@@ -96,6 +240,10 @@ export default function ProfileAddressesTab() {
         setWard('');
         setDistrict('');
         setCity('');
+        setSelectedProvinceCode('');
+        setSelectedDistrictCode('');
+        setDistrictsList([]);
+        setWardsList([]);
         setIsDefault(false);
         setLabel('home');
         setFormError(null);
@@ -108,7 +256,9 @@ export default function ProfileAddressesTab() {
         if (!recipientName.trim()) return setFormError('Họ và tên người nhận là bắt buộc');
         if (!phone.trim()) return setFormError('Số điện thoại là bắt buộc');
         if (!line1.trim()) return setFormError('Địa chỉ chi tiết là bắt buộc');
-        if (!city.trim()) return setFormError('Thành phố là bắt buộc');
+        if (!city.trim()) return setFormError('Tỉnh / Thành phố là bắt buộc');
+        if (!district.trim()) return setFormError('Quận / Huyện là bắt buộc');
+        if (!ward.trim()) return setFormError('Phường / Xã là bắt buộc');
 
         setFormSubmitting(true);
         try {
@@ -123,14 +273,22 @@ export default function ProfileAddressesTab() {
                 isDefault,
                 label
             };
-            await createUserAddress(payload);
+            
+            if (editingAddressId !== null) {
+                await updateUserAddress(editingAddressId, payload);
+                toast.success('Cập nhật địa chỉ thành công.');
+            } else {
+                await createUserAddress(payload);
+                toast.success('Thêm địa chỉ thành công.');
+            }
+            
             resetForm();
             setShowAddForm(false);
             // Reload addresses
             const list = await fetchMyAddresses();
             setAddresses(list);
         } catch (err: any) {
-            setFormError(err?.response?.data?.message || 'Có lỗi xảy ra khi tạo địa chỉ.');
+            setFormError(err?.response?.data?.message || 'Có lỗi xảy ra khi xử lý địa chỉ.');
         } finally {
             setFormSubmitting(false);
         }
@@ -177,7 +335,9 @@ export default function ProfileAddressesTab() {
             {showAddForm ? (
                 <div className="rounded-[24px] bg-surface-container-lowest p-6 shadow-sm border border-outline-variant/30">
                     <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-on-surface">Thêm địa chỉ giao hàng</h3>
+                        <h3 className="text-lg font-bold text-on-surface">
+                            {editingAddressId !== null ? 'Chỉnh sửa địa chỉ giao hàng' : 'Thêm địa chỉ giao hàng'}
+                        </h3>
                         <button
                             type="button"
                             onClick={() => setShowAddForm(false)}
@@ -240,53 +400,84 @@ export default function ProfileAddressesTab() {
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant px-1">
-                                    Thành phố
+                                    Tỉnh / Thành phố
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     required
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                    placeholder="Ví dụ: TP. Hồ Chí Minh"
+                                    value={selectedProvinceCode}
+                                    onChange={handleProvinceChange}
                                     className={inputClass}
-                                />
+                                >
+                                    <option value="">Chọn Tỉnh / Thành</option>
+                                    {loadingProvinces ? (
+                                        <option disabled>Đang tải...</option>
+                                    ) : (
+                                        provincesList.map((p) => (
+                                            <option key={p.code} value={p.code}>
+                                                {p.name}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant px-1">
                                     Quận / Huyện
                                 </label>
-                                <input
-                                    type="text"
-                                    value={district}
-                                    onChange={(e) => setDistrict(e.target.value)}
-                                    placeholder="Ví dụ: Quận 1 (Tùy chọn)"
+                                <select
+                                    required
+                                    disabled={!selectedProvinceCode}
+                                    value={selectedDistrictCode}
+                                    onChange={handleDistrictChange}
                                     className={inputClass}
-                                />
+                                >
+                                    <option value="">Chọn Quận / Huyện</option>
+                                    {loadingDistricts ? (
+                                        <option disabled>Đang tải...</option>
+                                    ) : (
+                                        districtsList.map((d) => (
+                                            <option key={d.code} value={d.code}>
+                                                {d.name}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant px-1">
                                     Phường / Xã
                                 </label>
-                                <input
-                                    type="text"
-                                    value={ward}
-                                    onChange={(e) => setWard(e.target.value)}
-                                    placeholder="Ví dụ: Phường Bến Nghé (Tùy chọn)"
+                                <select
+                                    required
+                                    disabled={!selectedDistrictCode}
+                                    value={wardsList.find((w) => w.name === ward)?.code || ''}
+                                    onChange={handleWardChange}
                                     className={inputClass}
-                                />
+                                >
+                                    <option value="">Chọn Phường / Xã</option>
+                                    {loadingWards ? (
+                                        <option disabled>Đang tải...</option>
+                                    ) : (
+                                        wardsList.map((w) => (
+                                            <option key={w.code} value={w.code}>
+                                                {w.name}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant px-1">
-                                    Mã bưu điện / Ghi chú
+                                    Ghi chú (Tùy chọn)
                                 </label>
                                 <input
                                     type="text"
                                     value={line2}
                                     onChange={(e) => setLine2(e.target.value)}
-                                    placeholder="Ví dụ: 700000 (Tùy chọn)"
+                                    placeholder="Ví dụ: Giao giờ hành chính, gọi trước khi giao..."
                                     className={inputClass}
                                 />
                             </div>
@@ -359,7 +550,7 @@ export default function ProfileAddressesTab() {
                                 disabled={formSubmitting}
                                 className="rounded-full bg-primary px-8 py-2.5 text-sm font-semibold text-on-primary shadow-sm hover:shadow hover:bg-primary/95 transition-all disabled:opacity-50"
                             >
-                                {formSubmitting ? 'Đang lưu...' : 'Lưu địa chỉ'}
+                                {formSubmitting ? 'Đang lưu...' : editingAddressId !== null ? 'Cập nhật địa chỉ' : 'Lưu địa chỉ'}
                             </button>
                         </div>
                     </form>
@@ -450,17 +641,30 @@ export default function ProfileAddressesTab() {
                                                 Địa chỉ nhận hàng chính
                                             </span>
                                         )}
-                                        <button
-                                            type="button"
-                                            disabled={isActionLoading}
-                                            onClick={() => handleDelete(addr.id)}
-                                            className="flex items-center gap-1 text-xs font-semibold text-error hover:underline hover:text-error/80 disabled:opacity-50"
-                                        >
-                                            <span className="material-symbols-outlined text-[16px]">
-                                                delete
-                                            </span>
-                                            Xóa
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                type="button"
+                                                disabled={isActionLoading}
+                                                onClick={() => handleEdit(addr)}
+                                                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline hover:text-primary/80 disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-[16px]">
+                                                    edit
+                                                </span>
+                                                Sửa
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={isActionLoading}
+                                                onClick={() => handleDelete(addr.id)}
+                                                className="flex items-center gap-1 text-xs font-semibold text-error hover:underline hover:text-error/80 disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-[16px]">
+                                                    delete
+                                                </span>
+                                                Xóa
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             );

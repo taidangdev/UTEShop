@@ -15,8 +15,7 @@ function isInformationComplete(info: CheckoutInformation) {
             info.phone.trim() &&
             info.street.trim() &&
             info.city.trim() &&
-            info.state.trim() &&
-            info.postalCode.trim()
+            info.state.trim()
     );
 }
 

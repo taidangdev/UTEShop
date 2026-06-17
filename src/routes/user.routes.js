@@ -56,6 +56,7 @@ const addressValidation = [
 router.get('/me/addresses', requirePermission('profile:read'), userController.getMyAddresses);
 router.post('/me/addresses', requirePermission('profile:update'), addressValidation, validate, userController.createAddress);
 router.put('/me/addresses/:id/default', requirePermission('profile:update'), userController.setDefaultAddress);
+router.put('/me/addresses/:id', requirePermission('profile:update'), addressValidation, validate, userController.updateAddress);
 router.delete('/me/addresses/:id', requirePermission('profile:update'), userController.deleteAddress);
 
 // --- Consignments ---

@@ -140,6 +140,15 @@ const deleteAddress = async (req, res, next) => {
     }
 };
 
+const updateAddress = async (req, res, next) => {
+    try {
+        const address = await addressService.updateAddress(req.user.id, req.params.id, req.body);
+        return successResponse(res, 200, 'Cập nhật địa chỉ thành công', { address });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getMe,
     getMyOrders,
@@ -151,5 +160,6 @@ module.exports = {
     getMyAddresses,
     createAddress,
     setDefaultAddress,
-    deleteAddress
+    deleteAddress,
+    updateAddress
 };
