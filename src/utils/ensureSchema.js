@@ -335,10 +335,13 @@ const ensureOrderDeliveryColumns = async (sequelize) => {
             defaultValue: 0
         });
         await addOrderCol('returnedAt', { type: DataTypes.DATE, allowNull: true });
+        await addOrderCol('returnReason', { type: DataTypes.TEXT, allowNull: true });
+        await addOrderCol('returnRequestedAt', { type: DataTypes.DATE, allowNull: true });
+        await addOrderCol('returnApprovedAt', { type: DataTypes.DATE, allowNull: true });
 
         try {
             await sequelize.query(
-                "ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'delivered', 'returned', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending'"
+                "ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'delivered', 'return_requested', 'return_approved', 'returned', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending'"
             );
             console.log('  + Verified orders.status ENUM values');
         } catch (err) {

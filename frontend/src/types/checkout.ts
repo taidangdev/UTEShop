@@ -85,6 +85,9 @@ export interface OrderDto {
     deliveredAt?: string | null;
     returnedAt?: string | null;
     cancelledAt?: string | null;
+    returnReason?: string | null;
+    returnRequestedAt?: string | null;
+    returnApprovedAt?: string | null;
 }
 
 export interface PlaceOrderResponseData {

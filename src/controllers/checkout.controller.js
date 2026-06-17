@@ -57,9 +57,21 @@ const cancelOrder = async (req, res, next) => {
     }
 };
 
+const requestReturn = async (req, res, next) => {
+    try {
+        const { orderNumber } = req.params;
+        const { reason } = req.body;
+        const data = await checkoutService.requestReturnForUser(orderNumber, req.user.id, { reason });
+        return successResponse(res, 200, 'Yêu cầu trả hàng đã được gửi thành công', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     preview,
     placeOrder,
     getOrder,
-    cancelOrder
+    cancelOrder,
+    requestReturn
 };

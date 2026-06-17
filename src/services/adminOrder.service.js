@@ -19,8 +19,10 @@ const ADMIN_TRANSITIONS = {
     processing: ['shipping', 'cancelled'],
     shipping: ['delivered', 'delivery_failed'],
     delivery_failed: ['shipping', 'returned'],
-    delivered: [],
-    returned: [],
+    delivered: ['return_requested'],
+    return_requested: ['return_approved', 'delivered'],
+    return_approved: ['returned'],
+    returned: ['refunded'],
     cancelled: [],
     refunded: []
 };
@@ -29,7 +31,10 @@ const ADMIN_TRANSITIONS = {
 const ACTION_LABELS = {
     delivery_failed: 'Giao thất bại',
     shipping: 'Giao lại',
-    returned: 'Hoàn trả hàng'
+    returned: 'Nhận hàng hoàn',
+    return_approved: 'Duyệt trả hàng',
+    delivered: 'Từ chối trả hàng',
+    refunded: 'Hoàn tiền'
 };
 
 const STATUS_NOTIFICATIONS = {
@@ -70,7 +75,17 @@ const STATUS_NOTIFICATIONS = {
     returned: {
         title: '📦 Đơn hàng đã hoàn trả',
         content: (orderNumber) =>
-            `Đơn hàng ${orderNumber} đã được hoàn trả sau nhiều lần giao không thành công.`
+            `Đơn hàng ${orderNumber} đã được hoàn trả thành công.`
+    },
+    return_requested: {
+        title: '🔄 Yêu cầu trả hàng đang chờ duyệt',
+        content: (orderNumber) =>
+            `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đang được shop xem xét.`
+    },
+    return_approved: {
+        title: '📦 Yêu cầu trả hàng được phê duyệt',
+        content: (orderNumber) =>
+            `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đã được phê duyệt. Vui lòng chờ shipper thu hồi.`
     }
 };
 
@@ -102,10 +117,12 @@ function getAllowedNextStatuses(order) {
             status: nextStatus,
             label:
                 currentStatus === 'delivery_failed' && nextStatus === 'shipping'
-                    ? ACTION_LABELS.shipping
-                    : currentStatus === 'shipping' && nextStatus === 'delivery_failed'
-                      ? ACTION_LABELS.delivery_failed
-                      : ACTION_LABELS[nextStatus] || STATUS_LABELS[nextStatus] || nextStatus
+                    ? 'Giao lại'
+                    : nextStatus === 'shipping'
+                      ? 'Giao hàng'
+                      : currentStatus === 'shipping' && nextStatus === 'delivery_failed'
+                        ? ACTION_LABELS.delivery_failed
+                        : ACTION_LABELS[nextStatus] || STATUS_LABELS[nextStatus] || nextStatus
         }));
 }
 
@@ -151,6 +168,9 @@ function mapAdminOrderRow(order) {
         deliveredAt: order.deliveredAt,
         cancelledAt: order.cancelledAt,
         returnedAt: order.returnedAt,
+        returnReason: order.returnReason || null,
+        returnRequestedAt: order.returnRequestedAt || null,
+        returnApprovedAt: order.returnApprovedAt || null,
         deliveryFailCount: order.deliveryFailCount || 0,
         maxDeliveryAttempts: MAX_DELIVERY_ATTEMPTS,
         deliveryType: snapshot.deliveryType || null,
@@ -403,6 +423,14 @@ async function applyStatusSideEffects(
         }
     }
 
+    if (newStatus === 'return_requested') {
+        orderUpdates.returnRequestedAt = now;
+    }
+
+    if (newStatus === 'return_approved') {
+        orderUpdates.returnApprovedAt = now;
+    }
+
     if (newStatus === 'returned') {
         orderUpdates.returnedAt = now;
         if (payment) {
@@ -478,9 +506,9 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             newStatus
         );
 
-        const shouldRestoreStock = ['cancelled', 'refunded', 'returned'].includes(
-            resolvedStatus
-        );
+        const stockRestoredStatuses = ['cancelled', 'refunded', 'returned'];
+        const shouldRestoreStock = stockRestoredStatuses.includes(resolvedStatus) &&
+                                   !stockRestoredStatuses.includes(order.status);
         if (shouldRestoreStock) {
             for (const item of order.items) {
                 await incrementStock(
@@ -497,6 +525,8 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
         if (adminNote !== undefined) {
             await order.update({ adminNote: adminNote || null }, { transaction });
         }
+
+        const originalStatusBeforeEffects = order.status;
 
         await applyStatusSideEffects(order, order.payment, resolvedStatus, {
             previousStatus: order.status,
@@ -519,7 +549,13 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             ]
         });
 
-        const notification = STATUS_NOTIFICATIONS[resolvedStatus];
+        let notification = STATUS_NOTIFICATIONS[resolvedStatus];
+        if (originalStatusBeforeEffects === 'return_requested' && resolvedStatus === 'delivered') {
+            notification = {
+                title: '❌ Yêu cầu trả hàng bị từ chối',
+                content: (orderNumber) => `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đã bị shop từ chối.`
+            };
+        }
         if (notification && order.userId) {
             notificationService
                 .createNotification({

@@ -29,6 +29,15 @@ const PAYMENT_METHOD_MAP = {
     credit_card: 'vnpay'
 };
 
+/**
+ * Các chuyển trạng thái mà KHÁCH HÀNG được phép thực hiện.
+ * Chỉ cho phép hủy đơn khi đơn ở trạng thái `pending` (chờ xác nhận).
+ * Mọi trạng thái khác phải được xử lý bởi Admin.
+ */
+const CUSTOMER_TRANSITIONS = {
+    pending: ['cancelled']
+};
+
 function generateOrderNumber() {
     const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const rnd = Math.floor(1000 + Math.random() * 9000);
@@ -374,6 +383,9 @@ function mapOrderResponse(order, items, payment) {
         deliveredAt: order.deliveredAt,
         returnedAt: order.returnedAt,
         cancelledAt: order.cancelledAt,
+        returnReason: order.returnReason || null,
+        returnRequestedAt: order.returnRequestedAt || null,
+        returnApprovedAt: order.returnApprovedAt || null,
         items: items.map((item) => ({
             id: item.id,
             productId: item.productId,
@@ -681,10 +693,13 @@ async function cancelOrderForUser(orderNumber, userId) {
             throw err;
         }
 
-        const cancellableStatuses = ['pending', 'confirmed'];
-        if (!cancellableStatuses.includes(order.status)) {
-            const err = new Error('Order cannot be cancelled in its current state');
-            err.statusCode = 400;
+        const allowedNextStatuses = CUSTOMER_TRANSITIONS[order.status] || [];
+        if (!allowedNextStatuses.includes('cancelled')) {
+            const err = new Error(
+                `Không thể hủy đơn hàng ở trạng thái "${order.status}". ` +
+                `Chỉ được hủy khi đơn đang ở trạng thái chờ xác nhận (pending).`
+            );
+            err.statusCode = 403;
             throw err;
         }
 
@@ -833,11 +848,75 @@ async function validatePromotionForCart(cartContext, { productIds, code }) {
     return promotionService.previewPromotion(code, lines, cartContext.userId);
 }
 
+async function requestReturnForUser(orderNumber, userId, { reason }) {
+    const transaction = await sequelize.transaction();
+    try {
+        const order = await Order.findOne({
+            where: { orderNumber },
+            include: [
+                { model: OrderItem, as: 'items' },
+                { model: Payment, as: 'payment' }
+            ],
+            transaction
+        });
+
+        if (!order) {
+            const err = new Error('Order not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        if (order.userId && order.userId !== userId) {
+            const err = new Error('Forbidden');
+            err.statusCode = 403;
+            throw err;
+        }
+
+        if (order.status !== 'delivered') {
+            const err = new Error('Only delivered orders can be returned');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        await order.update({
+            status: 'return_requested',
+            returnReason: reason,
+            returnRequestedAt: new Date()
+        }, { transaction });
+
+        await transaction.commit();
+
+        if (order.userId) {
+            notificationService.createNotification({
+                userId: order.userId,
+                title: '🔄 Yêu cầu trả hàng đã được ghi nhận',
+                content: `Yêu cầu trả hàng cho đơn hàng ${order.orderNumber} đã được ghi nhận và đang chờ shop duyệt.`,
+                type: 'order_status_update',
+                relatedId: order.orderNumber
+            }).catch(err => console.error('Error sending return request notification:', err));
+        }
+
+        const updatedOrder = await Order.findOne({
+            where: { orderNumber },
+            include: [
+                { model: OrderItem, as: 'items' },
+                { model: Payment, as: 'payment' }
+            ]
+        });
+
+        return { order: mapOrderResponse(updatedOrder, updatedOrder.items, updatedOrder.payment) };
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
 module.exports = {
     previewCheckout,
     placeOrder,
     getOrderForUser,
     cancelOrderForUser,
+    requestReturnForUser,
     autoCancelPendingOrders,
     validatePromotionForCart,
     normalizeInformation,

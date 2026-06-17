@@ -42,6 +42,8 @@ const Order = sequelize.define(
                 'shipping',
                 'delivery_failed',
                 'delivered',
+                'return_requested',
+                'return_approved',
                 'returned',
                 'cancelled',
                 'refunded'
