@@ -39,7 +39,7 @@ export default function CustomersTab() {
     // Role Edit Modal
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-    const [newRole, setNewRole] = useState<'admin' | 'customer' | 'user'>('customer');
+    const [newRole, setNewRole] = useState<'admin' | 'customer'>('customer');
     const [savingRole, setSavingRole] = useState(false);
 
     const showToast = (message: string, type: 'success' | 'error') => {
@@ -355,7 +355,6 @@ export default function CustomersTab() {
                         <option value="all">Tất cả vai trò</option>
                         <option value="admin">Quản trị viên (Admin)</option>
                         <option value="customer">Khách hàng (Customer)</option>
-                        <option value="user">Người dùng (User)</option>
                     </select>
 
                     <div className="flex gap-2">
@@ -471,11 +470,9 @@ export default function CustomersTab() {
                                                     <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
                                                         user.role === 'admin'
                                                             ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                                                            : user.role === 'customer'
-                                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                                                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                                                     }`}>
-                                                        {user.role}
+                                                        {user.role === 'admin' ? 'Admin' : 'Khách hàng'}
                                                     </span>
 
                                                     {/* Status Badge */}
@@ -821,20 +818,6 @@ export default function CustomersTab() {
                                     <div>
                                         <p className="text-sm font-bold text-on-surface">Customer</p>
                                         <p className="text-xs text-outline">Quyền hạn của khách hàng mua sản phẩm.</p>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center gap-3 rounded-xl border border-outline-variant/30 p-3 hover:bg-surface-container-low cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="user-role"
-                                        checked={newRole === 'user'}
-                                        onChange={() => setNewRole('user')}
-                                        className="h-4 w-4 text-primary focus:ring-primary"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-bold text-on-surface">User</p>
-                                        <p className="text-xs text-outline">Quyền hạn của thành viên thường.</p>
                                     </div>
                                 </label>
 

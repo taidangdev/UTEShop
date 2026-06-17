@@ -318,6 +318,8 @@ async function updateConsignment(id, payload) {
 
 /**
  * Deletes a consignment request by Admin.
+ * If the consignment has a linked product (e.g. status was ON_SALE),
+ * the product is archived first to prevent orphaned active listings.
  */
 async function deleteConsignment(id) {
     const transaction = await sequelize.transaction();
@@ -327,6 +329,14 @@ async function deleteConsignment(id) {
             const err = new Error('Yêu cầu ký gửi không tồn tại');
             err.statusCode = 404;
             throw err;
+        }
+
+        // Archive the linked product if it exists, to prevent orphaned active listings on the store
+        if (consignment.productId) {
+            await Product.update(
+                { status: 'archived', stockQuantity: 0 },
+                { where: { id: consignment.productId }, transaction }
+            );
         }
 
         // Remove associated images

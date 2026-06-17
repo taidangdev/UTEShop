@@ -133,7 +133,7 @@ async function getAdminDashboardStats({ from, to, preset, groupBy, status }) {
         `
         SELECT COUNT(*) AS newCustomers
         FROM users u
-        WHERE u.role IN ('customer', 'user')
+        WHERE u.role = 'customer'
           AND u.createdAt BETWEEN :startDate AND :endDate
         `,
         { replacements, type: QueryTypes.SELECT }

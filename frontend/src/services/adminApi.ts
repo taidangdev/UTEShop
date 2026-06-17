@@ -213,7 +213,7 @@ export interface AdminUser {
     fullName: string | null;
     phone: string | null;
     address: string | null;
-    role: 'admin' | 'customer' | 'user';
+    role: 'admin' | 'customer';
     status: 'active' | 'inactive' | 'banned';
     studentId: string | null;
     loyaltyPoints: number;
@@ -345,7 +345,7 @@ export async function updateAdminUserStatus(id: number, status: 'active' | 'inac
     return response.data;
 }
 
-export async function updateAdminUserRole(id: number, role: 'admin' | 'customer' | 'user') {
+export async function updateAdminUserRole(id: number, role: 'admin' | 'customer') {
     const response = await axiosInstance.put<ApiEnvelope<{ user: AdminUser }>>(`/admin/users/${id}/role`, { role });
     return response.data;
 }
