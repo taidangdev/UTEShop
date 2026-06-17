@@ -23,6 +23,9 @@ export interface AdminOrderListItem {
     deliveredAt: string | null;
     cancelledAt: string | null;
     returnedAt: string | null;
+    returnReason: string | null;
+    returnRequestedAt: string | null;
+    returnApprovedAt: string | null;
     deliveryFailCount: number;
     maxDeliveryAttempts: number;
     deliveryType: string | null;

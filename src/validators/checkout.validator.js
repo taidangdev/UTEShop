@@ -72,8 +72,14 @@ const orderNumberValidation = [
     param('orderNumber').trim().notEmpty().withMessage('orderNumber is required')
 ];
 
+const requestReturnValidation = [
+    ...orderNumberValidation,
+    body('reason').trim().notEmpty().withMessage('Lý do trả hàng là bắt buộc')
+];
+
 module.exports = {
     previewCheckoutValidation,
     placeOrderValidation,
-    orderNumberValidation
+    orderNumberValidation,
+    requestReturnValidation
 };

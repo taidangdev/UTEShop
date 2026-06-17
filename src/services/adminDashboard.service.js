@@ -8,6 +8,8 @@ const STATUS_LABELS = {
     shipping: 'Đang giao',
     delivery_failed: 'Giao thất bại',
     delivered: 'Đã giao',
+    return_requested: 'Chờ duyệt trả hàng',
+    return_approved: 'Chờ thu hồi hàng',
     returned: 'Hoàn trả hàng',
     cancelled: 'Đã hủy',
     refunded: 'Đã hoàn tiền'
@@ -20,6 +22,8 @@ const ORDER_STATUSES = [
     'shipping',
     'delivery_failed',
     'delivered',
+    'return_requested',
+    'return_approved',
     'returned',
     'cancelled',
     'refunded'

@@ -6,7 +6,8 @@ const { validate } = require('../middlewares/validation.middleware');
 const {
     previewCheckoutValidation,
     placeOrderValidation,
-    orderNumberValidation
+    orderNumberValidation,
+    requestReturnValidation
 } = require('../validators/checkout.validator');
 
 const router = express.Router();
@@ -43,6 +44,15 @@ router.post(
     orderNumberValidation,
     validate,
     checkoutController.cancelOrder
+);
+
+router.post(
+    '/orders/:orderNumber/return',
+    verifyToken,
+    requirePermission('orders:read'),
+    requestReturnValidation,
+    validate,
+    checkoutController.requestReturn
 );
 
 module.exports = router;

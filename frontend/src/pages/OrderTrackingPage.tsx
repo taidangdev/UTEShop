@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
-import { fetchOrder, cancelOrder } from '../services/checkoutApi';
+import { fetchOrder, cancelOrder, requestOrderReturn } from '../services/checkoutApi';
 import { fetchEligibleReviewItems } from '../services/reviewApi';
 import type { OrderDto } from '../types/checkout';
 import { useNotification } from '../context/NotificationContext';
@@ -15,6 +15,8 @@ const STATUS_CONFIG: Record<string, { label: string; icon: string; colorClass: s
     shipping: { label: 'Đang giao hàng', icon: 'local_shipping', colorClass: 'bg-tertiary-container text-on-tertiary-container', step: 4 },
     delivery_failed: { label: 'Giao hàng thất bại', icon: 'error', colorClass: 'bg-error-container text-on-error-container', step: 4 },
     delivered: { label: 'Đã giao thành công', icon: 'task_alt', colorClass: 'bg-success/10 text-success', step: 5 },
+    return_requested: { label: 'Chờ duyệt trả hàng', icon: 'history', colorClass: 'bg-amber-500/10 text-amber-500', step: 0 },
+    return_approved: { label: 'Chờ thu hồi hàng', icon: 'forward_to_inbox', colorClass: 'bg-indigo-500/10 text-indigo-500', step: 0 },
     returned: { label: 'Hoàn trả hàng', icon: 'undo', colorClass: 'bg-error-container text-on-error-container', step: 0 },
     cancelled: { label: 'Đã hủy đơn hàng', icon: 'cancel', colorClass: 'bg-error-container text-on-error-container', step: 0 },
     refunded: { label: 'Đã hoàn tiền', icon: 'keyboard_return', colorClass: 'bg-error-container text-on-error-container', step: 0 }
@@ -44,6 +46,9 @@ export default function OrderTrackingPage() {
     const [error, setError] = useState<string | null>(null);
     const [cancelling, setCancelling] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [returnReason, setReturnReason] = useState('');
+    const [returning, setReturning] = useState(false);
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewOrderItemId, setReviewOrderItemId] = useState<number | undefined>();
     const [reviewableItemIds, setReviewableItemIds] = useState<Set<number>>(() => new Set());
@@ -103,6 +108,22 @@ export default function OrderTrackingPage() {
         }
     };
 
+    const handleRequestReturn = async () => {
+        if (!orderNumber || !returnReason.trim()) return;
+        setReturning(true);
+        try {
+            await requestOrderReturn(orderNumber, returnReason);
+            toast.success('Gửi yêu cầu trả hàng thành công');
+            await loadOrderData();
+            setShowReturnModal(false);
+            setReturnReason('');
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || err?.message || 'Không thể gửi yêu cầu trả hàng');
+        } finally {
+            setReturning(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-surface">
@@ -125,6 +146,7 @@ export default function OrderTrackingPage() {
     }
 
     const currentStatus = order.status;
+    const isDisputeState = currentStatus === 'return_requested' || currentStatus === 'return_approved';
     const isTerminalFailure =
         currentStatus === 'cancelled' ||
         currentStatus === 'refunded' ||
@@ -161,7 +183,7 @@ export default function OrderTrackingPage() {
         { key: 5, label: 'Đã giao', desc: 'Hoàn tất đơn hàng' }
     ];
 
-    const canCancel = currentStatus === 'pending' || currentStatus === 'confirmed';
+    const canCancel = currentStatus === 'pending';
 
     return (
         <div className="min-h-screen bg-surface py-10 text-on-surface antialiased">
@@ -239,7 +261,28 @@ export default function OrderTrackingPage() {
                                 </p>
                             </div>
                         )}
-                        {isTerminalFailure ? (
+                        {isDisputeState ? (
+                            <div className="flex flex-col items-center justify-center rounded-2xl bg-amber-500/10 p-8 text-center border border-amber-500/20">
+                                <span className="material-symbols-outlined text-[48px] text-amber-600">
+                                    {currentStatus === 'return_requested' ? 'assignment_return' : 'local_shipping'}
+                                </span>
+                                <h3 className="mt-3 text-lg font-bold text-amber-700">
+                                    {currentStatus === 'return_requested'
+                                        ? 'Đang chờ duyệt Yêu cầu Trả hàng'
+                                        : 'Yêu cầu Trả hàng được Chấp nhận'}
+                                </h3>
+                                <p className="mt-1 max-w-lg text-sm text-on-surface-variant leading-relaxed">
+                                    {currentStatus === 'return_requested'
+                                        ? 'Yêu cầu trả hàng của bạn đã được ghi nhận và đang chờ shop phê duyệt.'
+                                        : 'Shop đã phê duyệt yêu cầu trả hàng của bạn. Vui lòng chờ shipper liên hệ để thu hồi sản phẩm.'}
+                                </p>
+                                {order.returnReason && (
+                                    <p className="mt-2 text-sm text-on-surface-variant font-medium">
+                                        Lý do trả hàng: <span className="italic font-normal">&quot;{order.returnReason}&quot;</span>
+                                    </p>
+                                )}
+                            </div>
+                        ) : isTerminalFailure ? (
                             <div className="flex flex-col items-center justify-center rounded-2xl bg-error-container/20 p-8 text-center border border-error/10">
                                 <span className="material-symbols-outlined text-[48px] text-error">
                                     {currentStatus === 'cancelled'
@@ -265,7 +308,10 @@ export default function OrderTrackingPage() {
                                         </span>
                                     )}
                                     {order.adminNote && (
-                                        <span className="block mt-2 italic font-medium">Lý do: &quot;{order.adminNote}&quot;</span>
+                                        <span className="block mt-2 italic font-medium">Ghi chú từ shop: &quot;{order.adminNote}&quot;</span>
+                                    )}
+                                    {order.returnReason && (
+                                        <span className="block mt-1 italic font-medium">Lý do trả hàng: &quot;{order.returnReason}&quot;</span>
                                     )}
                                 </p>
                             </div>
@@ -404,7 +450,16 @@ export default function OrderTrackingPage() {
                                     <span className="material-symbols-outlined text-[18px]">cancel</span>
                                     Hủy đơn hàng này
                                 </button>
-                            ) : (
+                            ) : order.status === 'delivered' ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowReturnModal(true)}
+                                    className="flex items-center gap-2 rounded-full border border-amber-500/30 px-6 py-3 text-sm font-semibold text-amber-500 hover:bg-amber-500/5 active:scale-95 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">keyboard_return</span>
+                                    Yêu cầu Trả hàng / Hoàn tiền
+                                </button>
+                            ) : ['return_requested', 'return_approved', 'returned', 'refunded'].includes(order.status) ? null : (
                                 <p className="text-xs text-on-surface-variant italic">
                                     * Đơn hàng đã ở trạng thái xử lý/vận chuyển, không thể tự hủy trực tuyến.
                                 </p>
@@ -497,6 +552,75 @@ export default function OrderTrackingPage() {
                                     </>
                                 ) : (
                                     'Đồng ý hủy đơn'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Return Request Modal */}
+            {showReturnModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-fade-in">
+                    <div className="soft-shadow w-full max-w-md rounded-[28px] bg-surface-container-low p-8 border border-outline-variant/30 text-on-surface">
+                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                            <span className="material-symbols-outlined text-[24px]">keyboard_return</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-on-surface">Yêu cầu Trả hàng / Hoàn tiền</h3>
+                        <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                            Vui lòng chọn hoặc nhập lý sớ lý do chi tiết để cửa hàng duyệt yêu cầu của bạn nhanh nhất:
+                        </p>
+
+                        <div className="mt-4 space-y-2">
+                            {['Hàng lỗi / hư hỏng do nhà sản xuất', 'Sản phẩm không đúng với mô tả', 'Gửi sai sản phẩm / thiếu hàng', 'Khác (vui lòng tự nhập lý do)'].map((reasonOpt) => (
+                                <button
+                                    key={reasonOpt}
+                                    type="button"
+                                    onClick={() => setReturnReason(reasonOpt)}
+                                    className={`w-full text-left p-3 rounded-xl border text-sm font-medium transition ${
+                                        returnReason === reasonOpt
+                                            ? 'border-primary bg-primary/5 text-primary'
+                                            : 'border-outline-variant/40 bg-surface hover:bg-surface-container-high text-on-surface-variant'
+                                    }`}
+                                >
+                                    {reasonOpt}
+                                </button>
+                            ))}
+                        </div>
+
+                        <textarea
+                            value={returnReason}
+                            onChange={(e) => setReturnReason(e.target.value)}
+                            rows={3}
+                            placeholder="Mô tả chi tiết lý do (bắt buộc nếu chọn Khác)..."
+                            className="mt-4 w-full rounded-xl border border-outline-variant/40 bg-surface px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+
+                        <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowReturnModal(false);
+                                    setReturnReason('');
+                                }}
+                                disabled={returning}
+                                className="h-12 rounded-full bg-surface-container-high px-6 text-sm font-semibold text-on-surface transition active:scale-95"
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleRequestReturn}
+                                disabled={returning || !returnReason.trim()}
+                                className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-on-primary hover:shadow-md transition active:scale-95 disabled:opacity-60"
+                            >
+                                {returning ? (
+                                    <>
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                        Đang gửi...
+                                    </>
+                                ) : (
+                                    'Gửi yêu cầu'
                                 )}
                             </button>
                         </div>

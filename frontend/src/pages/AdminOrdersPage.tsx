@@ -16,6 +16,8 @@ const STATUS_STYLES: Record<string, string> = {
     shipping: 'bg-tertiary-container text-on-tertiary-container',
     delivery_failed: 'bg-error-container/70 text-on-error-container',
     delivered: 'bg-primary/10 text-primary',
+    return_requested: 'bg-amber-500/10 text-amber-500',
+    return_approved: 'bg-indigo-500/10 text-indigo-500',
     returned: 'bg-error-container text-on-error-container',
     cancelled: 'bg-error-container text-on-error-container',
     refunded: 'bg-error-container text-on-error-container'
@@ -33,6 +35,8 @@ const ACTION_STYLES: Record<string, string> = {
     processing: 'bg-primary text-on-primary hover:bg-primary/90',
     shipping: 'bg-tertiary text-on-tertiary hover:bg-tertiary/90',
     delivered: 'bg-primary text-on-primary hover:bg-primary/90',
+    return_requested: 'bg-amber-500 text-white hover:bg-amber-600',
+    return_approved: 'bg-indigo-500 text-white hover:bg-indigo-600',
     delivery_failed: 'border border-error text-error hover:bg-error-container',
     returned: 'border border-error text-error hover:bg-error-container',
     cancelled: 'border border-error text-error hover:bg-error-container',
@@ -558,6 +562,15 @@ export default function AdminOrdersPage() {
                                         )}
                                     </div>
                                     <div>
+                                        {selectedOrder.returnReason && (
+                                            <div className="mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 p-4">
+                                                <p className="text-xs font-semibold uppercase text-amber-700">Lý do trả hàng của khách</p>
+                                                <p className="mt-1 text-sm font-medium text-on-surface">&quot;{selectedOrder.returnReason}&quot;</p>
+                                                {selectedOrder.returnRequestedAt && (
+                                                    <p className="mt-1 text-[10px] text-on-surface-variant">Yêu cầu lúc: {formatDate(selectedOrder.returnRequestedAt)}</p>
+                                                )}
+                                            </div>
+                                        )}
                                         <label className="mb-2 block text-xs font-semibold uppercase text-on-surface-variant">
                                             Ghi chú admin
                                         </label>

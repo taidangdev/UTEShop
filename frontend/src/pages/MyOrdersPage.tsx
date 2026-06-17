@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import WriteReviewModal from "../components/reviews/WriteReviewModal";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchMyOrders } from "../store/profileSlice";
-import { cancelOrder } from "../services/checkoutApi";
+import { cancelOrder, requestOrderReturn } from "../services/checkoutApi";
 import { fetchEligibleReviewItems } from "../services/reviewApi";
 import { useNotification } from "../context/NotificationContext";
 
@@ -67,6 +67,30 @@ export default function MyOrdersPage() {
   const closeReviewModal = () => {
     setReviewModalOpen(false);
     setReviewOrderNumber(undefined);
+  };
+
+  const [returningOrderNumber, setReturningOrderNumber] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [returning, setReturning] = useState(false);
+
+  const handleRequestReturn = async () => {
+    if (!returningOrderNumber || !returnReason.trim()) return;
+    setReturning(true);
+    try {
+      await requestOrderReturn(returningOrderNumber, returnReason);
+      toast.success(`Gửi yêu cầu trả hàng cho đơn #${returningOrderNumber} thành công`);
+      dispatch(fetchMyOrders());
+      setReturningOrderNumber(null);
+      setReturnReason("");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không thể gửi yêu cầu trả hàng",
+      );
+    } finally {
+      setReturning(false);
+    }
   };
 
   const handleReviewSuccess = () => {
@@ -227,7 +251,7 @@ export default function MyOrdersPage() {
             <div className="flex flex-col gap-4">
               {filteredOrders.map((order) => {
                 const canCancel =
-                  order.status === "pending" || order.status === "confirmed";
+                  order.status === "pending";
                 const canReview = canReviewOrder(order.orderNumber, order.status);
 
                 return (
@@ -300,6 +324,21 @@ export default function MyOrdersPage() {
                                 rate_review
                               </span>
                               Đánh giá
+                            </button>
+                          )}
+                          {order.status === "delivered" && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReturningOrderNumber(order.orderNumber);
+                              }}
+                              className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-amber-500/30 px-4 text-xs font-semibold text-amber-500 hover:bg-amber-500/5 active:scale-95 transition"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">
+                                keyboard_return
+                              </span>
+                              Trả hàng
                             </button>
                           )}
                           {canCancel && (
@@ -382,6 +421,79 @@ export default function MyOrdersPage() {
                   </>
                 ) : (
                   "Đồng ý hủy đơn"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return Request Modal */}
+      {returningOrderNumber && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6">
+          <div className="soft-shadow w-full max-w-md rounded-[28px] bg-surface-container-low p-8 border border-outline-variant/30 text-on-surface">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+              <span className="material-symbols-outlined text-[24px]">
+                keyboard_return
+              </span>
+            </div>
+            <h3 className="text-xl font-bold text-on-surface">
+              Yêu cầu Trả hàng / Hoàn tiền
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+              Bạn đang yêu cầu trả hàng cho đơn hàng **#{returningOrderNumber}**. Vui lòng chọn hoặc nhập lý do trả hàng chi tiết dưới đây:
+            </p>
+
+            <div className="mt-4 space-y-2">
+              {["Hàng lỗi / hư hỏng do nhà sản xuất", "Sản phẩm không đúng với mô tả", "Gửi sai sản phẩm / thiếu hàng", "Khác (vui lòng tự nhập lý do)"].map((reasonOpt) => (
+                <button
+                  key={reasonOpt}
+                  type="button"
+                  onClick={() => setReturnReason(reasonOpt)}
+                  className={`w-full text-left p-3 rounded-xl border text-sm font-medium transition ${
+                    returnReason === reasonOpt
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-outline-variant/40 bg-surface hover:bg-surface-container-high text-on-surface-variant"
+                  }`}
+                >
+                  {reasonOpt}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              rows={3}
+              placeholder="Mô tả chi tiết lý do (bắt buộc nếu chọn Khác)..."
+              className="mt-4 w-full rounded-xl border border-outline-variant/40 bg-surface px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            />
+
+            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setReturningOrderNumber(null);
+                  setReturnReason("");
+                }}
+                disabled={returning}
+                className="h-12 rounded-full bg-surface-container-high px-6 text-sm font-semibold text-on-surface transition active:scale-95"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleRequestReturn}
+                disabled={returning || !returnReason.trim()}
+                className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-on-primary hover:shadow-md transition active:scale-95 disabled:opacity-60"
+              >
+                {returning ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Đang gửi...
+                  </>
+                ) : (
+                  "Gửi yêu cầu"
                 )}
               </button>
             </div>
