@@ -568,25 +568,13 @@ async function placeOrder(
         // Real-time Notification và Email (chạy ngầm sau khi commit thành công)
         (async () => {
             try {
-                // 1. Thông báo cho Admin có đơn hàng mới
+                // 1. Thông báo cho Admin có đơn hàng mới (chỉ tạo notification hệ thống + realtime socket, không gửi email)
                 await notificationService.createNotification({
                     userId: null,
                     title: `🛒 Đơn hàng mới: ${order.orderNumber}`,
                     content: `Có đơn hàng mới trị giá ${totals.total}$ được đặt bởi khách hàng.`,
                     type: 'order_new',
-                    relatedId: order.orderNumber,
-                    emailOptions: {
-                        targetRole: 'admin',
-                        subject: `[UTEShop] Đơn hàng mới: ${order.orderNumber}`,
-                        message: `Một đơn hàng mới đã được đặt!\n\nSố đơn hàng: ${order.orderNumber}\nTổng tiền: ${totals.total}$\nNgười nhận: ${information.fullName}\nĐiện thoại: ${information.phone}\nPhương thức nhận: ${information.deliveryType === 'campus' ? 'Tại trường' : 'Giao tận nơi'}\n\nVui lòng truy cập trang quản trị để xem chi tiết.`,
-                        html: `<h3>Một đơn hàng mới đã được đặt!</h3>
-                               <p><strong>Số đơn hàng:</strong> ${order.orderNumber}</p>
-                               <p><strong>Tổng tiền:</strong> ${totals.total}$</p>
-                               <p><strong>Người nhận:</strong> ${information.fullName}</p>
-                               <p><strong>Điện thoại:</strong> ${information.phone}</p>
-                               <p><strong>Phương thức nhận:</strong> ${information.deliveryType === 'campus' ? 'Tại trường' : 'Giao tận nơi'}</p>
-                               <p>Vui lòng truy cập hệ thống để duyệt đơn hàng.</p>`
-                    }
+                    relatedId: order.orderNumber
                 });
 
                 // 2. Thông báo & Email cho Khách hàng

@@ -48,18 +48,7 @@ const createNotification = async ({ userId, title, content, type, relatedId, ema
             if (emailOptions.email) {
                 sendEmailNotification(emailOptions);
             } else if (emailOptions.targetRole === 'admin') {
-                // Nếu gửi cho admin mà không truyền cụ thể email, tìm email của các tài khoản admin trong DB
-                const admins = await User.findAll({ where: { role: 'admin' } });
-                admins.forEach(admin => {
-                    if (admin.email) {
-                        sendEmailNotification({
-                            email: admin.email,
-                            subject: emailOptions.subject,
-                            message: emailOptions.message,
-                            html: emailOptions.html
-                        });
-                    }
-                });
+                // Đã tắt cơ chế gửi email cho Admin để tránh lỗi gửi đến các email nội bộ ảo (.local)
             } else if (emailOptions.targetRole === 'all') {
                 // Newsletter gửi cho toàn bộ người dùng active
                 const users = await User.findAll({ where: { status: 'active' } });
