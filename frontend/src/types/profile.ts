@@ -1,5 +1,5 @@
 import type { ProductMajor } from './catalog';
-import type { PaginationMeta } from './api';
+
 
 export interface ProfileUser {
     id: number;

@@ -6,8 +6,7 @@ import type {
     ProfileOrder,
     ProfileReview,
     ProfileState,
-    ProfileUpdatePayload,
-    ProfileUser
+    ProfileUpdatePayload
 } from '../types/profile';
 
 export const fetchUserProfile = createAsyncThunk<

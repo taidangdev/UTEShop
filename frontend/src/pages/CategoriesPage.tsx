@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosConfig';
 import ProductSearchBox from '../components/catalog/ProductSearchBox';
-import { formatPrice } from '../utils/formatPrice';
+
 import type { ApiEnvelope, PaginationMeta } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, Major } from '../types/catalog';
 import ProductCard from '../components/catalog/ProductCard';
@@ -18,12 +18,7 @@ const HERO_IMAGE = '/PremiumLaptop.png';
 
 
 
-function categoryLabel(product: CatalogProduct) {
-    const c = product.category;
-    if (!c) return 'General';
-    if (c.parentName) return `${c.parentName} & ${c.name}`;
-    return c.name;
-}
+
 
 // Reusable ProductCard is now imported from components/catalog/ProductCard
 

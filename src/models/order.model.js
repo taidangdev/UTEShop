@@ -40,7 +40,9 @@ const Order = sequelize.define(
                 'confirmed',
                 'processing',
                 'shipping',
+                'delivery_failed',
                 'delivered',
+                'returned',
                 'cancelled',
                 'refunded'
             ),
@@ -100,6 +102,15 @@ const Order = sequelize.define(
             allowNull: true
         },
         cancelledAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        deliveryFailCount: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
+        returnedAt: {
             type: DataTypes.DATE,
             allowNull: true
         }

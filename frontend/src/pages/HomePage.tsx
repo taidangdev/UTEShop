@@ -6,7 +6,7 @@ import {
     FiMonitor,
     FiPackage,
     FiSearch,
-    FiShoppingCart,
+
     FiArrowRight,
     FiAward,
     FiHome,
@@ -21,7 +21,7 @@ import 'swiper/css/pagination';
 
 import axiosInstance from '../services/axiosConfig';
 import { useAppSelector } from '../store/hooks';
-import { formatPrice } from '../utils/formatPrice';
+
 import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, HomePageData, Major, PromoBanner } from '../types/catalog';
 import ProductCard from '../components/catalog/ProductCard';
@@ -59,12 +59,7 @@ const FALLBACK_PROMOS: PromoBanner[] = [
     }
 ];
 
-function categoryLabel(product: CatalogProduct) {
-    const c = product.category;
-    if (!c) return 'General';
-    if (c.parentName) return c.parentName;
-    return c.name;
-}
+
 
 function InternalLink({
     to,
@@ -251,49 +246,7 @@ function CategorySection({ categories }: { categories: CategoryWithCount[] }) {
 
 // Reusable ProductCard is now imported from components/catalog/ProductCard
 
-function ProductSection({
-    id,
-    title,
-    products,
-    viewAllTo,
-    background
-}: {
-    id: string;
-    title: string;
-    products: CatalogProduct[];
-    viewAllTo: string;
-    background?: string;
-}) {
-    if (products.length === 0) return null;
 
-    return (
-        <section
-            id={id}
-            className="scroll-mt-24 w-full px-6 py-20 lg:px-8"
-            style={background ? { backgroundColor: background } : undefined}
-        >
-            <div className="mx-auto max-w-[1280px]">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                    <h2 className="font-inter text-3xl font-semibold" style={{ color: TEXT }}>
-                        {title}
-                    </h2>
-                    <Link
-                        to={viewAllTo}
-                        className="font-inter text-sm font-medium transition hover:underline"
-                        style={{ color: PRIMARY }}
-                    >
-                        View all
-                    </Link>
-                </div>
-                <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {products.map((p) => (
-                        <ProductCard key={p.id} product={p} />
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-}
 
 function ProductCarouselSection({
     id,
@@ -646,8 +599,7 @@ export default function HomePage() {
     }, []);
 
     const memberName = user?.fullName || user?.username || user?.email || 'Student';
-    const featured = data?.featured?.length ? data.featured : (data?.newest?.slice(0, 3) ?? []);
-    const newest = data?.newest ?? [];
+
     const bestSellers = data?.bestSellers ?? [];
     const mostViewed = data?.mostViewed ?? [];
     const categories = data?.categories ?? [];

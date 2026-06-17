@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import AdminLayout from '../components/admin/AdminLayout';
 import { fetchAdminDashboard } from '../services/adminApi';
 import type { AdminDashboardData } from '../types/adminDashboard';
-import { useAppDispatch } from '../store/hooks';
-import { logout } from '../store/authSlice';
 import CategoriesTab from '../components/admin/CategoriesTab';
 import PromotionsTab from '../components/admin/PromotionsTab';
 import CustomersTab from '../components/admin/CustomersTab';
@@ -48,21 +47,9 @@ function formatCompact(value: number) {
     return String(value);
 }
 
-const SIDEBAR_ITEMS = [
-    { icon: 'dashboard', label: 'Dashboard', active: true },
-    { icon: 'shopping_cart', label: 'Đơn hàng' },
-    { icon: 'inventory_2', label: 'Sản phẩm' },
-    { icon: 'category', label: 'Danh mục' },
-    { icon: 'sell', label: 'Khuyến mãi' },
-    { icon: 'group', label: 'Khách hàng' },
-    { icon: 'payments', label: 'Dòng tiền' },
-    { icon: 'analytics', label: 'Báo cáo' }
-];
-
 export default function AdminDashboardPage() {
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [searchParams] = useSearchParams();
+    const activeTab = searchParams.get('tab') || 'dashboard';
     const [data, setData] = useState<AdminDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -119,92 +106,15 @@ export default function AdminDashboardPage() {
         return data.orderStats.byStatus.find((s) => s.status === status)?.label || 'Tất cả';
     }, [data, status]);
 
-    const handleLogout = () => {
-        dispatch(logout());
-        navigate('/login', { replace: true });
-    };
-
     const topOrders = data?.orderStats.orders.slice(0, 5) || [];
 
     return (
-        <div className="min-h-screen bg-surface text-on-surface">
-            <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col bg-[#2e3039] px-4 py-6 text-white lg:flex">
-                <div className="mb-8 px-3">
-                    <h1 className="text-2xl font-black text-[#b4c5ff]">UTEShop Pro</h1>
-                    <p className="text-xs text-white/60">Engineering Admin</p>
-                </div>
-
-                <nav className="flex-1 space-y-1">
-                    {SIDEBAR_ITEMS.map((item) => (
-                        <button
-                            key={item.label}
-                            type="button"
-                            onClick={() => setActiveTab(item.icon)}
-                            className={`flex w-full items-center rounded-lg px-4 py-3 text-left text-sm transition ${
-                                activeTab === item.icon ? 'bg-primary font-semibold text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}
-                        >
-                            <span className="material-symbols-outlined mr-3 text-[20px]">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </button>
-                    ))}
-                </nav>
-
-                <div className="space-y-1 border-t border-white/15 pt-4">
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="flex w-full items-center rounded-lg px-4 py-3 text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
-                    >
-                        <span className="material-symbols-outlined mr-3 text-[20px]">logout</span>
-                        Đăng xuất
-                    </button>
-                </div>
-            </aside>
-
-            <main className="min-h-screen lg:ml-64">
-                <header className="sticky top-0 z-20 border-b border-outline-variant/30 bg-surface/85 px-6 py-4 backdrop-blur lg:px-8">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="relative w-full max-w-sm">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-                                search
-                            </span>
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm nhanh..."
-                                className="h-10 w-full rounded-full border-none bg-surface-container-low pl-10 pr-4 text-sm outline-none ring-1 ring-transparent focus:ring-primary/40"
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                className="relative rounded-full p-2 text-on-surface-variant transition hover:bg-surface-container-high"
-                            >
-                                <span className="material-symbols-outlined">notifications</span>
-                                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-error" />
-                            </button>
-                            <div className="text-right">
-                                <p className="text-sm font-bold">Admin User</p>
-                                <p className="text-[10px] uppercase tracking-wider text-outline">Super Admin</p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                                AD
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                <div className="mx-auto max-w-[1280px] space-y-6 p-6 lg:p-8">
-                    {activeTab === 'dashboard' && (
-                        <>
-                            <section>
-                                <h2 className="text-3xl font-bold">Chào buổi sáng, Admin!</h2>
-                                <p className="mt-1 text-sm text-on-surface-variant">
-                                    Theo dõi doanh thu, đơn hàng và dòng tiền theo thời gian thực.
-                                </p>
-                            </section>
-
+        <AdminLayout
+            title={activeTab === 'dashboard' ? 'Chào buổi sáng, Admin!' : undefined}
+            subtitle={activeTab === 'dashboard' ? 'Theo dõi doanh thu, đơn hàng và dòng tiền theo thời gian thực.' : undefined}
+        >
+            {activeTab === 'dashboard' && (
+                <>
                     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <div className="rounded-[24px] bg-surface-container-lowest p-6 shadow-sm">
                             <div className="mb-4 flex items-start justify-between">
@@ -580,8 +490,6 @@ export default function AdminDashboardPage() {
                     </p>
                 </div>
             )}
-        </div>
-            </main>
-        </div>
+        </AdminLayout>
     );
 }

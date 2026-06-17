@@ -1,6 +1,9 @@
 const { User, Category, Product, Promotion, PromotionCategory, PromotionProduct, Major, Address, Order, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
 const adminDashboardService = require('../services/adminDashboard.service');
+const adminOrderService = require('../services/adminOrder.service');
+const adminProductService = require('../services/adminProduct.service');
+const adminConsignmentService = require('../services/adminConsignment.service');
 
 /**
  * Vietnamese friendly slug generation
@@ -325,6 +328,23 @@ const listCategories = async (req, res, next) => {
     }
 };
 
+const listOrders = async (req, res, next) => {
+    try {
+        const status = req.query.status === 'all' ? undefined : req.query.status;
+        const data = await adminOrderService.listOrders({
+            page: req.query.page,
+            limit: req.query.limit,
+            status,
+            search: req.query.search,
+            from: req.query.from,
+            to: req.query.to
+        });
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 /**
  * Create a new category (admin-only)
  */
@@ -362,6 +382,15 @@ const createCategory = async (req, res, next) => {
         });
 
         return successResponse(res, 201, 'Tạo danh mục thành công', { category });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getOrderDetail = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.getOrderDetail(req.params.orderNumber);
+        return successResponse(res, 200, 'OK', data);
     } catch (error) {
         next(error);
     }
@@ -436,6 +465,99 @@ const updateCategory = async (req, res, next) => {
     }
 };
 
+const updateOrderStatus = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.updateOrderStatus(req.params.orderNumber, {
+            status: req.body.status,
+            adminNote: req.body.adminNote
+        });
+        return successResponse(res, 200, 'Order status updated', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const listProducts = async (req, res, next) => {
+    try {
+        const status = req.query.status === 'all' ? undefined : req.query.status;
+        const data = await adminProductService.listProducts({
+            page: req.query.page,
+            limit: req.query.limit,
+            status,
+            search: req.query.search,
+            categoryId: req.query.categoryId
+        });
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getProductFormOptions = async (req, res, next) => {
+    try {
+        const data = await adminProductService.getFormOptions();
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getProductDetail = async (req, res, next) => {
+    try {
+        const data = await adminProductService.getProductById(req.params.id);
+        return successResponse(res, 200, 'OK', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const createProduct = async (req, res, next) => {
+    try {
+        const data = await adminProductService.createProduct(req.body);
+        return successResponse(res, 201, 'Product created', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateProduct = async (req, res, next) => {
+    try {
+        const data = await adminProductService.updateProduct(req.params.id, req.body);
+        return successResponse(res, 200, 'Product updated', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteProduct = async (req, res, next) => {
+    try {
+        const data = await adminProductService.deleteProduct(req.params.id);
+        return successResponse(res, 200, 'Product archived', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const listConsignments = async (req, res, next) => {
+    try {
+        const { page, limit, status, search } = req.query;
+        const data = await adminConsignmentService.listConsignments({ page, limit, status, search });
+        return successResponse(res, 200, 'Danh sách ký gửi', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateConsignment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const data = await adminConsignmentService.updateConsignment(Number(id), req.body);
+        return successResponse(res, 200, 'Cập nhật yêu cầu ký gửi thành công', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 /**
  * Hard delete a category only if empty (admin-only)
  */
@@ -470,6 +592,16 @@ const deleteCategory = async (req, res, next) => {
 
         await category.destroy();
         return successResponse(res, 200, 'Xóa danh mục thành công');
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteConsignment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const data = await adminConsignmentService.deleteConsignment(Number(id));
+        return successResponse(res, 200, data.message || 'Xóa ký gửi thành công', data);
     } catch (error) {
         next(error);
     }
@@ -1007,5 +1139,17 @@ module.exports = {
     getUserDetail,
     updateUserStatus,
     updateUserRole,
-    bulkUpdateUserStatus
+    bulkUpdateUserStatus,
+    listOrders,
+    getOrderDetail,
+    updateOrderStatus,
+    listProducts,
+    getProductFormOptions,
+    getProductDetail,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    listConsignments,
+    updateConsignment,
+    deleteConsignment
 };

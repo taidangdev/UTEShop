@@ -6,7 +6,9 @@ const STATUS_LABELS = {
     confirmed: 'Đã xác nhận',
     processing: 'Chuẩn bị hàng',
     shipping: 'Đang giao',
+    delivery_failed: 'Giao thất bại',
     delivered: 'Đã giao',
+    returned: 'Hoàn trả hàng',
     cancelled: 'Đã hủy',
     refunded: 'Đã hoàn tiền'
 };
@@ -16,7 +18,9 @@ const ORDER_STATUSES = [
     'confirmed',
     'processing',
     'shipping',
+    'delivery_failed',
     'delivered',
+    'returned',
     'cancelled',
     'refunded'
 ];
