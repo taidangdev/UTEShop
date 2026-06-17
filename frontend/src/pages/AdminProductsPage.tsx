@@ -9,6 +9,7 @@ import {
     fetchAdminProducts,
     updateAdminProduct
 } from '../services/adminApi';
+import { useNotification } from '../context/NotificationContext';
 import type {
     AdminProductDetail,
     AdminProductFormOptions,
@@ -144,6 +145,8 @@ export default function AdminProductsPage() {
     const [formError, setFormError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+
+    const { toast, showConfirm } = useNotification();
 
     const loadFormOptions = useCallback(async () => {
         setFormOptionsLoading(true);
@@ -284,19 +287,25 @@ export default function AdminProductsPage() {
     };
 
     const handleDelete = async (id: number, name: string) => {
-        if (!window.confirm(`Lưu trữ sản phẩm "${name}"? Sản phẩm sẽ không hiển thị trên cửa hàng.`)) {
-            return;
-        }
+        const confirmDelete = await showConfirm({
+            title: 'Lưu trữ sản phẩm',
+            message: `Lưu trữ sản phẩm "${name}"? Sản phẩm sẽ không hiển thị trên cửa hàng.`,
+            type: 'warning',
+            confirmText: 'Lưu trữ'
+        });
+        if (!confirmDelete) return;
+
         setDeletingId(id);
         try {
             await deleteAdminProduct(id);
+            toast.success(`Đã lưu trữ sản phẩm "${name}" thành công`);
             await loadProducts(pagination.page);
         } catch (err: unknown) {
             const message =
                 typeof err === 'object' && err && 'message' in err
                     ? String((err as { message?: string }).message || '')
                     : '';
-            alert(message || 'Không thể lưu trữ sản phẩm');
+            toast.error(message || 'Không thể lưu trữ sản phẩm');
         } finally {
             setDeletingId(null);
         }

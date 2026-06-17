@@ -4,6 +4,7 @@ import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchOrder, cancelOrder } from '../services/checkoutApi';
 import { fetchEligibleReviewItems } from '../services/reviewApi';
 import type { OrderDto } from '../types/checkout';
+import { useNotification } from '../context/NotificationContext';
 
 const REVIEWABLE_STATUSES = new Set(['delivered']);
 
@@ -46,6 +47,8 @@ export default function OrderTrackingPage() {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewOrderItemId, setReviewOrderItemId] = useState<number | undefined>();
     const [reviewableItemIds, setReviewableItemIds] = useState<Set<number>>(() => new Set());
+
+    const { toast } = useNotification();
 
     const loadReviewableItems = useCallback(async (currentOrderNumber: string) => {
         try {
@@ -90,10 +93,11 @@ export default function OrderTrackingPage() {
         setCancelling(true);
         try {
             await cancelOrder(orderNumber);
+            toast.success(`Hủy đơn hàng #${orderNumber} thành công`);
             await loadOrderData(); // Reload data
             setShowCancelModal(false);
         } catch (err: any) {
-            alert(err?.response?.data?.message || err?.message || 'Không thể hủy đơn hàng');
+            toast.error(err?.response?.data?.message || err?.message || 'Không thể hủy đơn hàng');
         } finally {
             setCancelling(false);
         }

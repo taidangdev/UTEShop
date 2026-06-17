@@ -34,10 +34,8 @@ const checkoutInformationValidation = [
         .notEmpty()
         .withMessage('Tỉnh/Thành phố là bắt buộc'),
     body('information.postalCode')
-        .if((value, { req }) => !req.body?.information?.addressId)
-        .trim()
-        .notEmpty()
-        .withMessage('Mã bưu điện là bắt buộc'),
+        .optional({ nullable: true })
+        .trim(),
     body('information.studentId').optional().isString(),
     body('information.coupon')
         .optional()

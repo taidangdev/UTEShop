@@ -8,6 +8,7 @@ import {
     type AdminUser,
     type AdminUserDetail
 } from '../../services/adminApi';
+import { useNotification } from '../../context/NotificationContext';
 
 export default function CustomersTab() {
     const [users, setUsers] = useState<AdminUser[]>([]);
@@ -28,8 +29,7 @@ export default function CustomersTab() {
     // Selection
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-    // Toast Notice
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { toast: globalToast, showConfirm } = useNotification();
 
     // Details Modal
     const [showDetailModal, setShowDetailModal] = useState(false);
@@ -39,12 +39,15 @@ export default function CustomersTab() {
     // Role Edit Modal
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-    const [newRole, setNewRole] = useState<'admin' | 'customer' | 'user'>('customer');
+    const [newRole, setNewRole] = useState<'admin' | 'customer'>('customer');
     const [savingRole, setSavingRole] = useState(false);
 
     const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
+        if (type === 'success') {
+            globalToast.success(message);
+        } else {
+            globalToast.error(message);
+        }
     };
 
     const loadUsers = async () => {
@@ -113,12 +116,16 @@ export default function CustomersTab() {
         }
 
         const nextStatus = user.status === 'banned' ? 'active' : 'banned';
-        const confirmMsg =
-            nextStatus === 'banned'
-                ? `Bạn có chắc chắn muốn KHÓA tài khoản "${user.username}"?\nNgười dùng này sẽ bị ngắt kết nối ngay lập tức.`
-                : `Bạn có muốn MỞ KHÓA tài khoản "${user.username}"?`;
+        const confirmDelete = await showConfirm({
+            title: nextStatus === 'banned' ? 'Khóa tài khoản' : 'Mở khóa tài khoản',
+            message: nextStatus === 'banned'
+                ? `Bạn có chắc chắn muốn KHÓA tài khoản "${user.username}"? Người dùng này sẽ bị ngắt kết nối ngay lập tức.`
+                : `Bạn có muốn MỞ KHÓA tài khoản "${user.username}"?`,
+            type: nextStatus === 'banned' ? 'danger' : 'info',
+            confirmText: nextStatus === 'banned' ? 'Khóa tài khoản' : 'Mở khóa'
+        });
 
-        if (!window.confirm(confirmMsg)) return;
+        if (!confirmDelete) return;
 
         try {
             await updateAdminUserStatus(user.id, nextStatus);
@@ -162,12 +169,16 @@ export default function CustomersTab() {
     // Bulk status update
     const handleBulkStatusChange = async (status: 'active' | 'banned') => {
         if (selectedIds.length === 0) return;
-        const confirmMsg =
-            status === 'banned'
+        const confirmDelete = await showConfirm({
+            title: status === 'banned' ? 'Khóa hàng loạt' : 'Mở khóa hàng loạt',
+            message: status === 'banned'
                 ? `Bạn có chắc chắn muốn KHÓA ${selectedIds.length} tài khoản đã chọn?`
-                : `Bạn có chắc chắn muốn MỞ KHÓA ${selectedIds.length} tài khoản đã chọn?`;
+                : `Bạn có chắc chắn muốn MỞ KHÓA ${selectedIds.length} tài khoản đã chọn?`,
+            type: status === 'banned' ? 'danger' : 'info',
+            confirmText: status === 'banned' ? 'Khóa tất cả' : 'Mở khóa'
+        });
 
-        if (!window.confirm(confirmMsg)) return;
+        if (!confirmDelete) return;
 
         try {
             const res = await bulkUpdateAdminUserStatus(selectedIds, status);
@@ -355,7 +366,6 @@ export default function CustomersTab() {
                         <option value="all">Tất cả vai trò</option>
                         <option value="admin">Quản trị viên (Admin)</option>
                         <option value="customer">Khách hàng (Customer)</option>
-                        <option value="user">Người dùng (User)</option>
                     </select>
 
                     <div className="flex gap-2">
@@ -471,11 +481,9 @@ export default function CustomersTab() {
                                                     <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
                                                         user.role === 'admin'
                                                             ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                                                            : user.role === 'customer'
-                                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                                                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                                                     }`}>
-                                                        {user.role}
+                                                        {user.role === 'admin' ? 'Admin' : 'Khách hàng'}
                                                     </span>
 
                                                     {/* Status Badge */}
@@ -828,20 +836,6 @@ export default function CustomersTab() {
                                     <input
                                         type="radio"
                                         name="user-role"
-                                        checked={newRole === 'user'}
-                                        onChange={() => setNewRole('user')}
-                                        className="h-4 w-4 text-primary focus:ring-primary"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-bold text-on-surface">User</p>
-                                        <p className="text-xs text-outline">Quyền hạn của thành viên thường.</p>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center gap-3 rounded-xl border border-outline-variant/30 p-3 hover:bg-surface-container-low cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="user-role"
                                         checked={newRole === 'admin'}
                                         onChange={() => setNewRole('admin')}
                                         className="h-4 w-4 text-primary focus:ring-primary"
@@ -875,19 +869,6 @@ export default function CustomersTab() {
                 </div>
             )}
 
-            {/* Custom Toast Alert */}
-            {toast && (
-                <div className={`fixed right-6 top-6 z-50 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xl border animate-slide-in-right ${
-                    toast.type === 'success'
-                        ? 'bg-green-50 border-green-200 text-green-800'
-                        : 'bg-red-50 border-red-200 text-red-800'
-                }`}>
-                    <span className="material-symbols-outlined text-[20px]">
-                        {toast.type === 'success' ? 'check_circle' : 'error'}
-                    </span>
-                    <span className="text-sm font-bold">{toast.message}</span>
-                </div>
-            )}
         </div>
     );
 }

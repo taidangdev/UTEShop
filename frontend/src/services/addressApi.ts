@@ -28,3 +28,8 @@ export async function setDefaultAddress(id: number): Promise<UserAddress> {
 export async function deleteUserAddress(id: number): Promise<void> {
     await axiosInstance.delete<ApiEnvelope<void>>(`/users/me/addresses/${id}`);
 }
+
+export async function updateUserAddress(id: number, payload: UserAddressPayload): Promise<UserAddress> {
+    const res = await axiosInstance.put<ApiEnvelope<AddressResponse>>(`/users/me/addresses/${id}`, payload);
+    return res.data.address;
+}

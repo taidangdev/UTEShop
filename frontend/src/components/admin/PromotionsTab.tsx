@@ -12,6 +12,7 @@ import {
     type AdminPromotion,
     type AdminCategory
 } from '../../services/adminApi';
+import { useNotification } from '../../context/NotificationContext';
 
 interface ProductCandidate {
     id: number;
@@ -39,8 +40,7 @@ export default function PromotionsTab() {
     // Selection
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-    // Toast Alert
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { toast: globalToast, showConfirm } = useNotification();
 
     // Modal
     const [showModal, setShowModal] = useState(false);
@@ -76,8 +76,11 @@ export default function PromotionsTab() {
     const [selectedProducts, setSelectedProducts] = useState<Array<{ id: number; name: string }>>([]);
 
     const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
+        if (type === 'success') {
+            globalToast.success(message);
+        } else {
+            globalToast.error(message);
+        }
     };
 
     const loadPromotions = async () => {
@@ -245,7 +248,12 @@ export default function PromotionsTab() {
             showToast('Không thể xóa khuyến mãi đã có lượt sử dụng để bảo toàn dữ liệu', 'error');
             return;
         }
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa khuyến mãi "${promo.code}"?`);
+        const confirmDelete = await showConfirm({
+            title: 'Xác nhận xóa',
+            message: `Bạn có chắc chắn muốn xóa khuyến mãi "${promo.code}"?`,
+            type: 'danger',
+            confirmText: 'Xóa khuyến mãi'
+        });
         if (!confirmDelete) return;
 
         try {
@@ -280,7 +288,12 @@ export default function PromotionsTab() {
 
     const handleBulkDelete = async () => {
         if (selectedIds.length === 0) return;
-        const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa các khuyến mãi đã chọn?`);
+        const confirmDelete = await showConfirm({
+            title: 'Xóa hàng loạt',
+            message: `Bạn có chắc chắn muốn xóa các khuyến mãi đã chọn?`,
+            type: 'danger',
+            confirmText: 'Xóa tất cả'
+        });
         if (!confirmDelete) return;
 
         try {
@@ -461,20 +474,6 @@ export default function PromotionsTab() {
 
     return (
         <div className="space-y-6 pb-20">
-            {/* Toast Alert */}
-            {toast && (
-                <div className={`fixed right-6 top-24 z-50 flex items-start gap-3 rounded-2xl p-4 shadow-xl border backdrop-blur-md transition-all duration-300 max-w-md ${
-                    toast.type === 'success' 
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
-                        : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                }`}>
-                    <span className="material-symbols-outlined mt-0.5 animate-bounce">
-                        {toast.type === 'success' ? 'check_circle' : 'error'}
-                    </span>
-                    <span className="text-sm font-semibold">{toast.message}</span>
-                </div>
-            )}
-
             {/* Header section */}
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-surface-container-lowest p-6 shadow-sm border border-outline-variant/15">
                 <div>

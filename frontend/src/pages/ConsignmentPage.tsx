@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchMyConsignments, deleteConsignment } from '../services/consignmentApi';
 import type { Consignment } from '../types/consignment';
 import ConsignmentModal from '../components/profile/ConsignmentModal';
+import { useNotification } from '../context/NotificationContext';
 
 const TABS = [
     { id: 'all', label: 'Tất cả' },
@@ -92,6 +93,8 @@ export default function ConsignmentPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
 
+    const { toast, showConfirm } = useNotification();
+
     const loadConsignments = async () => {
         setIsLoading(true);
         setError(null);
@@ -110,12 +113,20 @@ export default function ConsignmentPage() {
     }, []);
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa yêu cầu ký gửi này?')) return;
+        const confirmDelete = await showConfirm({
+            title: 'Xóa yêu cầu ký gửi',
+            message: 'Bạn có chắc chắn muốn xóa yêu cầu ký gửi này?',
+            type: 'warning',
+            confirmText: 'Xóa yêu cầu'
+        });
+        if (!confirmDelete) return;
+
         try {
             await deleteConsignment(id);
+            toast.success('Xóa yêu cầu ký gửi thành công');
             loadConsignments();
         } catch (err: any) {
-            alert(err.message || 'Không thể xóa yêu cầu ký gửi');
+            toast.error(err.message || 'Không thể xóa yêu cầu ký gửi');
         }
     };
 

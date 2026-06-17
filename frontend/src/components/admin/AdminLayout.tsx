@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch } from '../../store/hooks';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/authSlice';
 
 export const ADMIN_SIDEBAR_ITEMS: Array<{
@@ -30,6 +30,11 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
+    const user = useAppSelector((state) => state.auth.user);
+
+    const displayName = user?.fullName || user?.username || 'Admin';
+    const avatarInitial = displayName.charAt(0).toUpperCase();
+    const roleLabel = user?.role === 'admin' ? 'Quản trị viên' : (user?.role ?? 'Admin');
 
     const handleLogout = () => {
         dispatch(logout());
@@ -110,13 +115,13 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
                                 <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-error" />
                             </button>
                             <div className="text-right">
-                                <p className="text-sm font-bold">Admin User</p>
+                                <p className="text-sm font-bold">{displayName}</p>
                                 <p className="text-[10px] uppercase tracking-wider text-outline">
-                                    Super Admin
+                                    {roleLabel}
                                 </p>
                             </div>
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                                AD
+                                {avatarInitial}
                             </div>
                         </div>
                     </div>

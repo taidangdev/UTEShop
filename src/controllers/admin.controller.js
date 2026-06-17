@@ -198,7 +198,7 @@ const updateUserRole = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { role } = req.body;
-        if (!['admin', 'customer', 'user'].includes(role)) {
+        if (!['admin', 'customer'].includes(role)) {
             return errorResponse(res, 400, 'Vai trò không hợp lệ');
         }
 

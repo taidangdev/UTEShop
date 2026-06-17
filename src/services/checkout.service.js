@@ -83,11 +83,6 @@ function validateInformation(info) {
         err.statusCode = 400;
         throw err;
     }
-    if (!info.postalCode) {
-        const err = new Error('Postal code is required');
-        err.statusCode = 400;
-        throw err;
-    }
 }
 
 async function calculateCheckoutTotals(lineItems, information, userId) {

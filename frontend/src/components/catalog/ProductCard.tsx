@@ -7,6 +7,8 @@ import { toggleWishlistApi } from '../../services/wishlistApi';
 import { getAccessToken } from '../../services/authSession';
 import { useAppSelector } from '../../store/hooks';
 import type { CatalogProduct } from '../../types/catalog';
+import { addToCart } from '../../utils/cartStorage';
+import { useNotification } from '../../context/NotificationContext';
 
 interface ProductCardProps {
     product: CatalogProduct;
@@ -31,6 +33,8 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
     const isAuthenticated = Boolean(authUser || getAccessToken());
     const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted ?? false);
     const [isToggling, setIsToggling] = useState(false);
+
+    const { toast } = useNotification();
 
     useEffect(() => {
         setIsWishlisted(product.isWishlisted ?? false);
@@ -62,6 +66,23 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
         } finally {
             setIsToggling(false);
         }
+    };
+
+    const handleCartClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        addToCart({
+            productId: product.id,
+            slug: product.slug,
+            name: product.name,
+            price: product.price,
+            imageUrl: product.imageUrl || null,
+            categoryId: product.category?.id,
+            quantity: 1
+        });
+
+        toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
     };
 
     return (
@@ -125,13 +146,15 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
                                 </span>
                             )}
                         </div>
-                        <span
-                            className="flex h-12 w-12 items-center justify-center rounded-full text-white transition group-hover:opacity-90 hover:scale-105 active:scale-95"
+                        <button
+                            type="button"
+                            onClick={handleCartClick}
+                            className="flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:scale-105 active:scale-95 z-10"
                             style={{ backgroundColor: PRIMARY }}
-                            aria-hidden
+                            aria-label="Thêm vào giỏ hàng"
                         >
                             <FiShoppingCart className="h-5 w-5" strokeWidth={2} />
-                        </span>
+                        </button>
                     </div>
                     {(product.soldCount ?? 0) > 0 && (
                         <p className="font-inter text-xs" style={{ color: TEXT_BODY }}>

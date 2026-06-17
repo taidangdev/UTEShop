@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchMyOrders } from "../store/profileSlice";
 import { cancelOrder } from "../services/checkoutApi";
 import { fetchEligibleReviewItems } from "../services/reviewApi";
+import { useNotification } from "../context/NotificationContext";
 
 const REVIEWABLE_STATUSES = new Set(["delivered"]);
 
@@ -29,6 +30,8 @@ export default function MyOrdersPage() {
   const { orders, ordersLoading, ordersError } = useAppSelector(
     (state) => state.profile,
   );
+
+  const { toast } = useNotification();
 
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,10 +84,11 @@ export default function MyOrdersPage() {
     setCancelling(true);
     try {
       await cancelOrder(orderNumber);
+      toast.success(`Hủy đơn hàng #${orderNumber} thành công`);
       dispatch(fetchMyOrders()); // Reload orders list
       setCancellingOrder(null);
     } catch (err: any) {
-      alert(
+      toast.error(
         err?.response?.data?.message ||
           err?.message ||
           "Không thể hủy đơn hàng",

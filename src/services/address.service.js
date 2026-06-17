@@ -117,9 +117,55 @@ async function deleteAddress(userId, addressId) {
     }
 }
 
+async function updateAddress(userId, addressId, data) {
+    const transaction = await sequelize.transaction();
+    try {
+        const address = await Address.findOne({
+            where: { id: addressId, userId },
+            transaction
+        });
+
+        if (!address) {
+            const err = new Error('Không tìm thấy địa chỉ hoặc địa chỉ không thuộc về bạn');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        let isDefault = !!data.isDefault;
+        if (isDefault && !address.isDefault) {
+            await Address.update(
+                { isDefault: false },
+                { where: { userId }, transaction }
+            );
+        }
+
+        await address.update(
+            {
+                recipientName: data.recipientName,
+                phone: data.phone,
+                line1: data.line1,
+                line2: data.line2 || null,
+                ward: data.ward || null,
+                district: data.district || null,
+                city: data.city,
+                isDefault,
+                label: data.label || 'home'
+            },
+            { transaction }
+        );
+
+        await transaction.commit();
+        return address;
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
 module.exports = {
     listAddresses,
     createAddress,
     setDefaultAddress,
-    deleteAddress
+    deleteAddress,
+    updateAddress
 };

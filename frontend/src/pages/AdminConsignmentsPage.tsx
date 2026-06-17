@@ -7,6 +7,7 @@ import {
     deleteAdminConsignment
 } from '../services/adminApi';
 import type { Consignment } from '../types/consignment';
+import { useNotification } from '../context/NotificationContext';
 
 const STATUS_STYLES: Record<string, string> = {
     PENDING: 'bg-amber-100 text-amber-800',
@@ -77,6 +78,8 @@ export default function AdminConsignmentsPage() {
     const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, totalPages: 1 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const { toast, showConfirm } = useNotification();
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [search, setSearch] = useState('');
@@ -149,7 +152,7 @@ export default function AdminConsignmentsPage() {
         try {
             const priceNum = approvedPrice ? Number(approvedPrice) : undefined;
             if (priceNum !== undefined && (Number.isNaN(priceNum) || priceNum < 0)) {
-                alert('Giá duyệt bán không hợp lệ');
+                toast.error('Giá duyệt bán không hợp lệ');
                 setUpdating(false);
                 return;
             }
@@ -165,9 +168,9 @@ export default function AdminConsignmentsPage() {
                 prev.map((c) => (c.id === selectedConsignment.id ? updated : c))
             );
             setSelectedConsignment(updated);
-            alert('Cập nhật yêu cầu ký gửi thành công');
+            toast.success('Cập nhật yêu cầu ký gửi thành công');
         } catch (err: any) {
-            alert(err.message || 'Lỗi khi cập nhật yêu cầu ký gửi');
+            toast.error(err.message || 'Lỗi khi cập nhật yêu cầu ký gửi');
         } finally {
             setUpdating(false);
         }
@@ -175,16 +178,22 @@ export default function AdminConsignmentsPage() {
 
     const handleDelete = async () => {
         if (!selectedConsignment) return;
-        if (!window.confirm('Bạn có chắc chắn muốn xóa vĩnh viễn yêu cầu ký gửi này?')) return;
+        const confirmDelete = await showConfirm({
+            title: 'Xóa yêu cầu ký gửi',
+            message: 'Bạn có chắc chắn muốn xóa vĩnh viễn yêu cầu ký gửi này?',
+            type: 'danger',
+            confirmText: 'Xóa yêu cầu'
+        });
+        if (!confirmDelete) return;
 
         setUpdating(true);
         try {
             await deleteAdminConsignment(selectedConsignment.id);
             setConsignments((prev) => prev.filter((c) => c.id !== selectedConsignment.id));
             closeDetail();
-            alert('Xóa yêu cầu ký gửi thành công');
+            toast.success('Xóa yêu cầu ký gửi thành công');
         } catch (err: any) {
-            alert(err.message || 'Lỗi khi xóa yêu cầu ký gửi');
+            toast.error(err.message || 'Lỗi khi xóa yêu cầu ký gửi');
         } finally {
             setUpdating(false);
         }

@@ -31,11 +31,20 @@ const ensureUserColumns = async (sequelize) => {
         defaultValue: 0
     });
 
+    // Migrate any existing 'user' role to 'customer' before changing the ENUM
     try {
         await sequelize.query(
-            "ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'customer', 'user') DEFAULT 'customer'"
+            "UPDATE users SET role = 'customer' WHERE role = 'user'"
         );
-        console.log('  + Verified users.role ENUM values');
+    } catch (err) {
+        console.warn('  ! Warning migrating user role to customer:', err.message);
+    }
+
+    try {
+        await sequelize.query(
+            "ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'customer') DEFAULT 'customer'"
+        );
+        console.log('  + Verified users.role ENUM (admin, customer)');
     } catch (err) {
         console.warn('  ! Warning updating users.role ENUM:', err.message);
     }
