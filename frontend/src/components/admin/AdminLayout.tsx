@@ -14,9 +14,7 @@ export const ADMIN_SIDEBAR_ITEMS: Array<{
     { icon: 'storefront', label: 'Ký gửi', path: '/admin/consignments' },
     { icon: 'category', label: 'Danh mục', path: '/admin/dashboard?tab=category' },
     { icon: 'sell', label: 'Khuyến mãi', path: '/admin/dashboard?tab=sell' },
-    { icon: 'group', label: 'Khách hàng', path: '/admin/dashboard?tab=group' },
-    { icon: 'payments', label: 'Dòng tiền', path: '/admin/dashboard?tab=payments' },
-    { icon: 'analytics', label: 'Báo cáo', path: '/admin/dashboard?tab=analytics' }
+    { icon: 'group', label: 'Khách hàng', path: '/admin/dashboard?tab=group' }
 ];
 
 interface AdminLayoutProps {

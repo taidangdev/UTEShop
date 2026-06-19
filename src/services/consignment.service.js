@@ -64,8 +64,16 @@ async function getFormOptions() {
         ]
     });
 
+    // Filter out categories that are parents of other active categories
+    const parentIds = new Set(
+        categories
+            .map((c) => c.parentId)
+            .filter((parentId) => parentId !== null && parentId !== undefined)
+    );
+    const leafCategories = categories.filter((c) => !parentIds.has(c.id));
+
     return {
-        categories: categories.map((c) => {
+        categories: leafCategories.map((c) => {
             const parent = c.parent;
             return {
                 id: c.id,
