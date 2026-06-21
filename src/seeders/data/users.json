@@ -46,5 +46,115 @@
     "studentId": "21110004",
     "majorCode": "IT",
     "status": "active"
+  },
+  {
+    "username": "customer1",
+    "email": "customer1@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Nguyen Van An",
+    "studentId": "21110005",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer2",
+    "email": "customer2@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Tran Thi Binh",
+    "studentId": "21110006",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer3",
+    "email": "customer3@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Le Van Cuong",
+    "studentId": "21110007",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer4",
+    "email": "customer4@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Pham Minh Duc",
+    "studentId": "21110008",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer5",
+    "email": "customer5@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Hoang Thi Em",
+    "studentId": "21110009",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer6",
+    "email": "customer6@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Vu Thanh Phong",
+    "studentId": "21110010",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer7",
+    "email": "customer7@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Doan Van Giang",
+    "studentId": "21110011",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer8",
+    "email": "customer8@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Bui Thi Hoa",
+    "studentId": "21110012",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer9",
+    "email": "customer9@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Dinh Van Hieu",
+    "studentId": "21110013",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer10",
+    "email": "customer10@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Quach Thi Lan",
+    "studentId": "21110014",
+    "majorCode": "IT",
+    "status": "active"
+  },
+  {
+    "username": "customer11",
+    "email": "customer11@uteshop.local",
+    "plainPassword": "Demo123!",
+    "role": "customer",
+    "fullName": "Mai Quoc Nam",
+    "studentId": "21110015",
+    "majorCode": "IT",
+    "status": "active"
   }
 ]
