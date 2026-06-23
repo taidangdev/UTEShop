@@ -386,105 +386,6 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
     );
 }
 
-function MajorFilterSection({ majors }: { majors: Major[] }) {
-    const navigate = useNavigate();
-    const [activeMajorId, setActiveMajorId] = useState<number | ''>('');
-    const [search, setSearch] = useState('');
-
-    const handleSearch = (e: FormEvent) => {
-        e.preventDefault();
-        const q = search.trim();
-        const params = new URLSearchParams();
-        if (q) params.set('q', q);
-        if (activeMajorId) params.set('majorId', String(activeMajorId));
-        const qs = params.toString();
-        navigate(qs ? `/categories?${qs}` : '/categories');
-    };
-
-    return (
-        <section className="w-full bg-white px-6 py-20 lg:px-8">
-            <div className="mx-auto max-w-[1280px] text-center">
-                <h2 className="font-inter text-3xl font-semibold" style={{ color: TEXT }}>
-                    Curated for Your Degree
-                </h2>
-                <p className="mx-auto mt-4 max-w-[648px] font-inter text-lg leading-[29px]" style={{ color: TEXT_BODY }}>
-                    Select your major to see tailored equipment and material lists recommended by your
-                    faculty.
-                </p>
-                <div className="mt-10 flex flex-wrap justify-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setActiveMajorId('')}
-                        className="rounded-full px-6 py-3 font-inter text-sm font-medium transition"
-                        style={
-                            activeMajorId === ''
-                                ? {
-                                      backgroundColor: PRIMARY,
-                                      color: '#fff',
-                                      border: `2px solid ${PRIMARY}`,
-                                      boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
-                                  }
-                                : {
-                                      backgroundColor: 'transparent',
-                                      color: TEXT,
-                                      border: '2px solid #E1E2ED'
-                                  }
-                        }
-                    >
-                        All majors
-                    </button>
-                    {majors.map((major) => {
-                        const isActive = activeMajorId === major.id;
-                        return (
-                            <button
-                                key={major.id}
-                                type="button"
-                                onClick={() => setActiveMajorId(major.id)}
-                                className="rounded-full px-6 py-3 font-inter text-sm font-medium transition"
-                                style={
-                                    isActive
-                                        ? {
-                                              backgroundColor: PRIMARY,
-                                              color: '#fff',
-                                              border: `2px solid ${PRIMARY}`,
-                                              boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
-                                          }
-                                        : {
-                                              backgroundColor: 'transparent',
-                                              color: TEXT,
-                                              border: '2px solid #E1E2ED'
-                                          }
-                                }
-                            >
-                                {major.name}
-                            </button>
-                        );
-                    })}
-                </div>
-                <form onSubmit={handleSearch} className="relative mx-auto mt-10 max-w-[672px]">
-                    <FiSearch
-                        className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2"
-                        style={{ color: TEXT_BODY }}
-                        strokeWidth={1.75}
-                    />
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search for specific tools, books, or gear..."
-                        className="h-16 w-full rounded-full pl-14 pr-6 font-inter text-base shadow-[0_10px_30px_rgba(0,0,0,0.04)] outline-none transition focus:ring-2 focus:ring-primary/30"
-                        style={{
-                            backgroundColor: SURFACE,
-                            color: TEXT,
-                            borderColor: 'transparent'
-                        }}
-                    />
-                </form>
-            </div>
-        </section>
-    );
-}
-
 function ShopFooter() {
     return (
         <footer id="support" className="scroll-mt-24 w-full px-6 lg:px-8" style={{ backgroundColor: SURFACE }}>
@@ -505,9 +406,14 @@ function ShopFooter() {
                         </p>
                         <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
                             <li>
-                                <a href="#support" className="hover:underline">
+                                <Link to="/support" className="hover:underline">
                                     Student Support
-                                </a>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/support#contact" className="hover:underline">
+                                    Contact Us
+                                </Link>
                             </li>
                             <li>
                                 <Link to="/categories" className="hover:underline">
@@ -522,14 +428,14 @@ function ShopFooter() {
                         </p>
                         <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
                             <li>
-                                <a href="#support" className="hover:underline">
+                                <Link to="/support" className="hover:underline">
                                     Privacy Policy
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a href="#support" className="hover:underline">
+                                <Link to="/support" className="hover:underline">
                                     Terms of Service
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -604,7 +510,6 @@ export default function HomePage() {
     const mostViewed = data?.mostViewed ?? [];
     const categories = data?.categories ?? [];
     const banners = data?.banners ?? [];
-    const majors = data?.majors ?? [];
 
     return (
         <div style={{ backgroundColor: PAGE_BG, color: TEXT }}>
@@ -636,7 +541,6 @@ export default function HomePage() {
                             products={mostViewed}
                             viewAllTo="/categories?sort=popular"
                         />
-                        <MajorFilterSection majors={majors} />
                     </>
                 )}
             </main>

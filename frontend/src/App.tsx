@@ -23,6 +23,7 @@ import { SocketProvider } from './context/SocketContext';
 import { NotificationProvider } from './context/NotificationContext';
 import ConsignmentPage from './pages/ConsignmentPage';
 import AdminConsignmentsPage from './pages/AdminConsignmentsPage';
+import SupportPage from './pages/SupportPage';
 
 function HomeRouteGuard() {
     const user = useAppSelector((state) => state.auth.user);
@@ -80,6 +81,7 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route path="/support" element={<SupportPage />} />
                     </Route>
                     <Route path="/checkout" element={<CheckoutInformationPage />} />
                     <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />

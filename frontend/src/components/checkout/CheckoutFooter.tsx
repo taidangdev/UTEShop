@@ -15,9 +15,9 @@ export default function CheckoutFooter() {
                     <p className="text-sm font-bold text-on-surface">Support</p>
                     <ul className="space-y-2 text-on-surface-variant">
                         <li>
-                            <a href="/#support" className="transition hover:text-primary">
+                            <Link to="/support" className="transition hover:text-primary">
                                 Academic Support
-                            </a>
+                            </Link>
                         </li>
                         <li>
                             <Link to="/categories" className="transition hover:text-primary">
@@ -25,9 +25,9 @@ export default function CheckoutFooter() {
                             </Link>
                         </li>
                         <li>
-                            <a href="/#support" className="transition hover:text-primary">
+                            <Link to="/support" className="transition hover:text-primary">
                                 Warranty &amp; Repairs
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </div>
@@ -35,9 +35,9 @@ export default function CheckoutFooter() {
                     <p className="text-sm font-bold text-on-surface">Corporate</p>
                     <ul className="space-y-2 text-on-surface-variant">
                         <li>
-                            <a href="/#support" className="transition hover:text-primary">
+                            <Link to="/support" className="transition hover:text-primary">
                                 Privacy Policy
-                            </a>
+                            </Link>
                         </li>
                         <li>
                             <Link to="/profile" className="transition hover:text-primary">

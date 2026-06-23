@@ -19,9 +19,8 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
     { label: 'Home', to: '/' },
     { label: 'Product', to: '/categories', matchPath: true },
-    { label: 'Student Life', to: '/categories?category=student-life' },
     { label: 'Coupons', to: '/coupons' },
-    { label: 'Support / Contact', to: '/#support' }
+    { label: 'Support & Contact', to: '/support' }
 ];
 
 function isNavActive(location: Location, link: NavLink): boolean {

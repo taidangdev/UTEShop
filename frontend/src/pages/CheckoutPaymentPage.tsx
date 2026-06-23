@@ -139,9 +139,7 @@ export default function CheckoutPaymentPage() {
         }
     };
 
-    const loading = cartLoading || previewLoading;
-
-    if (!loading && items.length === 0) {
+    if (!cartLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-surface px-6 py-20 text-center">
                 <p className="text-lg text-on-surface-variant">No items selected for checkout.</p>
@@ -151,6 +149,8 @@ export default function CheckoutPaymentPage() {
             </div>
         );
     }
+
+    const loading = cartLoading || previewLoading;
 
     return (
         <div className="min-h-screen bg-surface text-on-surface antialiased">
