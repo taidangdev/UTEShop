@@ -80,4 +80,19 @@ const sendEditProfileOtp = (email, otp, ttlSeconds = 600) => {
     );
 };
 
-module.exports = { sendActivationOtp, sendForgotPasswordOtp, sendEditProfileOtp };
+const sendChangePasswordOtp = (email, otp, ttlSeconds = 600) => {
+    return sendGenericOtpEmail(
+        email,
+        otp,
+        ttlSeconds,
+        'Xác thực đổi mật khẩu',
+        'Dưới đây là mã xác minh để xác nhận yêu cầu thay đổi mật khẩu của bạn.'
+    );
+};
+
+module.exports = {
+    sendActivationOtp,
+    sendForgotPasswordOtp,
+    sendEditProfileOtp,
+    sendChangePasswordOtp
+};

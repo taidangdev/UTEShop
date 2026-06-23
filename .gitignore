@@ -5,3 +5,7 @@ coverage/
 *.log
 *.pdf
 tailieu/
+erd/
+sequence/
+usecase/
+postman/

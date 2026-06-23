@@ -149,6 +149,27 @@ const updateAddress = async (req, res, next) => {
     }
 };
 
+const requestChangePasswordOtp = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const result = await userService.requestChangePasswordOtp(userId);
+        return successResponse(res, 200, result.message);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const changePassword = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword, otp } = req.body;
+        const result = await userService.changePasswordWithOtp(userId, currentPassword, newPassword, otp);
+        return successResponse(res, 200, result.message);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getMe,
     getMyOrders,
@@ -161,5 +182,7 @@ module.exports = {
     createAddress,
     setDefaultAddress,
     deleteAddress,
-    updateAddress
+    updateAddress,
+    requestChangePasswordOtp,
+    changePassword
 };
