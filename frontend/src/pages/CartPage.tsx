@@ -209,24 +209,6 @@ function categoryLabel(product: CatalogProduct) {
     return c.name;
 }
 
-function applyCartLines(
-    next: CartLine[],
-    setItems: (items: CartLine[]) => void,
-    setSelectedIds: Dispatch<SetStateAction<Set<number>>>
-) {
-    setItems(next);
-    setSelectedIds((prev) => {
-        if (next.length === 0) return new Set<number>();
-        const nextIds = next.map((i) => i.productId);
-        const kept = nextIds.filter((id) => prev.has(id));
-        const result = new Set(kept.length > 0 ? kept : nextIds);
-        nextIds.forEach((id) => {
-            if (!prev.has(id)) result.add(id);
-        });
-        return result;
-    });
-}
-
 export default function CartPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -238,13 +220,36 @@ export default function CartPage() {
     const user = useAppSelector((state) => state.auth.user);
     const [items, setItems] = useState<CartLine[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [isSelectionInitialized, setIsSelectionInitialized] = useState(false);
     const [recommended, setRecommended] = useState<CatalogProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionError, setActionError] = useState<string | null>(null);
     const [useApi, setUseApi] = useState(true);
 
+    // Sync selection when items change
+    useEffect(() => {
+        if (items.length === 0) {
+            setSelectedIds(new Set());
+            return;
+        }
+        setSelectedIds((prev) => {
+            const itemIds = new Set(items.map((i) => Number(i.productId)));
+            if (!isSelectionInitialized) {
+                setIsSelectionInitialized(true);
+                return new Set<number>(itemIds);
+            }
+            const next = new Set<number>();
+            prev.forEach((id) => {
+                if (itemIds.has(id)) {
+                    next.add(id);
+                }
+            });
+            return next;
+        });
+    }, [items, isSelectionInitialized]);
+
     const refreshLocalCart = useCallback(() => {
-        applyCartLines(getCart(), setItems, setSelectedIds);
+        setItems(getCart());
         notifyCartUpdated({ itemCount: getCartCount() });
     }, []);
 
@@ -256,7 +261,7 @@ export default function CartPage() {
                 await mergeLocalCartToServer();
             }
             const cart = await fetchServerCart();
-            applyCartLines(apiItemsToCartLines(cart), setItems, setSelectedIds);
+            setItems(apiItemsToCartLines(cart));
             notifyCartUpdated({ itemCount: cartItemCount(cart) });
             setUseApi(true);
         } catch {
@@ -312,7 +317,7 @@ export default function CartPage() {
     }, [items.length]);
 
     const selectedItems = useMemo(
-        () => items.filter((i) => selectedIds.has(i.productId)),
+        () => items.filter((i) => selectedIds.has(Number(i.productId))),
         [items, selectedIds]
     );
 
@@ -326,21 +331,22 @@ export default function CartPage() {
         [items]
     );
 
-    const allSelected = items.length > 0 && items.every((i) => selectedIds.has(i.productId));
+    const allSelected = items.length > 0 && items.every((i) => selectedIds.has(Number(i.productId)));
 
     const toggleAll = () => {
         if (allSelected) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(items.map((i) => i.productId)));
+            setSelectedIds(new Set(items.map((i) => Number(i.productId))));
         }
     };
 
     const toggleItem = (productId: number) => {
+        const id = Number(productId);
         setSelectedIds((prev) => {
             const next = new Set(prev);
-            if (next.has(productId)) next.delete(productId);
-            else next.add(productId);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
             return next;
         });
     };
@@ -350,7 +356,7 @@ export default function CartPage() {
         try {
             if (useApi && item.cartItemId) {
                 const cart = await updateServerCartItem(item.cartItemId, quantity);
-                applyCartLines(apiItemsToCartLines(cart), setItems, setSelectedIds);
+                setItems(apiItemsToCartLines(cart));
             } else {
                 updateCartQuantity(item.productId, quantity);
                 refreshLocalCart();
@@ -366,7 +372,7 @@ export default function CartPage() {
 
     const handleProceedToCheckout = () => {
         if (selectedItems.length === 0) return;
-        saveCheckoutSelection(selectedItems.map((i) => i.productId));
+        saveCheckoutSelection(selectedItems.map((i) => Number(i.productId)));
         navigate('/checkout');
     };
 
@@ -375,14 +381,9 @@ export default function CartPage() {
         try {
             if (useApi && item.cartItemId) {
                 const cart = await removeServerCartItem(item.cartItemId);
-                applyCartLines(apiItemsToCartLines(cart), setItems, setSelectedIds);
+                setItems(apiItemsToCartLines(cart));
             } else {
                 removeFromCart(item.productId);
-                setSelectedIds((prev) => {
-                    const next = new Set(prev);
-                    next.delete(item.productId);
-                    return next;
-                });
                 refreshLocalCart();
             }
         } catch (err) {
@@ -466,8 +467,8 @@ export default function CartPage() {
                                 <CartItemRow
                                     key={item.cartItemId ?? item.productId}
                                     item={item}
-                                    selected={selectedIds.has(item.productId)}
-                                    onToggleSelect={() => toggleItem(item.productId)}
+                                    selected={selectedIds.has(Number(item.productId))}
+                                    onToggleSelect={() => toggleItem(Number(item.productId))}
                                     onQuantityChange={(qty) => handleQuantityChange(item, qty)}
                                     onRemove={() => handleRemove(item)}
                                 />
