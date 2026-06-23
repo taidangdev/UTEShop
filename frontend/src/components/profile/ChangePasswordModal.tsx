@@ -1,30 +1,29 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { updateUserProfile, clearStatus } from '../../store/profileSlice';
-import type { ProfileUpdatePayload } from '../../types/profile';
+import { useAppSelector } from '../../store/hooks';
 import axiosInstance from '../../services/axiosConfig';
 import OtpBoxes from '../auth/OtpBoxes';
 
-interface ProfileEditModalProps {
+interface ChangePasswordModalProps {
     open: boolean;
     onClose: () => void;
 }
 
-export default function ProfileEditModal({ open, onClose }: ProfileEditModalProps) {
-    const dispatch = useAppDispatch();
-    const { user, isUpdating, error, updateSuccess } = useAppSelector((state) => state.profile);
+export default function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps) {
+    const { user } = useAppSelector((state) => state.profile);
 
-    const [formData, setFormData] = useState<ProfileUpdatePayload>({
-        fullName: '',
-        phone: '',
-        otp: ''
-    });
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [otp, setOtp] = useState('');
 
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [otpCooldown, setOtpCooldown] = useState(0);
     const [otpSentHint, setOtpSentHint] = useState<string | null>(null);
+    
+    const [isUpdating, setIsUpdating] = useState(false);
     const [localError, setLocalError] = useState<string | null>(null);
+    const [updateSuccess, setUpdateSuccess] = useState(false);
 
     useEffect(() => {
         let timer: ReturnType<typeof setInterval>;
@@ -39,63 +38,78 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
     }, [otpCooldown]);
 
     useEffect(() => {
-        if (user && open) {
-            setFormData({
-                fullName: user.fullName || '',
-                phone: user.phone || '',
-                otp: ''
-            });
+        if (open) {
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setOtp('');
             setOtpCooldown(0);
             setOtpSentHint(null);
             setLocalError(null);
+            setUpdateSuccess(false);
         }
-    }, [user, open]);
-
-    useEffect(() => {
-        if (updateSuccess) {
-            const t = setTimeout(() => {
-                dispatch(clearStatus());
-                onClose();
-            }, 1200);
-            return () => clearTimeout(t);
-        }
-    }, [updateSuccess, dispatch, onClose]);
+    }, [open]);
 
     if (!open) return null;
-
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        if (localError) setLocalError(null);
-        if (updateSuccess || error) dispatch(clearStatus());
-    };
 
     const handleSendOtp = async () => {
         setIsSendingOtp(true);
         setOtpSentHint(null);
         setLocalError(null);
-        if (error) dispatch(clearStatus());
 
         try {
-            await axiosInstance.post('/users/profile/request-otp');
-            setOtpSentHint('Mã OTP đã được gửi đến email của bạn.');
+            await axiosInstance.post('/users/profile/change-password/request-otp');
+            setOtpSentHint('Mã OTP xác thực đổi mật khẩu đã được gửi đến email của bạn.');
             setOtpCooldown(60);
-        } catch (err) {
-            const apiErr = err as { message?: string };
-            setLocalError(apiErr.message || 'Không thể gửi mã OTP. Vui lòng thử lại.');
+        } catch (err: unknown) {
+            const apiErr = err as { message?: string; response?: { data?: { message?: string } } };
+            const errorMsg = apiErr.response?.data?.message || apiErr.message || 'Không thể gửi mã OTP. Vui lòng thử lại.';
+            setLocalError(errorMsg);
         } finally {
             setIsSendingOtp(false);
         }
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLocalError(null);
-        if (!formData.otp || formData.otp.trim().length !== 6) {
+        setUpdateSuccess(false);
+
+        if (!currentPassword) {
+            setLocalError('Vui lòng nhập mật khẩu hiện tại.');
+            return;
+        }
+        if (newPassword.length < 6) {
+            setLocalError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setLocalError('Mật khẩu mới và mật khẩu xác nhận không trùng khớp.');
+            return;
+        }
+        if (!otp || otp.trim().length !== 6) {
             setLocalError('Vui lòng nhập đủ 6 chữ số mã OTP để xác nhận.');
             return;
         }
-        dispatch(updateUserProfile(formData));
+
+        setIsUpdating(true);
+        try {
+            await axiosInstance.put('/users/profile/change-password', {
+                currentPassword,
+                newPassword,
+                otp
+            });
+            setUpdateSuccess(true);
+            setTimeout(() => {
+                onClose();
+            }, 1500);
+        } catch (err: unknown) {
+            const apiErr = err as { message?: string; response?: { data?: { message?: string } } };
+            const errorMsg = apiErr.response?.data?.message || apiErr.message || 'Thay đổi mật khẩu thất bại. Vui lòng thử lại.';
+            setLocalError(errorMsg);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const inputClass =
@@ -106,7 +120,7 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="edit-profile-title"
+            aria-labelledby="change-password-title"
         >
             <button
                 type="button"
@@ -116,8 +130,8 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
             />
             <div className="relative z-10 w-full max-w-lg rounded-[24px] bg-surface-container-lowest p-8 soft-shadow">
                 <div className="mb-6 flex items-center justify-between">
-                    <h2 id="edit-profile-title" className="text-2xl font-semibold text-on-surface">
-                        Edit Profile
+                    <h2 id="change-password-title" className="text-2xl font-semibold text-on-surface">
+                        Thay đổi mật khẩu
                     </h2>
                     <button
                         type="button"
@@ -129,57 +143,68 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
                     </button>
                 </div>
 
-                {(localError || error) && (
+                {localError && (
                     <div className="mb-4 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
-                        {localError || error}
+                        {localError}
                     </div>
                 )}
                 {updateSuccess && (
-                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-on-surface">
-                        Profile updated successfully.
+                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary font-medium">
+                        Mật khẩu đã được thay đổi thành công!
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Full name
+                            Mật khẩu hiện tại
                         </label>
                         <input
-                            name="fullName"
-                            value={formData.fullName}
-                            onChange={handleChange}
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => {
+                                setCurrentPassword(e.target.value);
+                                if (localError) setLocalError(null);
+                            }}
                             className={inputClass}
-                            placeholder="Your full name"
+                            placeholder="Nhập mật khẩu hiện tại của bạn"
                         />
                     </div>
                     <div>
                         <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Email
+                            Mật khẩu mới
                         </label>
                         <input
-                            value={user?.email || ''}
-                            readOnly
-                            className={`${inputClass} opacity-70`}
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => {
+                                setNewPassword(e.target.value);
+                                if (localError) setLocalError(null);
+                            }}
+                            className={inputClass}
+                            placeholder="Tối thiểu 6 ký tự"
                         />
                     </div>
                     <div>
                         <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Phone
+                            Xác nhận mật khẩu mới
                         </label>
                         <input
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => {
+                                setConfirmPassword(e.target.value);
+                                if (localError) setLocalError(null);
+                            }}
                             className={inputClass}
-                            placeholder="Phone number"
+                            placeholder="Nhập lại mật khẩu mới"
                         />
                     </div>
 
                     <div className="border-t border-outline-variant/30 pt-4 mt-4">
                         <div className="flex items-center justify-between mb-3">
                             <label className="ml-1 block text-xs font-bold text-on-surface-variant">
-                                OTP Code (Mã xác thực gửi qua Email)
+                                Mã xác thực OTP (Gửi qua Email {user?.email})
                             </label>
                             <button
                                 type="button"
@@ -190,22 +215,21 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
                                 {otpCooldown > 0 ? (
                                     <>
                                         <span className="material-symbols-outlined text-[14px]">timer</span>
-                                        Resend in {otpCooldown}s
+                                        Gửi lại sau {otpCooldown}s
                                     </>
                                 ) : isSendingOtp ? (
-                                    'Sending...'
+                                    'Đang gửi...'
                                 ) : (
-                                    'Send OTP'
+                                    'Nhận mã OTP'
                                 )}
                             </button>
                         </div>
                         
                         <OtpBoxes
-                            value={formData.otp || ''}
+                            value={otp}
                             onChange={(otpVal) => {
-                                setFormData((prev) => ({ ...prev, otp: otpVal }));
+                                setOtp(otpVal);
                                 if (localError) setLocalError(null);
-                                if (error) dispatch(clearStatus());
                             }}
                             disabled={isUpdating}
                         />
@@ -223,14 +247,14 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
                             onClick={onClose}
                             className="flex h-12 flex-1 items-center justify-center rounded-full bg-surface-container-low text-sm font-semibold text-on-surface transition hover:bg-surface-container-high"
                         >
-                            Cancel
+                            Hủy bỏ
                         </button>
                         <button
                             type="submit"
-                            disabled={isUpdating}
+                            disabled={isUpdating || updateSuccess}
                             className="flex h-12 flex-1 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary transition hover:shadow-lg disabled:opacity-70"
                         >
-                            {isUpdating ? 'Saving…' : 'Save Changes'}
+                            {isUpdating ? 'Đang lưu…' : 'Cập nhật'}
                         </button>
                     </div>
                 </form>
@@ -238,4 +262,3 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
         </div>
     );
 }
-

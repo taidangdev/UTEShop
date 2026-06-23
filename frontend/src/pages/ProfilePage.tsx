@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchMyOrders, fetchMyReviews, fetchUserProfile } from '../store/profileSlice';
 import { logout } from '../store/authSlice';
 import ProfileEditModal from '../components/profile/ProfileEditModal';
+import ChangePasswordModal from '../components/profile/ChangePasswordModal';
 import ProfileRewardsPanel from '../components/profile/ProfileRewardsPanel';
 import ProfileAddressesTab from '../components/profile/ProfileAddressesTab';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
@@ -130,6 +131,7 @@ const ProfilePage = () => {
 
     const [activeSection, setActiveSection] = useState('overview');
     const [editOpen, setEditOpen] = useState(false);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [coupons, setCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState<number | null>(null);
@@ -293,21 +295,6 @@ const ProfilePage = () => {
                                             </span>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex w-full flex-col gap-2 md:w-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setEditOpen(true)}
-                                        className="flex h-14 items-center justify-center gap-2 rounded-[24px] bg-primary px-8 text-sm font-medium text-on-primary transition active:scale-95 hover:shadow-lg"
-                                    >
-                                        Edit Profile
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="flex h-14 items-center justify-center gap-2 rounded-[24px] bg-surface-container-low px-8 text-sm font-medium text-on-surface transition active:scale-95 hover:bg-surface-container-high"
-                                    >
-                                        Student ID Card
-                                    </button>
                                 </div>
                             </div>
                         </section>
@@ -755,38 +742,37 @@ const ProfilePage = () => {
                                         <h2 className="mb-8 text-2xl font-semibold text-on-surface">
                                             Account Settings
                                         </h2>
-                                        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                                            {[
-                                                {
-                                                    icon: 'lock',
-                                                    title: 'Security',
-                                                    desc: 'Passwords, 2FA, Devices'
-                                                },
-                                                {
-                                                    icon: 'credit_card',
-                                                    title: 'Payments',
-                                                    desc: 'Student loans, Cards, Billing'
-                                                },
-                                                {
-                                                    icon: 'notifications',
-                                                    title: 'Notifications',
-                                                    desc: 'Order alerts, Price drops'
-                                                }
-                                            ].map((card) => (
-                                                <button
-                                                    key={card.title}
-                                                    type="button"
-                                                    className="group cursor-pointer rounded-2xl bg-surface-container-low p-6 text-left transition-colors hover:bg-surface-container-high"
-                                                >
-                                                    <span className="material-symbols-outlined mb-3 text-primary transition-transform group-hover:scale-110">
-                                                        {card.icon}
-                                                    </span>
-                                                    <h4 className="text-sm font-medium text-on-surface">
-                                                        {card.title}
-                                                    </h4>
-                                                    <p className="mt-1 text-xs text-on-surface-variant">{card.desc}</p>
-                                                </button>
-                                            ))}
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditOpen(true)}
+                                                className="group cursor-pointer rounded-2xl bg-surface-container-low p-6 text-left transition-colors hover:bg-surface-container-high border border-outline-variant/30 hover:border-primary/20"
+                                            >
+                                                <span className="material-symbols-outlined mb-3 text-primary transition-transform group-hover:scale-110 block text-3xl">
+                                                    manage_accounts
+                                                </span>
+                                                <h4 className="text-base font-semibold text-on-surface">
+                                                    Cập nhật thông tin cá nhân
+                                                </h4>
+                                                <p className="mt-1 text-xs text-on-surface-variant">
+                                                    Thay đổi họ tên, số điện thoại... Xác thực bảo mật bằng mã OTP.
+                                                </p>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setChangePasswordOpen(true)}
+                                                className="group cursor-pointer rounded-2xl bg-surface-container-low p-6 text-left transition-colors hover:bg-surface-container-high border border-outline-variant/30 hover:border-primary/20"
+                                            >
+                                                <span className="material-symbols-outlined mb-3 text-primary transition-transform group-hover:scale-110 block text-3xl">
+                                                    lock
+                                                </span>
+                                                <h4 className="text-base font-semibold text-on-surface">
+                                                    Thay đổi mật khẩu
+                                                </h4>
+                                                <p className="mt-1 text-xs text-on-surface-variant">
+                                                    Cập nhật mật khẩu mới của bạn và xác thực bảo mật bằng mã OTP.
+                                                </p>
+                                            </button>
                                         </div>
                                         <button
                                             type="button"
@@ -806,6 +792,7 @@ const ProfilePage = () => {
 
             <ProfileFooter />
             <ProfileEditModal open={editOpen} onClose={() => setEditOpen(false)} />
+            <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
             <WriteReviewModal
                 open={reviewModalOpen}
                 onClose={() => setReviewModalOpen(false)}

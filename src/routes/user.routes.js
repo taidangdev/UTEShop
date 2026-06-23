@@ -41,6 +41,31 @@ router.put(
     userController.editProfile
 );
 
+const changePasswordValidation = [
+    body('otp')
+        .notEmpty().withMessage('OTP là bắt buộc')
+        .matches(/^\d{6}$/).withMessage('OTP phải có đúng 6 chữ số'),
+    body('currentPassword')
+        .notEmpty().withMessage('Mật khẩu hiện tại là bắt buộc'),
+    body('newPassword')
+        .notEmpty().withMessage('Mật khẩu mới là bắt buộc')
+        .isLength({ min: 6 }).withMessage('Mật khẩu mới phải có ít nhất 6 ký tự')
+];
+
+router.post(
+    '/profile/change-password/request-otp',
+    requirePermission('profile:update'),
+    userController.requestChangePasswordOtp
+);
+
+router.put(
+    '/profile/change-password',
+    requirePermission('profile:update'),
+    changePasswordValidation,
+    validate,
+    userController.changePassword
+);
+
 const addressValidation = [
     body('recipientName').trim().notEmpty().withMessage('Tên người nhận là bắt buộc'),
     body('phone').trim().notEmpty().withMessage('Số điện thoại là bắt buộc'),
