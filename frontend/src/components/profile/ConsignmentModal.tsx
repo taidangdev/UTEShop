@@ -3,7 +3,8 @@ import type { FormEvent, ChangeEvent } from 'react';
 import {
     fetchConsignmentFormOptions,
     createConsignment,
-    updateConsignment
+    updateConsignment,
+    uploadConsignmentImage
 } from '../../services/consignmentApi';
 import type {
     Consignment,
@@ -24,10 +25,11 @@ export default function ConsignmentModal({
     onSuccess,
     consignment
 }: ConsignmentModalProps) {
-    const [categories, setCategories] = useState<ConsignmentCategoryOption[]>([]);
+     const [categories, setCategories] = useState<ConsignmentCategoryOption[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
 
     const [form, setForm] = useState({
         title: '',
@@ -35,8 +37,35 @@ export default function ConsignmentModal({
         suggestedPrice: '',
         condition: 'used' as 'new' | 'like_new' | 'used' | 'refurbished',
         contactPhone: '',
-        imageUrl: ''
+        images: [] as string[]
     });
+
+    const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setUploading(true);
+        setError(null);
+        try {
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64String = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+                const url = await uploadConsignmentImage(base64String);
+                uploadedUrls.push(url);
+            }
+            setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+        } catch (err: any) {
+            setError(err.message || 'Không thể tải ảnh lên');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     useEffect(() => {
         if (open) {
@@ -65,7 +94,7 @@ export default function ConsignmentModal({
                     suggestedPrice: consignment.suggestedPrice ? String(consignment.suggestedPrice) : '',
                     condition: consignment.condition || 'used',
                     contactPhone: consignment.contactPhone || '',
-                    imageUrl: consignment.images?.[0]?.url || ''
+                    images: consignment.images?.map((img) => img.url) || []
                 });
             } else {
                 setForm({
@@ -74,7 +103,7 @@ export default function ConsignmentModal({
                     suggestedPrice: '',
                     condition: 'used',
                     contactPhone: '',
-                    imageUrl: ''
+                    images: []
                 });
             }
         }
@@ -115,7 +144,7 @@ export default function ConsignmentModal({
                 suggestedPrice: priceNum,
                 condition: form.condition,
                 contactPhone: form.contactPhone.trim() || undefined,
-                images: form.imageUrl.trim() ? [form.imageUrl.trim()] : []
+                images: form.images
             };
 
             if (consignment) {
@@ -258,15 +287,57 @@ export default function ConsignmentModal({
 
                     <div>
                         <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Hình ảnh sản phẩm (Link URL)
+                            Hình ảnh sản phẩm (Có thể chọn nhiều ảnh)
                         </label>
-                        <input
-                            name="imageUrl"
-                            value={form.imageUrl}
-                            onChange={handleFieldChange}
-                            className={inputClass}
-                            placeholder="Nhập địa chỉ hình ảnh (URL)"
-                        />
+                        <div className="grid grid-cols-3 gap-3 rounded-xl border border-dashed border-outline-variant p-4 bg-surface-container-low">
+                            {form.images.map((url, idx) => (
+                                <div key={url + idx} className="relative aspect-square w-full overflow-hidden rounded-lg bg-surface-container shadow-sm border border-outline/10">
+                                    <img
+                                        src={url}
+                                        alt={`Product image ${idx + 1}`}
+                                        className="h-full w-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setForm(prev => ({
+                                                ...prev,
+                                                images: prev.images.filter((_, i) => i !== idx)
+                                            }));
+                                        }}
+                                        className="absolute right-1 top-1 rounded-full bg-on-surface/80 p-1 text-surface transition hover:bg-on-surface flex items-center justify-center"
+                                        aria-label="Xóa ảnh"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px] font-bold">close</span>
+                                    </button>
+                                </div>
+                            ))}
+
+                            {uploading ? (
+                                <div className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg bg-surface-container">
+                                    <span className="animate-spin material-symbols-outlined text-primary text-xl">
+                                        progress_activity
+                                    </span>
+                                    <span className="text-[10px] text-on-surface-variant font-medium text-center">Đang tải...</span>
+                                </div>
+                            ) : (
+                                <label className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-surface-container transition hover:bg-surface-container-high border border-outline-variant/30">
+                                    <span className="material-symbols-outlined text-2xl text-on-surface-variant">
+                                        add_a_photo
+                                    </span>
+                                    <span className="text-[10px] text-on-surface-variant font-medium text-center">
+                                        Thêm ảnh
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex gap-3 pt-2">
