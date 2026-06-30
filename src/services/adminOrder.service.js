@@ -19,7 +19,7 @@ const ADMIN_TRANSITIONS = {
     processing: ['shipping', 'cancelled'],
     shipping: ['delivered', 'delivery_failed'],
     delivery_failed: ['shipping', 'returned'],
-    delivered: ['return_requested'],
+    delivered: [],
     return_requested: ['return_approved', 'delivered'],
     return_approved: ['returned'],
     returned: ['refunded'],
@@ -113,17 +113,25 @@ function getAllowedNextStatuses(order) {
             }
             return true;
         })
-        .map((nextStatus) => ({
-            status: nextStatus,
-            label:
-                currentStatus === 'delivery_failed' && nextStatus === 'shipping'
-                    ? 'Giao lại'
-                    : nextStatus === 'shipping'
-                      ? 'Giao hàng'
-                      : currentStatus === 'shipping' && nextStatus === 'delivery_failed'
-                        ? ACTION_LABELS.delivery_failed
-                        : ACTION_LABELS[nextStatus] || STATUS_LABELS[nextStatus] || nextStatus
-        }));
+        .map((nextStatus) => {
+            let label = ACTION_LABELS[nextStatus] || STATUS_LABELS[nextStatus] || nextStatus;
+
+            // Custom labels based on transition context
+            if (currentStatus === 'shipping' && nextStatus === 'delivered') {
+                label = 'Giao thành công';
+            } else if (currentStatus === 'return_requested' && nextStatus === 'delivered') {
+                label = 'Từ chối trả hàng';
+            } else if (currentStatus === 'delivery_failed' && nextStatus === 'shipping') {
+                label = 'Giao lại';
+            } else if (nextStatus === 'shipping') {
+                label = 'Giao hàng';
+            }
+
+            return {
+                status: nextStatus,
+                label
+            };
+        });
 }
 
 function resolveStatusTransition(order, requestedStatus) {
@@ -433,10 +441,6 @@ async function applyStatusSideEffects(
 
     if (newStatus === 'returned') {
         orderUpdates.returnedAt = now;
-        if (payment) {
-            const paymentStatus = payment.status === 'paid' ? 'refunded' : 'failed';
-            await payment.update({ status: paymentStatus }, { transaction });
-        }
     }
 
     if (newStatus === 'cancelled' || newStatus === 'refunded') {

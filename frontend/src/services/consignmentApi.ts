@@ -58,3 +58,12 @@ export async function deleteConsignment(id: number): Promise<{ message: string }
     );
     return res.data;
 }
+
+export async function uploadConsignmentImage(base64Image: string): Promise<string> {
+    const res = await axiosInstance.post<ApiEnvelope<{ url: string }>>(
+        `/users/upload`,
+        { image: base64Image }
+    );
+    return res.data.url;
+}
+

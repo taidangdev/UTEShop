@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const userService = require('../services/user.service');
 const profileService = require('../services/profile.service');
 const loyaltyService = require('../services/loyalty.service');
@@ -170,6 +172,37 @@ const changePassword = async (req, res, next) => {
     }
 };
 
+const uploadImage = async (req, res, next) => {
+    try {
+        const { image } = req.body;
+        if (!image) {
+            return res.status(400).json({ message: 'Không có ảnh nào được gửi' });
+        }
+
+        const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ message: 'Định dạng ảnh base64 không hợp lệ' });
+        }
+
+        const imageBuffer = Buffer.from(matches[2], 'base64');
+        const extension = matches[1].split('/')[1] || 'png';
+        const filename = `img-${Date.now()}.${extension}`;
+
+        const uploadDir = path.join(__dirname, '../../public/uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filepath = path.join(uploadDir, filename);
+        fs.writeFileSync(filepath, imageBuffer);
+
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+        return successResponse(res, 200, 'Upload ảnh thành công', { url: imageUrl });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getMe,
     getMyOrders,
@@ -184,5 +217,6 @@ module.exports = {
     deleteAddress,
     updateAddress,
     requestChangePasswordOtp,
-    changePassword
+    changePassword,
+    uploadImage
 };

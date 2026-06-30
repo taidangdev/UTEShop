@@ -129,6 +129,12 @@ router.put(
     consignmentController.updateConsignment
 );
 
+router.post(
+    '/upload',
+    requirePermission('consignments:write'),
+    userController.uploadImage
+);
+
 router.delete(
     '/me/consignments/:id',
     requirePermission('consignments:write'),
@@ -136,3 +142,4 @@ router.delete(
 );
 
 module.exports = router;
+

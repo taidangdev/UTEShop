@@ -1,6 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const path = require('path');
 const errorHandler = require('./middlewares/error.middleware');
 
 // Import Routes
@@ -27,10 +28,13 @@ app.use(
 );
 
 // Parse JSON body
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Parse urlencoded
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// Serve Static Files
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Parse Cookie
 app.use(cookieParser());
