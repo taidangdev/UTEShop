@@ -12,8 +12,8 @@ const checkoutInformationValidation = [
     body('information.phone')
         .if((value, { req }) => !req.body?.information?.addressId)
         .trim()
-        .notEmpty()
-        .withMessage('Số điện thoại là bắt buộc'),
+        .notEmpty().withMessage('Số điện thoại là bắt buộc')
+        .matches(/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/).withMessage('Số điện thoại không đúng định dạng Việt Nam'),
     body('information.deliveryType')
         .optional()
         .isIn(['campus', 'home'])

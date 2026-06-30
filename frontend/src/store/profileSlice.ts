@@ -74,11 +74,14 @@ export const updateUserProfile = createAsyncThunk<
         );
         return response.data;
     } catch (error) {
-        const msg =
-            typeof error === 'string'
-                ? error
-                : (error as { message?: string })?.message || 'Cập nhật thất bại';
-        return rejectWithValue(msg);
+        if (typeof error === 'object' && error !== null) {
+            const apiError = error as any;
+            if (apiError.errors && Array.isArray(apiError.errors) && apiError.errors.length > 0) {
+                return rejectWithValue(apiError.errors.map((e: any) => e.msg).join(', '));
+            }
+            return rejectWithValue(apiError.message || 'Cập nhật thất bại');
+        }
+        return rejectWithValue(typeof error === 'string' ? error : 'Cập nhật thất bại');
     }
 });
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -29,6 +30,7 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
     const navigate = useNavigate();
     const location = useLocation();
     const user = useAppSelector((state) => state.auth.user);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const displayName = user?.fullName || user?.username || 'Admin';
     const avatarInitial = displayName.charAt(0).toUpperCase();
@@ -37,13 +39,42 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
     const handleLogout = () => {
         dispatch(logout());
         navigate('/login', { replace: true });
+        setIsSidebarOpen(false);
+    };
+
+    const handleItemClick = (path?: string) => {
+        if (path) {
+            navigate(path);
+            setIsSidebarOpen(false);
+        }
     };
 
     return (
         <div className="min-h-screen bg-surface text-on-surface">
-            <aside className="fixed left-0 top-0 z-30 hidden h-screen w-72 flex-col border-r border-outline-variant/30 bg-surface-container-lowest lg:flex">
-                <div className="flex h-20 items-center px-8">
+            {/* Backdrop Overlay for mobile when sidebar is open */}
+            {isSidebarOpen && (
+                <div
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="fixed inset-0 z-40 bg-on-surface/40 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+                />
+            )}
+
+            {/* Sidebar drawer */}
+            <aside
+                className={`fixed left-0 top-0 z-50 h-screen w-72 flex flex-col border-r border-outline-variant/30 bg-surface-container-lowest transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                <div className="flex h-20 items-center justify-between px-8">
                     <span className="text-xl font-bold text-primary">UTEShop</span>
+                    <button
+                        type="button"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container transition lg:hidden"
+                        aria-label="Đóng thanh bên"
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
                 </div>
 
                 <nav className="flex-1 space-y-2 px-4 py-6">
@@ -62,7 +93,7 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
                                 key={item.label}
                                 type="button"
                                 disabled={!item.path}
-                                onClick={() => item.path && navigate(item.path)}
+                                onClick={() => handleItemClick(item.path)}
                                 className={`group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200 ${
                                     isActive
                                         ? 'bg-primary/10 font-bold text-primary'
@@ -99,10 +130,21 @@ export default function AdminLayout({ children, title, subtitle, headerExtra }: 
                 </div>
             </aside>
 
-            <main className="min-h-screen lg:ml-72">
+            {/* Main content area */}
+            <main className="min-h-screen lg:ml-72 transition-all duration-300">
                 <header className="sticky top-0 z-20 border-b border-outline-variant/30 bg-surface/85 px-6 py-4 backdrop-blur lg:px-8">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex-1">{headerExtra}</div>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 flex-1">
+                            <button
+                                type="button"
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-container-high lg:hidden"
+                                aria-label="Mở thanh bên"
+                            >
+                                <span className="material-symbols-outlined">menu</span>
+                            </button>
+                            <div className="flex-1">{headerExtra}</div>
+                        </div>
 
                         <div className="flex items-center gap-3">
                             <button

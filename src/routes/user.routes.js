@@ -13,7 +13,10 @@ const editProfileValidation = [
         .notEmpty().withMessage('OTP là bắt buộc')
         .matches(/^\d{6}$/).withMessage('OTP phải có đúng 6 chữ số'),
     body('fullName').optional().isString().withMessage('FullName must be a string'),
-    body('phone').optional().isString().withMessage('Phone must be a string'),
+    body('phone')
+        .optional({ nullable: true, checkFalsy: true })
+        .isString().withMessage('Phone must be a string')
+        .matches(/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/).withMessage('Số điện thoại không đúng định dạng Việt Nam'),
     body('address').optional().isString().withMessage('Address must be a string')
 ];
 
@@ -68,7 +71,10 @@ router.put(
 
 const addressValidation = [
     body('recipientName').trim().notEmpty().withMessage('Tên người nhận là bắt buộc'),
-    body('phone').trim().notEmpty().withMessage('Số điện thoại là bắt buộc'),
+    body('phone')
+        .trim()
+        .notEmpty().withMessage('Số điện thoại là bắt buộc')
+        .matches(/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/).withMessage('Số điện thoại không đúng định dạng Việt Nam'),
     body('line1').trim().notEmpty().withMessage('Địa chỉ chi tiết là bắt buộc'),
     body('city').trim().notEmpty().withMessage('Tỉnh/Thành phố là bắt buộc'),
     body('district').optional().isString(),
@@ -88,7 +94,9 @@ router.delete('/me/addresses/:id', requirePermission('profile:update'), userCont
 const consignmentController = require('../controllers/consignment.controller');
 
 const consignmentValidation = [
-    body('title').notEmpty().withMessage('Tiêu đề ký gửi là bắt buộc'),
+    body('title')
+        .notEmpty().withMessage('Tiêu đề ký gửi là bắt buộc')
+        .isLength({ max: 100 }).withMessage('Tiêu đề ký gửi không được vượt quá 100 ký tự'),
     body('categoryId').isInt().withMessage('Danh mục ký gửi không hợp lệ'),
     body('suggestedPrice').isFloat({ min: 0 }).withMessage('Giá đề xuất phải là số dương'),
     body('condition')
@@ -96,8 +104,8 @@ const consignmentValidation = [
         .withMessage('Tình trạng sản phẩm không hợp lệ'),
     body('contactPhone')
         .optional({ nullable: true, checkFalsy: true })
-        .isString()
-        .withMessage('Số điện thoại liên hệ phải là chuỗi ký tự'),
+        .isString().withMessage('Số điện thoại liên hệ phải là chuỗi ký tự')
+        .matches(/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/).withMessage('Số điện thoại liên hệ không đúng định dạng Việt Nam'),
     body('images').optional().isArray().withMessage('Danh sách hình ảnh phải là một mảng')
 ];
 

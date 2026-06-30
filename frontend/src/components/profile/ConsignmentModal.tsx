@@ -122,8 +122,13 @@ export default function ConsignmentModal({
         e.preventDefault();
         setError(null);
 
-        if (!form.title.trim()) {
+        const titleTrimmed = form.title.trim();
+        if (!titleTrimmed) {
             setError('Tiêu đề ký gửi là bắt buộc');
+            return;
+        }
+        if (titleTrimmed.length > 100) {
+            setError('Tiêu đề ký gửi không được vượt quá 100 ký tự');
             return;
         }
         if (!form.categoryId) {
@@ -135,15 +140,20 @@ export default function ConsignmentModal({
             setError('Giá đề xuất phải là số dương hợp lệ');
             return;
         }
+        const phoneTrimmed = form.contactPhone.trim();
+        if (phoneTrimmed && !/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(phoneTrimmed)) {
+            setError('Số điện thoại liên hệ không đúng định dạng Việt Nam');
+            return;
+        }
 
         setIsSubmitting(true);
         try {
             const payload: CreateConsignmentPayload = {
-                title: form.title.trim(),
+                title: titleTrimmed,
                 categoryId: Number(form.categoryId),
                 suggestedPrice: priceNum,
                 condition: form.condition,
-                contactPhone: form.contactPhone.trim() || undefined,
+                contactPhone: phoneTrimmed || undefined,
                 images: form.images
             };
 
@@ -155,7 +165,11 @@ export default function ConsignmentModal({
             onSuccess();
             onClose();
         } catch (err: any) {
-            setError(err.message || 'Có lỗi xảy ra khi lưu yêu cầu ký gửi');
+            if (err.errors && Array.isArray(err.errors) && err.errors.length > 0) {
+                setError(err.errors.map((e: any) => e.msg).join(', '));
+            } else {
+                setError(err.message || 'Có lỗi xảy ra khi lưu yêu cầu ký gửi');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -199,17 +213,27 @@ export default function ConsignmentModal({
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                            Tiêu đề sản phẩm ký gửi
-                        </label>
+                        <div className="flex justify-between items-center mb-2 ml-1">
+                            <label className="block text-xs font-semibold text-on-surface-variant">
+                                Tiêu đề sản phẩm ký gửi
+                            </label>
+                            <span className={`text-[10px] ${form.title.length > 100 ? 'text-error font-bold' : form.title.length > 90 ? 'text-error font-semibold' : 'text-on-surface-variant/60'}`}>
+                                {form.title.length}/100
+                            </span>
+                        </div>
                         <input
                             name="title"
                             value={form.title}
                             onChange={handleFieldChange}
-                            className={inputClass}
+                            className={`${inputClass} ${form.title.length > 100 ? 'ring-2 ring-error/50 border border-error bg-error/5' : ''}`}
                             placeholder="Ví dụ: Giáo trình kỹ thuật lập trình, máy tính cũ..."
                             required
                         />
+                        {form.title.length > 100 && (
+                            <p className="mt-1.5 ml-1 text-xs text-error font-medium animate-pulse">
+                                Tiêu đề ký gửi không được vượt quá 100 ký tự
+                            </p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -272,16 +296,23 @@ export default function ConsignmentModal({
                         </div>
 
                         <div>
-                            <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                                Số điện thoại liên hệ
-                            </label>
+                            <div className="flex justify-between items-center mb-2 ml-1">
+                                <label className="block text-xs font-semibold text-on-surface-variant">
+                                    Số điện thoại liên hệ
+                                </label>
+                            </div>
                             <input
                                 name="contactPhone"
                                 value={form.contactPhone}
                                 onChange={handleFieldChange}
-                                className={inputClass}
-                                placeholder="Nhập SĐT của bạn"
+                                className={`${inputClass} ${form.contactPhone.trim() && !/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(form.contactPhone.trim()) ? 'ring-2 ring-error/50 border border-error bg-error/5' : ''}`}
+                                placeholder="Ví dụ: 0987654321 hoặc +84987654321"
                             />
+                            {form.contactPhone.trim() && !/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(form.contactPhone.trim()) && (
+                                <p className="mt-1.5 ml-1 text-xs text-error font-medium animate-pulse">
+                                    Số điện thoại liên hệ không đúng định dạng Việt Nam
+                                </p>
+                            )}
                         </div>
                     </div>
 

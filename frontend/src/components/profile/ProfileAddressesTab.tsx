@@ -288,7 +288,11 @@ export default function ProfileAddressesTab() {
             const list = await fetchMyAddresses();
             setAddresses(list);
         } catch (err: any) {
-            setFormError(err?.response?.data?.message || 'Có lỗi xảy ra khi xử lý địa chỉ.');
+            if (err && err.errors && Array.isArray(err.errors) && err.errors.length > 0) {
+                setFormError(err.errors.map((e: any) => e.msg).join(', '));
+            } else {
+                setFormError(err?.message || 'Có lỗi xảy ra khi xử lý địa chỉ.');
+            }
         } finally {
             setFormSubmitting(false);
         }
