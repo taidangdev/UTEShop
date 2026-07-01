@@ -7,7 +7,7 @@ import { toggleWishlistApi } from '../../services/wishlistApi';
 import { getAccessToken } from '../../services/authSession';
 import { useAppSelector } from '../../store/hooks';
 import type { CatalogProduct } from '../../types/catalog';
-import { addToCart } from '../../utils/cartStorage';
+import { addToCart, getCart } from '../../utils/cartStorage';
 import { addItemToServerCart } from '../../services/cartApi';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -75,19 +75,35 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
 
         try {
             await addItemToServerCart({ productId: product.id, quantity: 1 });
-        } catch {
-            addToCart({
-                productId: product.id,
-                slug: product.slug,
-                name: product.name,
-                price: product.price,
-                imageUrl: product.imageUrl || null,
-                categoryId: product.category?.id,
-                quantity: 1
-            });
-        }
+            toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+        } catch (err: any) {
+            if (typeof err === 'object' && err !== null) {
+                const msg = err.message || 'Không thể thêm vào giỏ hàng';
+                toast.error(msg);
+            } else {
+                const localCart = getCart();
+                const existing = localCart.find((i) => i.productId === product.id);
+                const currentQty = existing ? existing.quantity : 0;
+                const max = product.stockQuantity ?? 999;
+                
+                if (currentQty + 1 > max) {
+                    toast.error(`Bạn đã có ${currentQty} sản phẩm trong giỏ hàng. Không thể thêm nữa.`);
+                    return;
+                }
 
-        toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+                addToCart({
+                    productId: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl || null,
+                    categoryId: product.category?.id,
+                    quantity: 1,
+                    stockQuantity: product.stockQuantity
+                });
+                toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+            }
+        }
     };
 
     return (

@@ -28,7 +28,8 @@ export function apiItemsToCartLines(cart: CartDto): CartLine[] {
             imageUrl: item.product!.imageUrl,
             quantity: item.quantity,
             inStock: item.inStock,
-            priceChanged: item.priceChanged
+            priceChanged: item.priceChanged,
+            stockQuantity: item.variant ? item.variant.stockQuantity : item.product!.stockQuantity
         }));
 }
 

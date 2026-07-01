@@ -86,11 +86,15 @@ function CartFooter() {
 function CartQuantityControl({
     value,
     onDecrease,
-    onIncrease
+    onIncrease,
+    onChange,
+    max
 }: {
     value: number;
     onDecrease: () => void;
     onIncrease: () => void;
+    onChange: (qty: number) => void;
+    max?: number;
 }) {
     return (
         <div className="flex items-center gap-4 rounded-full bg-surface-container px-4 py-2">
@@ -103,13 +107,36 @@ function CartQuantityControl({
             >
                 remove
             </button>
-            <span className="w-4 text-center text-sm font-medium text-on-surface" aria-live="polite">
-                {value}
-            </span>
+            <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={value}
+                onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    if (val === '') {
+                        onChange(0);
+                    } else {
+                        const num = Number(val);
+                        if (max != null && num > max) {
+                            onChange(max);
+                        } else {
+                            onChange(num);
+                        }
+                    }
+                }}
+                onBlur={() => {
+                    if (value < 1) {
+                        onChange(1);
+                    }
+                }}
+                className="w-8 text-center text-sm font-medium text-on-surface border-none bg-transparent outline-none focus:ring-0 p-0"
+            />
             <button
                 type="button"
                 onClick={onIncrease}
-                className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary"
+                disabled={max != null && value >= max}
+                className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Increase quantity"
             >
                 add
@@ -189,6 +216,8 @@ function CartItemRow({
                     value={item.quantity}
                     onDecrease={() => onQuantityChange(item.quantity - 1)}
                     onIncrease={() => onQuantityChange(item.quantity + 1)}
+                    onChange={(qty) => onQuantityChange(qty)}
+                    max={item.stockQuantity}
                 />
                 <button
                     type="button"
@@ -323,6 +352,11 @@ export default function CartPage() {
 
     const subtotal = useMemo(
         () => selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+        [selectedItems]
+    );
+
+    const canCheckout = useMemo(
+        () => selectedItems.length > 0 && !selectedItems.some((i) => i.inStock === false),
         [selectedItems]
     );
 
@@ -494,7 +528,7 @@ export default function CartPage() {
                                 </div>
                                 <button
                                     type="button"
-                                    disabled={selectedItems.length === 0}
+                                    disabled={!canCheckout}
                                     onClick={handleProceedToCheckout}
                                     className="w-full rounded-full bg-primary py-5 text-sm font-medium uppercase tracking-widest text-on-primary shadow-lg shadow-primary/10 transition hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                 >

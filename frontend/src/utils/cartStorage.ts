@@ -21,6 +21,7 @@ export interface CartLine {
     inStock?: boolean;
     priceChanged?: boolean;
     categoryId?: number;
+    stockQuantity?: number;
 }
 
 function readCart(): CartLine[] {
@@ -44,7 +45,13 @@ export function addToCart(line: Omit<CartLine, 'quantity'> & { quantity: number 
     const items = readCart();
     const idx = items.findIndex((i) => i.productId === line.productId);
     if (idx >= 0) {
-        items[idx].quantity += line.quantity;
+        const newQty = items[idx].quantity + line.quantity;
+        const max = items[idx].stockQuantity ?? line.stockQuantity;
+        if (max != null && newQty > max) {
+            items[idx].quantity = max;
+        } else {
+            items[idx].quantity = newQty;
+        }
     } else {
         items.push({ ...line });
     }
@@ -60,7 +67,12 @@ export function updateCartQuantity(productId: number, quantity: number) {
     if (quantity < 1) {
         items.splice(idx, 1);
     } else {
-        items[idx].quantity = quantity;
+        const max = items[idx].stockQuantity;
+        if (max != null && quantity > max) {
+            items[idx].quantity = max;
+        } else {
+            items[idx].quantity = quantity;
+        }
     }
     writeCart(items);
     notifyCartUpdated({ itemCount: getCartCount() });

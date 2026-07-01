@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosConfig';
 import { formatPrice } from '../utils/formatPrice';
 import { addItemToServerCart } from '../services/cartApi';
-import { addToCart } from '../utils/cartStorage';
+import { addToCart, getCart } from '../utils/cartStorage';
 import ProductImageGallery from '../components/catalog/ProductImageGallery';
 import QuantitySelector from '../components/catalog/QuantitySelector';
 import SimilarProducts from '../components/catalog/SimilarProducts';
@@ -14,6 +14,7 @@ import { toggleWishlistApi } from '../services/wishlistApi';
 import { useAppSelector } from '../store/hooks';
 import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, ProductDetail, ProductDetailResponse } from '../types/catalog';
+import { useNotification } from '../context/NotificationContext';
 
 function initials(name?: string | null, username?: string | null) {
     const base = name || username || '?';
@@ -127,6 +128,7 @@ function ProductDetailFooter() {
 export default function ProductDetailPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const { toast } = useNotification();
     const authUser = useAppSelector((s) => s.auth.user);
     const isAuthenticated = Boolean(authUser || getAccessToken());
     const [product, setProduct] = useState<ProductDetail | null>(null);
@@ -295,18 +297,36 @@ export default function ProductDetailPage() {
         if (!inStock) return;
         try {
             await addItemToServerCart({ productId: product.id, quantity });
-        } catch {
-            addToCart({
-                productId: product.id,
-                slug: product.slug,
-                name: product.name,
-                price: product.price,
-                imageUrl: product.imageUrl ?? images[0]?.url ?? null,
-                quantity
-            });
+            setCartMessage(`Added ${quantity} × ${product.name} to cart`);
+            window.setTimeout(() => setCartMessage(null), 3500);
+        } catch (err: any) {
+            if (typeof err === 'object' && err !== null) {
+                const msg = err.message || 'Could not add to cart';
+                toast.error(msg);
+            } else {
+                const localCart = getCart();
+                const existing = localCart.find((i) => i.productId === product.id);
+                const currentQty = existing ? existing.quantity : 0;
+                const max = product.stockQuantity ?? 999;
+                
+                if (currentQty + quantity > max) {
+                    toast.error(`Bạn đã có ${currentQty} sản phẩm trong giỏ hàng. Chỉ có thể thêm tối đa ${max - currentQty} sản phẩm.`);
+                    return;
+                }
+
+                addToCart({
+                    productId: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl ?? images[0]?.url ?? null,
+                    quantity,
+                    stockQuantity: product.stockQuantity
+                });
+                setCartMessage(`Added ${quantity} × ${product.name} to cart`);
+                window.setTimeout(() => setCartMessage(null), 3500);
+            }
         }
-        setCartMessage(`Added ${quantity} × ${product.name} to cart`);
-        window.setTimeout(() => setCartMessage(null), 3500);
     };
 
     return (

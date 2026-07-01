@@ -36,12 +36,28 @@ export default function QuantitySelector({
                 >
                     <span className="material-symbols-outlined text-[20px]">remove</span>
                 </button>
-                <span
-                    className="min-w-[3rem] text-center text-base font-bold text-on-surface"
-                    aria-live="polite"
-                >
-                    {value}
-                </span>
+                <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={value}
+                    disabled={disabled}
+                    onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val === '') {
+                            onChange(0);
+                        } else {
+                            const num = Number(val);
+                            onChange(Math.min(num, max));
+                        }
+                    }}
+                    onBlur={() => {
+                        if (value < min) {
+                            onChange(min);
+                        }
+                    }}
+                    className="w-12 text-center text-base font-bold text-on-surface border-none bg-transparent outline-none focus:ring-0 p-0"
+                />
                 <button
                     type="button"
                     onClick={increase}
