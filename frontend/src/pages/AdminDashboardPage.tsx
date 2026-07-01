@@ -33,11 +33,17 @@ function formatDate(value: string | null) {
 }
 
 function shortBucketLabel(bucket: string, groupBy: 'day' | 'month') {
-    const date = new Date(bucket);
+    if (!bucket) return '—';
+    const parts = bucket.split('-');
+    if (parts.length < 3) return bucket;
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2];
+
     if (groupBy === 'month') {
-        return `T${date.getMonth() + 1}/${date.getFullYear()}`;
+        return `T${parseInt(month, 10)}/${year}`;
     }
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+    return `${day}/${month}`;
 }
 
 function formatCompact(value: number) {
@@ -244,9 +250,11 @@ export default function AdminDashboardPage() {
                             <button
                                 type="button"
                                 className="h-10 rounded-xl border border-outline-variant/50 px-4 text-sm font-semibold"
-                                onClick={() =>
-                                    loadDashboard({ preset, groupBy, status, from: undefined, to: undefined })
-                                }
+                                onClick={async () => {
+                                    setFromDate('');
+                                    setToDate('');
+                                    await loadDashboard({ preset, groupBy, status, from: undefined, to: undefined });
+                                }}
                             >
                                 Làm mới
                             </button>
