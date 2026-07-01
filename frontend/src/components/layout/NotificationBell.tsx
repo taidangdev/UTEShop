@@ -92,7 +92,7 @@ export default function NotificationBell() {
             >
                 <FiBell className="h-[22px] w-[22px]" strokeWidth={1.5} />
                 {unreadCount > 0 && (
-                    <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[9px] font-bold leading-none text-white animate-pulse">
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[9px] font-bold leading-none text-white animate-pulse whitespace-nowrap">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}

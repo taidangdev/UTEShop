@@ -152,7 +152,7 @@ export default function ShopHeader() {
                     >
                         <FiShoppingCart className="h-[22px] w-[22px]" strokeWidth={1.5} />
                         {cartCount > 0 && (
-                            <span className="absolute -right-2.5 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[10px] font-bold leading-none text-white">
+                            <span className="absolute -top-2.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 font-inter text-[10px] font-bold leading-none text-white whitespace-nowrap">
                                 {cartCount > 99 ? '99+' : cartCount}
                             </span>
                         )}
