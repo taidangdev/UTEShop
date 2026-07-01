@@ -86,11 +86,26 @@ export default function CustomersTab() {
     };
 
     // Reset filters
-    const handleResetFilters = () => {
+    const handleResetFilters = async () => {
         setSearchQuery('');
         setStatusFilter('all');
         setRoleFilter('all');
         setPage(1);
+
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await fetchAdminUsers(1, limit, '', '', '');
+            if (data) {
+                setUsers(data.users || []);
+                setTotalCount(data.pagination?.total || 0);
+                setTotalPages(data.pagination?.totalPages || 1);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Không thể kết nối đến máy chủ');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Checkbox toggles
