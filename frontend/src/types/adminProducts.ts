@@ -136,7 +136,7 @@ export interface AdminProductFormState {
     productType: string;
     status: string;
     isFeatured: boolean;
-    imageUrl: string;
+    images: string[];
     tags: string;
     majorIds: number[];
 }
@@ -157,7 +157,7 @@ export const EMPTY_PRODUCT_FORM: AdminProductFormState = {
     productType: 'standard',
     status: 'draft',
     isFeatured: false,
-    imageUrl: '',
+    images: [],
     tags: '',
     majorIds: []
 };

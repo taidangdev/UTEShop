@@ -4,7 +4,8 @@ import AdminPagination from '../components/admin/AdminPagination';
 import {
     fetchAdminOrders,
     fetchAdminOrderDetail,
-    updateAdminOrderStatus
+    updateAdminOrderStatus,
+    updateAdminOrderNote
 } from '../services/adminApi';
 import type { AdminOrderDetail, AdminOrderListItem } from '../types/adminOrders';
 import { useNotification } from '../context/NotificationContext';
@@ -76,17 +77,42 @@ export default function AdminOrdersPage() {
     const [searchInput, setSearchInput] = useState('');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
+    const [dateError, setDateError] = useState<string | null>(null);
+
+    const handleFromDateChange = (val: string) => {
+        setFromDate(val);
+        if (val && toDate && val > toDate) {
+            setDateError('Ngày bắt đầu không thể lớn hơn ngày kết thúc');
+        } else {
+            setDateError(null);
+        }
+    };
+
+    const handleToDateChange = (val: string) => {
+        setToDate(val);
+        if (fromDate && val && fromDate > val) {
+            setDateError('Ngày kết thúc không thể nhỏ hơn ngày bắt đầu');
+        } else {
+            setDateError(null);
+        }
+    };
 
     const [selectedOrder, setSelectedOrder] = useState<AdminOrderDetail | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
     const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
     const [adminNote, setAdminNote] = useState('');
+    const [savingNote, setSavingNote] = useState(false);
 
-    const { toast } = useNotification();
+    const { toast, showConfirm } = useNotification();
 
     const loadOrders = useCallback(
         async (page = pagination.page) => {
+            if (fromDate && toDate && fromDate > toDate) {
+                setOrders([]);
+                setLoading(false);
+                return;
+            }
             setLoading(true);
             setError(null);
             try {
@@ -148,10 +174,41 @@ export default function AdminOrdersPage() {
         }
     };
 
-    const closeDetail = () => {
+    const closeDetail = async () => {
+        if (selectedOrder && adminNote.trim() !== (selectedOrder.adminNote || '')) {
+            const confirmClose = await showConfirm({
+                title: 'Thay đổi chưa lưu',
+                message: 'Ghi chú admin có sự thay đổi chưa lưu. Bạn có chắc chắn muốn đóng và hủy bỏ các thay đổi này?',
+                type: 'warning',
+                confirmText: 'Đóng và hủy',
+                cancelText: 'Quay lại'
+            });
+            if (!confirmClose) return;
+        }
         setSelectedOrder(null);
         setDetailError(null);
         setAdminNote('');
+    };
+
+    const handleSaveNote = async () => {
+        if (!selectedOrder) return;
+        setSavingNote(true);
+        try {
+            const cleanNote = adminNote.trim() || null;
+            const data = await updateAdminOrderNote(selectedOrder.orderNumber, cleanNote);
+            setSelectedOrder(data.order);
+            setAdminNote(data.order.adminNote || '');
+            toast.success('Đã lưu ghi chú admin thành công');
+            await loadOrders(pagination.page);
+        } catch (err: unknown) {
+            const message =
+                typeof err === 'object' && err && 'message' in err
+                    ? String((err as { message?: string }).message || '')
+                    : '';
+            toast.error(message || 'Không thể lưu ghi chú admin');
+        } finally {
+            setSavingNote(false);
+        }
     };
 
     const handleStatusUpdate = async (orderNumber: string, newStatus: string) => {
@@ -249,8 +306,12 @@ export default function AdminOrdersPage() {
                             <input
                                 type="date"
                                 value={fromDate}
-                                onChange={(e) => setFromDate(e.target.value)}
-                                className="h-10 rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                onChange={(e) => handleFromDateChange(e.target.value)}
+                                className={`h-10 rounded-xl border bg-surface px-3 text-sm outline-none focus:ring-1 ${
+                                    dateError
+                                        ? 'border-error focus:border-error focus:ring-error'
+                                        : 'border-outline-variant/40 focus:border-primary focus:ring-primary'
+                                }`}
                             />
                         </div>
                         <div className="flex items-center gap-2">
@@ -258,8 +319,12 @@ export default function AdminOrdersPage() {
                             <input
                                 type="date"
                                 value={toDate}
-                                onChange={(e) => setToDate(e.target.value)}
-                                className="h-10 rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                onChange={(e) => handleToDateChange(e.target.value)}
+                                className={`h-10 rounded-xl border bg-surface px-3 text-sm outline-none focus:ring-1 ${
+                                    dateError
+                                        ? 'border-error focus:border-error focus:ring-error'
+                                        : 'border-outline-variant/40 focus:border-primary focus:ring-primary'
+                                }`}
                             />
                         </div>
                         <button
@@ -276,6 +341,7 @@ export default function AdminOrdersPage() {
                                 setSearch('');
                                 setFromDate('');
                                 setToDate('');
+                                setDateError(null);
                                 setStatusFilter('all');
                             }}
                             className="h-10 rounded-xl border border-outline-variant/50 px-4 text-sm font-semibold hover:bg-surface-container-low transition"
@@ -284,6 +350,11 @@ export default function AdminOrdersPage() {
                         </button>
                     </div>
                 </div>
+                {dateError && (
+                    <div className="mt-3 text-xs font-semibold text-error">
+                        {dateError}
+                    </div>
+                )}
             </section>
 
             {loading && (
@@ -572,9 +643,33 @@ export default function AdminOrdersPage() {
                                                 )}
                                             </div>
                                         )}
-                                        <label className="mb-2 block text-xs font-semibold uppercase text-on-surface-variant">
-                                            Ghi chú admin
-                                        </label>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <label className="block text-xs font-semibold uppercase text-on-surface-variant">
+                                                Ghi chú admin
+                                            </label>
+                                            <button
+                                                type="button"
+                                                disabled={savingNote || adminNote.trim() === (selectedOrder.adminNote || '')}
+                                                onClick={handleSaveNote}
+                                                className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary hover:bg-primary/95 transition disabled:opacity-50"
+                                            >
+                                                {savingNote ? (
+                                                    <>
+                                                        <span className="animate-spin material-symbols-outlined text-[14px]">
+                                                            progress_activity
+                                                        </span>
+                                                        <span>Đang lưu...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="material-symbols-outlined text-[14px]">
+                                                            save
+                                                        </span>
+                                                        <span>Lưu ghi chú</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
                                         <textarea
                                             value={adminNote}
                                             onChange={(e) => setAdminNote(e.target.value)}

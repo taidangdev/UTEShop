@@ -477,6 +477,17 @@ const updateOrderStatus = async (req, res, next) => {
     }
 };
 
+const updateOrderNote = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.updateOrderNote(req.params.orderNumber, {
+            adminNote: req.body.adminNote
+        });
+        return successResponse(res, 200, 'Order admin note updated', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const listProducts = async (req, res, next) => {
     try {
         const status = req.query.status === 'all' ? undefined : req.query.status;
@@ -795,6 +806,35 @@ const createPromotion = async (req, res, next) => {
             }
         }
 
+        if (startsAt) {
+            const start = new Date(startsAt);
+            if (isNaN(start.getTime())) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian bắt đầu không hợp lệ');
+            }
+        }
+
+        if (endsAt) {
+            const end = new Date(endsAt);
+            if (isNaN(end.getTime())) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian kết thúc không hợp lệ');
+            }
+            if (end <= new Date()) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian kết thúc phải diễn ra trong tương lai');
+            }
+        }
+
+        if (startsAt && endsAt) {
+            const start = new Date(startsAt);
+            const end = new Date(endsAt);
+            if (end <= start) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian kết thúc phải diễn ra sau thời gian bắt đầu');
+            }
+        }
+
         let legacyCategoryId = null;
         if (scope === 'category' && Array.isArray(categoryIds) && categoryIds.length > 0) {
             legacyCategoryId = categoryIds[0];
@@ -902,6 +942,34 @@ const updatePromotion = async (req, res, next) => {
                 await transaction.rollback();
                 return errorResponse(res, 400, 'Không thể thay đổi giá trị khi đã có người sử dụng');
             }
+        }
+
+        if (startsAt !== undefined && startsAt) {
+            const start = new Date(startsAt);
+            if (isNaN(start.getTime())) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian bắt đầu không hợp lệ');
+            }
+        }
+
+        if (endsAt !== undefined && endsAt) {
+            const end = new Date(endsAt);
+            if (isNaN(end.getTime())) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian kết thúc không hợp lệ');
+            }
+            if (end <= new Date()) {
+                await transaction.rollback();
+                return errorResponse(res, 400, 'Thời gian kết thúc phải diễn ra trong tương lai');
+            }
+        }
+
+        const finalStartsAt = startsAt !== undefined ? (startsAt ? new Date(startsAt) : null) : (promotion.startsAt ? new Date(promotion.startsAt) : null);
+        const finalEndsAt = endsAt !== undefined ? (endsAt ? new Date(endsAt) : null) : (promotion.endsAt ? new Date(promotion.endsAt) : null);
+
+        if (finalStartsAt && finalEndsAt && finalEndsAt <= finalStartsAt) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Thời gian kết thúc phải diễn ra sau thời gian bắt đầu');
         }
 
         const updates = {};
@@ -1143,6 +1211,7 @@ module.exports = {
     listOrders,
     getOrderDetail,
     updateOrderStatus,
+    updateOrderNote,
     listProducts,
     getProductFormOptions,
     getProductDetail,

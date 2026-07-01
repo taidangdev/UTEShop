@@ -315,9 +315,6 @@ export default function OrderTrackingPage() {
                                             Đã giao thất bại {deliveryFailCount} lần trước khi hoàn trả.
                                         </span>
                                     )}
-                                    {order.adminNote && (
-                                        <span className="block mt-2 italic font-medium">Ghi chú từ shop: &quot;{order.adminNote}&quot;</span>
-                                    )}
                                     {order.returnReason && (
                                         <span className="block mt-1 italic font-medium">Lý do trả hàng: &quot;{order.returnReason}&quot;</span>
                                     )}
@@ -354,6 +351,19 @@ export default function OrderTrackingPage() {
                                             </div>
                                         );
                                     })}
+                                </div>
+                            </div>
+                        )}
+                        {order.adminNote && (
+                            <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+                                <span className="material-symbols-outlined text-[20px] text-primary mt-0.5">
+                                    info
+                                </span>
+                                <div className="text-left">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-primary">Ghi chú từ cửa hàng</p>
+                                    <p className="mt-1 text-sm font-medium text-on-surface">
+                                        &quot;{order.adminNote}&quot;
+                                    </p>
                                 </div>
                             </div>
                         )}

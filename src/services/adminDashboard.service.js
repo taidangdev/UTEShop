@@ -33,13 +33,13 @@ const ORDER_STATUSES = [
 
 function startOfDay(date) {
     const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
+    d.setUTCHours(0, 0, 0, 0);
     return d;
 }
 
 function endOfDay(date) {
     const d = new Date(date);
-    d.setHours(23, 59, 59, 999);
+    d.setUTCHours(23, 59, 59, 999);
     return d;
 }
 
@@ -52,7 +52,7 @@ function parseDateInput(value) {
 
 function subtractDays(date, days) {
     const d = new Date(date);
-    d.setDate(d.getDate() - days);
+    d.setUTCDate(d.getUTCDate() - days);
     return d;
 }
 
@@ -91,11 +91,11 @@ function buildTimelineBuckets(startDate, endDate, groupBy) {
     const cursor = new Date(startDate);
 
     if (groupBy === 'month') {
-        cursor.setDate(1);
+        cursor.setUTCDate(1);
         while (cursor <= endDate) {
-            const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-01`;
+            const key = `${cursor.getUTCFullYear()}-${String(cursor.getUTCMonth() + 1).padStart(2, '0')}-01`;
             buckets.push(key);
-            cursor.setMonth(cursor.getMonth() + 1, 1);
+            cursor.setUTCMonth(cursor.getUTCMonth() + 1, 1);
         }
         return buckets;
     }
@@ -103,7 +103,7 @@ function buildTimelineBuckets(startDate, endDate, groupBy) {
     while (cursor <= endDate) {
         const key = cursor.toISOString().slice(0, 10);
         buckets.push(key);
-        cursor.setDate(cursor.getDate() + 1);
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
     }
     return buckets;
 }

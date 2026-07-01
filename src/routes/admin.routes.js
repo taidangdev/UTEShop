@@ -5,7 +5,8 @@ const { validate } = require('../middlewares/validation.middleware');
 const {
     listOrdersValidation,
     orderNumberParamValidation,
-    updateOrderStatusValidation
+    updateOrderStatusValidation,
+    updateOrderNoteValidation
 } = require('../validators/adminOrder.validator');
 const {
     listProductsValidation,
@@ -32,6 +33,12 @@ router.patch(
     updateOrderStatusValidation,
     validate,
     adminController.updateOrderStatus
+);
+router.patch(
+    '/orders/:orderNumber/note',
+    updateOrderNoteValidation,
+    validate,
+    adminController.updateOrderNote
 );
 
 router.get('/products/form-options', adminController.getProductFormOptions);

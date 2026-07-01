@@ -18,6 +18,8 @@ import type {
     AdminProductPayload
 } from '../types/adminProducts';
 import { EMPTY_PRODUCT_FORM as emptyForm } from '../types/adminProducts';
+import type { ApiErrorPayload } from '../types/api';
+import { uploadConsignmentImage } from '../services/consignmentApi';
 
 const STATUS_STYLES: Record<string, string> = {
     draft: 'bg-surface-container-high text-on-surface-variant',
@@ -73,7 +75,7 @@ function detailToForm(product: AdminProductDetail): AdminProductFormState {
         productType: product.productType,
         status: product.status,
         isFeatured: product.isFeatured,
-        imageUrl: product.images[0]?.url || product.imageUrl || '',
+        images: product.images.map((img) => img.url),
         tags: (product.tags || []).join(', '),
         majorIds: product.majors.map((major) => major.id)
     };
@@ -105,8 +107,12 @@ function formToPayload(form: AdminProductFormState): AdminProductPayload {
     };
 
     if (form.slug.trim()) payload.slug = form.slug.trim();
-    if (form.imageUrl.trim()) {
-        payload.images = [{ url: form.imageUrl.trim(), isPrimary: true }];
+    if (form.images.length > 0) {
+        payload.images = form.images.map((url, idx) => ({
+            url: url.trim(),
+            isPrimary: idx === 0,
+            sortOrder: idx
+        }));
     }
 
     return payload;
@@ -118,6 +124,15 @@ function validateForm(form: AdminProductFormState): string | null {
     if (!form.price.trim() || Number.isNaN(parseFloat(form.price))) return 'Giá không hợp lệ';
     if (parseFloat(form.price) < 0) return 'Giá phải >= 0';
     if (Number.isNaN(parseInt(form.stockQuantity, 10))) return 'Tồn kho không hợp lệ';
+    if (form.images.length > 0) {
+        const validExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|tiff)$/i;
+        for (const imageUrl of form.images) {
+            const cleanUrl = imageUrl.trim().split('?')[0].split('#')[0];
+            if (!validExtensions.test(cleanUrl)) {
+                return `URL hình ảnh "${imageUrl}" phải có định dạng hợp lệ (.jpg, .jpeg, .png, .webp, .gif, .svg, .bmp, .tiff)`;
+            }
+        }
+    }
     return null;
 }
 
@@ -145,6 +160,8 @@ export default function AdminProductsPage() {
     const [formError, setFormError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [imageUploading, setImageUploading] = useState(false);
+    const [imageUrlInput, setImageUrlInput] = useState('');
 
     const { toast, showConfirm } = useNotification();
 
@@ -248,6 +265,58 @@ export default function AdminProductsPage() {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
+    const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setImageUploading(true);
+        setFormError(null);
+        try {
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64String = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+                const url = await uploadConsignmentImage(base64String);
+                uploadedUrls.push(url);
+            }
+            handleFormChange('images', [...form.images, ...uploadedUrls]);
+            toast.success(`Đã tải lên ${files.length} ảnh thành công`);
+        } catch (err: any) {
+            setFormError(err.message || 'Không thể tải ảnh lên');
+        } finally {
+            setImageUploading(false);
+        }
+    };
+
+    const handleAddImageUrl = () => {
+        const url = imageUrlInput.trim();
+        if (!url) return;
+        const cleanUrl = url.split('?')[0].split('#')[0];
+        const validExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|tiff)$/i;
+        if (!validExtensions.test(cleanUrl)) {
+            toast.error('URL hình ảnh phải có định dạng hợp lệ (.jpg, .jpeg, .png, .webp, .gif, .svg, .bmp, .tiff)');
+            return;
+        }
+        handleFormChange('images', [...form.images, url]);
+        setImageUrlInput('');
+        toast.success('Đã thêm URL ảnh thành công');
+    };
+
+    const handleRemoveImage = (indexToRemove: number) => {
+        handleFormChange('images', form.images.filter((_, idx) => idx !== indexToRemove));
+    };
+
+    const handleSetPrimaryImage = (indexToSet: number) => {
+        const targetImage = form.images[indexToSet];
+        const remaining = form.images.filter((_, idx) => idx !== indexToSet);
+        handleFormChange('images', [targetImage, ...remaining]);
+    };
+
     const toggleMajor = (majorId: number) => {
         setForm((prev) => ({
             ...prev,
@@ -276,10 +345,15 @@ export default function AdminProductsPage() {
             closeModal();
             await loadProducts(pagination.page);
         } catch (err: unknown) {
-            const message =
-                typeof err === 'object' && err && 'message' in err
-                    ? String((err as { message?: string }).message || '')
-                    : '';
+            let message = '';
+            if (typeof err === 'object' && err) {
+                const apiError = err as ApiErrorPayload;
+                if (apiError.errors && Array.isArray(apiError.errors) && apiError.errors.length > 0) {
+                    message = apiError.errors.map((e) => e.msg).join(', ');
+                } else {
+                    message = apiError.message || '';
+                }
+            }
             setFormError(message || 'Không thể lưu sản phẩm');
         } finally {
             setSaving(false);
@@ -792,20 +866,106 @@ export default function AdminProductsPage() {
                                         <span className="text-sm font-medium">Sản phẩm nổi bật</span>
                                     </label>
 
-                                    <label className="block sm:col-span-2">
-                                        <span className="mb-1 block text-xs font-semibold uppercase text-on-surface-variant">
-                                            URL ảnh
+                                    <div className="sm:col-span-2">
+                                        <span className="mb-2 block text-xs font-semibold uppercase text-on-surface-variant">
+                                            Hình ảnh sản phẩm (Ảnh đầu tiên sẽ là ảnh chính)
                                         </span>
-                                        <input
-                                            type="text"
-                                            placeholder="/image.png hoặc https://..."
-                                            value={form.imageUrl}
-                                            onChange={(e) =>
-                                                handleFormChange('imageUrl', e.target.value)
-                                            }
-                                            className="h-10 w-full rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm"
-                                        />
-                                    </label>
+                                        
+                                        {/* Grid danh sách ảnh */}
+                                        {form.images.length > 0 && (
+                                            <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-dashed border-outline-variant/40 p-4 bg-surface-container-low sm:grid-cols-4">
+                                                {form.images.map((url, idx) => (
+                                                    <div key={url + idx} className="group relative aspect-square w-full overflow-hidden rounded-xl bg-surface-container border border-outline-variant/30 shadow-sm">
+                                                        <img
+                                                            src={url}
+                                                            alt={`Product preview ${idx + 1}`}
+                                                            className="h-full w-full object-cover"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).src = '';
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                            }}
+                                                        />
+                                                        
+                                                        {/* Badge ảnh chính */}
+                                                        {idx === 0 ? (
+                                                            <span className="absolute left-2 top-2 rounded-lg bg-primary px-2 py-0.5 text-[10px] font-bold text-on-primary shadow">
+                                                                Ảnh chính
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleSetPrimaryImage(idx)}
+                                                                className="absolute left-2 top-2 hidden rounded-lg bg-surface-container-high/90 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant shadow transition hover:bg-primary hover:text-on-primary group-hover:block"
+                                                            >
+                                                                Đặt làm ảnh chính
+                                                            </button>
+                                                        )}
+
+                                                        {/* Nút xóa ảnh */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(idx)}
+                                                            className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition hover:bg-black group-hover:opacity-100 flex items-center justify-center"
+                                                            aria-label="Xóa ảnh"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[14px] font-bold">close</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Nhập URL hoặc tải file từ máy */}
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex gap-2">
+                                                <div className="flex flex-1 gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Dán URL ảnh tại đây..."
+                                                        value={imageUrlInput}
+                                                        onChange={(e) => setImageUrlInput(e.target.value)}
+                                                        className="h-10 flex-1 rounded-xl border border-outline-variant/40 bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleAddImageUrl}
+                                                        className="h-10 rounded-xl bg-surface-container-high px-4 text-sm font-semibold hover:bg-surface-container-highest transition"
+                                                    >
+                                                        Thêm URL
+                                                    </button>
+                                                </div>
+                                                
+                                                <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary/5 transition disabled:opacity-50">
+                                                    {imageUploading ? (
+                                                        <>
+                                                            <span className="animate-spin material-symbols-outlined text-[18px]">
+                                                                progress_activity
+                                                            </span>
+                                                            <span>Đang tải...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="material-symbols-outlined text-[18px]">
+                                                                upload
+                                                                </span>
+                                                            <span>Tải ảnh từ máy</span>
+                                                        </>
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={handleImageFileChange}
+                                                        disabled={imageUploading}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p className="text-[11px] text-on-surface-variant">
+                                                Bạn có thể tải lên nhiều tệp ảnh cùng lúc hoặc dán URL rồi bấm "Thêm URL".
+                                            </p>
+                                        </div>
+                                    </div>
 
                                     <label className="block sm:col-span-2">
                                         <span className="mb-1 block text-xs font-semibold uppercase text-on-surface-variant">

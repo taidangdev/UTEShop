@@ -85,23 +85,25 @@ function CartFooter() {
 
 function CartQuantityControl({
     value,
+    disabled = false,
     onDecrease,
     onIncrease,
     onChange,
     max
 }: {
     value: number;
+    disabled?: boolean;
     onDecrease: () => void;
     onIncrease: () => void;
     onChange: (qty: number) => void;
     max?: number;
 }) {
     return (
-        <div className="flex items-center gap-4 rounded-full bg-surface-container px-4 py-2">
+        <div className={`flex items-center gap-4 rounded-full bg-surface-container px-4 py-2 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <button
                 type="button"
                 onClick={onDecrease}
-                disabled={value <= 1}
+                disabled={disabled || value <= 1}
                 className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Decrease quantity"
             >
@@ -135,7 +137,7 @@ function CartQuantityControl({
             <button
                 type="button"
                 onClick={onIncrease}
-                disabled={max != null && value >= max}
+                disabled={disabled || (max != null && value >= max)}
                 className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Increase quantity"
             >
@@ -159,15 +161,17 @@ function CartItemRow({
     onRemove: () => void;
 }) {
     const lineTotal = item.price * item.quantity;
+    const isOutOfStock = item.inStock === false;
 
     return (
-        <article className="flex flex-col items-center gap-6 rounded-xl bg-surface-container-lowest p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] sm:flex-row">
+        <article className={`flex flex-col items-center gap-6 rounded-xl bg-surface-container-lowest p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] sm:flex-row ${isOutOfStock ? 'opacity-65' : ''}`}>
             <div className="flex items-center justify-center pr-2">
                 <input
                     type="checkbox"
                     checked={selected}
+                    disabled={isOutOfStock}
                     onChange={onToggleSelect}
-                    className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary"
+                    className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={`Select ${item.name}`}
                 />
             </div>
@@ -192,9 +196,9 @@ function CartItemRow({
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-start">
                     <span
-                        className={`text-sm font-medium ${item.inStock === false ? 'text-error' : 'text-outline'}`}
+                        className={`text-sm font-medium ${isOutOfStock ? 'text-error' : 'text-outline'}`}
                     >
-                        {item.inStock === false ? 'Out of Stock' : 'In Stock'}
+                        {isOutOfStock ? 'Out of Stock' : 'In Stock'}
                     </span>
                     {item.priceChanged && (
                         <>
@@ -202,7 +206,7 @@ function CartItemRow({
                             <span className="text-sm font-medium text-tertiary">Price updated</span>
                         </>
                     )}
-                    {item.inStock !== false && (
+                    {!isOutOfStock && (
                         <>
                             <span className="h-1.5 w-1.5 rounded-full bg-primary/20" aria-hidden />
                             <span className="text-sm font-medium text-primary">Student Discount Eligible</span>
@@ -214,6 +218,7 @@ function CartItemRow({
                 <span className="text-2xl font-semibold text-on-surface">{formatPrice(lineTotal)}</span>
                 <CartQuantityControl
                     value={item.quantity}
+                    disabled={isOutOfStock}
                     onDecrease={() => onQuantityChange(item.quantity - 1)}
                     onIncrease={() => onQuantityChange(item.quantity + 1)}
                     onChange={(qty) => onQuantityChange(qty)}
@@ -262,14 +267,16 @@ export default function CartPage() {
             return;
         }
         setSelectedIds((prev) => {
-            const itemIds = new Set(items.map((i) => Number(i.productId)));
+            const inStockItemIds = new Set(
+                items.filter((i) => i.inStock !== false).map((i) => Number(i.productId))
+            );
             if (!isSelectionInitialized) {
                 setIsSelectionInitialized(true);
-                return new Set<number>(itemIds);
+                return new Set<number>(inStockItemIds);
             }
             const next = new Set<number>();
             prev.forEach((id) => {
-                if (itemIds.has(id)) {
+                if (inStockItemIds.has(id)) {
                     next.add(id);
                 }
             });
@@ -365,18 +372,22 @@ export default function CartPage() {
         [items]
     );
 
-    const allSelected = items.length > 0 && items.every((i) => selectedIds.has(Number(i.productId)));
+    const inStockItems = useMemo(() => items.filter((i) => i.inStock !== false), [items]);
+
+    const allSelected = inStockItems.length > 0 && inStockItems.every((i) => selectedIds.has(Number(i.productId)));
 
     const toggleAll = () => {
         if (allSelected) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(items.map((i) => Number(i.productId))));
+            setSelectedIds(new Set(inStockItems.map((i) => Number(i.productId))));
         }
     };
 
     const toggleItem = (productId: number) => {
         const id = Number(productId);
+        const item = items.find((i) => Number(i.productId) === id);
+        if (item && item.inStock === false) return; // Ignore toggles for out of stock products
         setSelectedIds((prev) => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);
@@ -405,8 +416,9 @@ export default function CartPage() {
     };
 
     const handleProceedToCheckout = () => {
-        if (selectedItems.length === 0) return;
-        saveCheckoutSelection(selectedItems.map((i) => Number(i.productId)));
+        const eligibleItems = selectedItems.filter((i) => i.inStock !== false);
+        if (eligibleItems.length === 0) return;
+        saveCheckoutSelection(eligibleItems.map((i) => Number(i.productId)));
         navigate('/checkout');
     };
 
@@ -487,14 +499,14 @@ export default function CartPage() {
                                 <input
                                     type="checkbox"
                                     checked={allSelected}
+                                    disabled={inStockItems.length === 0}
                                     onChange={toggleAll}
-                                    className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary"
+                                    className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Select all items"
                                 />
                                 <span className="text-sm font-medium text-on-surface-variant">
-                                    Select all ({items.length}{' '}
-                                    {items.length === 1 ? 'product' : 'products'}, {totalQuantity}{' '}
-                                    {totalQuantity === 1 ? 'item' : 'items'})
+                                    Select all ({inStockItems.length}{' '}
+                                    {inStockItems.length === 1 ? 'product' : 'products'} available)
                                 </span>
                             </div>
                             {items.map((item) => (

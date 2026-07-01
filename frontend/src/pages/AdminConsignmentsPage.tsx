@@ -163,10 +163,23 @@ export default function AdminConsignmentsPage() {
                 approvedPrice: priceNum
             });
 
-            // Update in place
-            setConsignments((prev) =>
-                prev.map((c) => (c.id === selectedConsignment.id ? updated : c))
-            );
+            // Update state and filter out if status no longer matches active filter
+            setConsignments((prev) => {
+                if (statusFilter !== 'all' && updated.status !== statusFilter) {
+                    setPagination((p) => {
+                        const newTotal = Math.max(0, p.total - 1);
+                        const newTotalPages = Math.max(1, Math.ceil(newTotal / p.limit));
+                        return {
+                            ...p,
+                            total: newTotal,
+                            totalPages: newTotalPages
+                        };
+                    });
+                    return prev.filter((c) => c.id !== selectedConsignment.id);
+                }
+                return prev.map((c) => (c.id === selectedConsignment.id ? updated : c));
+            });
+
             setSelectedConsignment(updated);
             toast.success('Cập nhật yêu cầu ký gửi thành công');
         } catch (err: any) {
@@ -190,6 +203,15 @@ export default function AdminConsignmentsPage() {
         try {
             await deleteAdminConsignment(selectedConsignment.id);
             setConsignments((prev) => prev.filter((c) => c.id !== selectedConsignment.id));
+            setPagination((p) => {
+                const newTotal = Math.max(0, p.total - 1);
+                const newTotalPages = Math.max(1, Math.ceil(newTotal / p.limit));
+                return {
+                    ...p,
+                    total: newTotal,
+                    totalPages: newTotalPages
+                };
+            });
             closeDetail();
             toast.success('Xóa yêu cầu ký gửi thành công');
         } catch (err: any) {

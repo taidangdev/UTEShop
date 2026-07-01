@@ -21,7 +21,20 @@ const productIdParamValidation = [
 ];
 
 const productImageValidation = [
-    body('images.*.url').optional().isString().trim().notEmpty().withMessage('Image url is required'),
+    body('images.*.url')
+        .optional()
+        .isString()
+        .trim()
+        .notEmpty()
+        .withMessage('Image url is required')
+        .custom((value) => {
+            const cleanUrl = value.split('?')[0].split('#')[0];
+            const validExtensions = /\.(jpg|jpeg|png|webp|gif|svg|bmp|tiff)$/i;
+            if (!validExtensions.test(cleanUrl)) {
+                throw new Error('Image URL must end with a valid image extension (.jpg, .jpeg, .png, .webp, .gif, .svg, .bmp, .tiff)');
+            }
+            return true;
+        }),
     body('images.*.altText').optional({ nullable: true }).isString(),
     body('images.*.sortOrder').optional().isInt({ min: 0 }),
     body('images.*.isPrimary').optional().isBoolean()

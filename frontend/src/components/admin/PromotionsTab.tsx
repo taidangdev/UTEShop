@@ -410,6 +410,24 @@ export default function PromotionsTab() {
             return;
         }
 
+        const isEndsAtModified = !editingPromotion || formatDateInput(editingPromotion.endsAt) !== formData.endsAt;
+        if (formData.endsAt && isEndsAtModified) {
+            const end = new Date(formData.endsAt);
+            if (end <= new Date()) {
+                setModalError('Thời gian kết thúc phải diễn ra trong tương lai');
+                return;
+            }
+        }
+
+        if (formData.startsAt && formData.endsAt) {
+            const start = new Date(formData.startsAt);
+            const end = new Date(formData.endsAt);
+            if (end <= start) {
+                setModalError('Thời gian kết thúc phải diễn ra sau thời gian bắt đầu');
+                return;
+            }
+        }
+
         if (formData.type !== 'free_shipping' && Number(formData.value) <= 0) {
             setModalError('Giá trị khuyến mãi phải lớn hơn 0');
             return;

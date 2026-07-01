@@ -9,6 +9,8 @@ export interface ShopPromotion {
     minOrderAmount: number;
     categoryIds?: number[];
     productIds?: number[];
+    categories?: Array<{ id: number; name: string }>;
+    products?: Array<{ id: number; name: string }>;
 }
 
 export interface PromotionValidateResult {
