@@ -90,6 +90,22 @@ function ShopPromotionCard({ promo }: { promo: ShopPromotion }) {
                 {promo.description && (
                     <p className="mt-2 line-clamp-2 text-sm text-on-surface-variant">{promo.description}</p>
                 )}
+                {promo.scope === 'category' && promo.categories && promo.categories.length > 0 && (
+                    <div className="mt-3 flex items-start gap-1.5 text-xs text-primary font-semibold">
+                        <span className="material-symbols-outlined text-[16px] mt-0.5">category</span>
+                        <span>
+                            Danh mục: {promo.categories.map((c) => c.name).join(', ')}
+                        </span>
+                    </div>
+                )}
+                {promo.scope === 'product' && promo.products && promo.products.length > 0 && (
+                    <div className="mt-3 flex items-start gap-1.5 text-xs text-primary font-semibold">
+                        <span className="material-symbols-outlined text-[16px] mt-0.5">inventory_2</span>
+                        <span className="line-clamp-2" title={promo.products.map((p) => p.name).join(', ')}>
+                            Sản phẩm: {promo.products.map((p) => p.name).join(', ')}
+                        </span>
+                    </div>
+                )}
             </div>
             <div className="flex flex-1 flex-col p-6 pt-2">
                 <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3">

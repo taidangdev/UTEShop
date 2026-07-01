@@ -327,13 +327,13 @@ async function listActivePromotions() {
             {
                 model: Category,
                 as: 'categories',
-                attributes: ['id'],
+                attributes: ['id', 'name'],
                 through: { attributes: [] }
             },
             {
                 model: Product,
                 as: 'products',
-                attributes: ['id'],
+                attributes: ['id', 'name'],
                 through: { attributes: [] }
             }
         ],
@@ -348,7 +348,9 @@ async function listActivePromotions() {
             return {
                 ...mapped,
                 categoryIds: (p.categories || []).map((c) => c.id),
-                productIds: (p.products || []).map((prod) => prod.id)
+                productIds: (p.products || []).map((prod) => prod.id),
+                categories: (p.categories || []).map((c) => ({ id: c.id, name: c.name })),
+                products: (p.products || []).map((prod) => ({ id: prod.id, name: prod.name }))
             };
         });
 }
