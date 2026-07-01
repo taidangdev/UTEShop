@@ -15,9 +15,9 @@ const PRESET_OPTIONS = [
 ] as const;
 
 function formatCurrency(value: number) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'VND'
     }).format(value);
 }
 

@@ -98,7 +98,7 @@ const consignmentValidation = [
         .notEmpty().withMessage('Tiêu đề ký gửi là bắt buộc')
         .isLength({ max: 100 }).withMessage('Tiêu đề ký gửi không được vượt quá 100 ký tự'),
     body('categoryId').isInt().withMessage('Danh mục ký gửi không hợp lệ'),
-    body('suggestedPrice').isFloat({ min: 0 }).withMessage('Giá đề xuất phải là số dương'),
+    body('suggestedPrice').isFloat({ min: 1000, max: 100000000 }).withMessage('Giá đề xuất phải từ 1.000 VNĐ đến 100.000.000 VNĐ'),
     body('condition')
         .isIn(['new', 'like_new', 'used', 'refurbished'])
         .withMessage('Tình trạng sản phẩm không hợp lệ'),

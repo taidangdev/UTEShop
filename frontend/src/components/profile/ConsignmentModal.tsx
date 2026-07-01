@@ -136,8 +136,8 @@ export default function ConsignmentModal({
             return;
         }
         const priceNum = Number(form.suggestedPrice);
-        if (Number.isNaN(priceNum) || priceNum <= 0) {
-            setError('Giá đề xuất phải là số dương hợp lệ');
+        if (Number.isNaN(priceNum) || priceNum < 1000 || priceNum > 100000000) {
+            setError('Giá đề xuất phải từ 1.000 VNĐ đến 100.000.000 VNĐ');
             return;
         }
         const phoneTrimmed = form.contactPhone.trim();
@@ -280,7 +280,7 @@ export default function ConsignmentModal({
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                                Giá đề xuất ($ / VNĐ)
+                                Giá đề xuất (VNĐ)
                             </label>
                             <input
                                 type="number"

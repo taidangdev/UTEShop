@@ -534,7 +534,7 @@ export default function PromotionsTab() {
                     >
                         <option value="all">Tất cả hình thức giảm</option>
                         <option value="percentage">Phần trăm (%)</option>
-                        <option value="fixed_amount">Số tiền cố định ($)</option>
+                        <option value="fixed_amount">Số tiền cố định (VNĐ)</option>
                         <option value="free_shipping">Miễn phí vận chuyển</option>
                     </select>
                 </div>
@@ -971,14 +971,14 @@ export default function PromotionsTab() {
                                         className="w-full rounded-2xl border border-outline-variant/40 bg-surface px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                                     >
                                         <option value="percentage">Phần trăm (%)</option>
-                                        <option value="fixed_amount">Số tiền cố định ($)</option>
+                                        <option value="fixed_amount">Số tiền cố định (VNĐ)</option>
                                         <option value="free_shipping">Free ship</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-bold uppercase text-outline mb-1.5">
-                                        Giá trị giảm {formData.type === 'percentage' ? '(%)' : formData.type === 'fixed_amount' ? '($)' : ''}
+                                        Giá trị giảm {formData.type === 'percentage' ? '(%)' : formData.type === 'fixed_amount' ? '(VNĐ)' : ''}
                                     </label>
                                     <input
                                         type="number"
@@ -999,7 +999,7 @@ export default function PromotionsTab() {
 
                                 <div>
                                     <label className="block text-xs font-bold uppercase text-outline mb-1.5">
-                                        Số tiền giảm tối đa ($)
+                                        Số tiền giảm tối đa (VNĐ)
                                     </label>
                                     <input
                                         type="number"
@@ -1022,7 +1022,7 @@ export default function PromotionsTab() {
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                 <div>
                                     <label className="block text-xs font-bold uppercase text-outline mb-1.5">
-                                        Đơn tối thiểu ($)
+                                        Đơn tối thiểu (VNĐ)
                                     </label>
                                     <input
                                         type="number"

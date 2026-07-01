@@ -39,9 +39,9 @@ const PRODUCT_TYPE_LABELS: Record<string, string> = {
 };
 
 function formatCurrency(value: number) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'VND'
     }).format(value);
 }
 
