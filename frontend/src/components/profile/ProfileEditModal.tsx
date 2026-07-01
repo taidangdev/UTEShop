@@ -91,6 +91,15 @@ export default function ProfileEditModal({ open, onClose }: ProfileEditModalProp
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         setLocalError(null);
+
+        if (formData.phone) {
+            const phoneRegex = /^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/;
+            if (!phoneRegex.test(formData.phone.trim())) {
+                setLocalError('Số điện thoại không đúng định dạng Việt Nam (ví dụ: 0912345678).');
+                return;
+            }
+        }
+
         if (!formData.otp || formData.otp.trim().length !== 6) {
             setLocalError('Vui lòng nhập đủ 6 chữ số mã OTP để xác nhận.');
             return;

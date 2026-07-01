@@ -447,6 +447,12 @@ export default function CheckoutInformationPage() {
         if (selectedAddressId !== null) return null;
         if (!recipientName.trim()) return 'Họ và tên người nhận là bắt buộc';
         if (!phone.trim()) return 'Số điện thoại nhận hàng là bắt buộc';
+
+        const phoneRegex = /^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/;
+        if (!phoneRegex.test(phone.trim())) {
+            return 'Số điện thoại không đúng định dạng Việt Nam (ví dụ: 0912345678)';
+        }
+
         if (!line1.trim()) return 'Địa chỉ chi tiết là bắt buộc';
         if (!city.trim()) return 'Tỉnh / Thành phố là bắt buộc';
         if (!district.trim()) return 'Quận / Huyện là bắt buộc';
