@@ -168,10 +168,10 @@ export default function OrderTrackingPage() {
         });
     };
 
-    const formattedTotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.total);
-    const formattedSubtotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.subtotal);
-    const formattedShippingFee = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.shippingFee);
-    const formattedDiscount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(order.discountAmount);
+    const formattedTotal = `${new Intl.NumberFormat('vi-VN').format(order.total * 1000)} VNĐ`;
+    const formattedSubtotal = `${new Intl.NumberFormat('vi-VN').format(order.subtotal * 1000)} VNĐ`;
+    const formattedShippingFee = `${new Intl.NumberFormat('vi-VN').format(order.shippingFee * 1000)} VNĐ`;
+    const formattedDiscount = `${new Intl.NumberFormat('vi-VN').format(order.discountAmount * 1000)} VNĐ`;
 
     // Extract shipping snapshot address info safely
     const snapshot = (order.shippingSnapshot as any) || {};

@@ -301,7 +301,7 @@ export default function CustomersTab() {
 
     const formatCurrency = (val: number | null) => {
         if (val == null) return '—';
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+        return `${new Intl.NumberFormat('vi-VN').format(val * 1000)} VNĐ`;
     };
 
     const formatDate = (dateStr: string | null) => {

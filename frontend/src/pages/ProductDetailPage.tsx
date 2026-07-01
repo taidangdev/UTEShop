@@ -141,7 +141,6 @@ export default function ProductDetailPage() {
     const [activeTab, setActiveTab] = useState('specs');
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [isWishlistToggling, setIsWishlistToggling] = useState(false);
-    const { toast } = useNotification();
 
     useEffect(() => {
         if (product) {

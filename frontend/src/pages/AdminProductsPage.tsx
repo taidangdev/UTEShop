@@ -725,7 +725,7 @@ export default function AdminProductsPage() {
 
                                     <label className="block">
                                         <span className="mb-1 block text-xs font-semibold uppercase text-on-surface-variant">
-                                            Giá bán (USD) *
+                                            Giá bán (VNĐ) *
                                         </span>
                                         <input
                                             type="number"

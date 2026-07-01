@@ -69,8 +69,8 @@ const CONDITION_LABELS: Record<string, string> = {
 
 const formatPrice = (value: any) => {
     const num = Number(value);
-    if (Number.isNaN(num)) return '$0.00';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    if (Number.isNaN(num)) return '0 VNĐ';
+    return `${new Intl.NumberFormat('vi-VN').format(num * 1000)} VNĐ`;
 };
 
 const formatDate = (dateStr: string) => {
