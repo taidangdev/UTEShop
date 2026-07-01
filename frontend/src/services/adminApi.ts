@@ -378,3 +378,20 @@ export async function deleteAdminConsignment(id: number) {
     const response = await axiosInstance.delete<ApiEnvelope<{ message: string }>>(`/admin/consignments/${id}`);
     return response.data;
 }
+
+export interface CreateAdminConsignmentPayload {
+    userId?: number;
+    title: string;
+    categoryId: number;
+    suggestedPrice: number;
+    condition: 'new' | 'like_new' | 'used' | 'refurbished';
+    contactPhone?: string;
+    images?: string[];
+    status?: string;
+    approvedPrice?: number;
+}
+
+export async function createAdminConsignment(payload: CreateAdminConsignmentPayload) {
+    const response = await axiosInstance.post<ApiEnvelope<Consignment>>('/admin/consignments', payload);
+    return response.data;
+}

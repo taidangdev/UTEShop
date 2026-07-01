@@ -559,6 +559,15 @@ const listConsignments = async (req, res, next) => {
     }
 };
 
+const createConsignment = async (req, res, next) => {
+    try {
+        const data = await adminConsignmentService.createConsignment(req.body);
+        return successResponse(res, 201, 'Tạo yêu cầu ký gửi thành công', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const updateConsignment = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -1219,6 +1228,7 @@ module.exports = {
     updateProduct,
     deleteProduct,
     listConsignments,
+    createConsignment,
     updateConsignment,
     deleteConsignment
 };

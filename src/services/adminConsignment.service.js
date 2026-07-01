@@ -356,8 +356,141 @@ async function deleteConsignment(id) {
     }
 }
 
+/**
+ * Creates a new consignment request by Admin.
+ */
+async function createConsignment(payload) {
+    const transaction = await sequelize.transaction();
+    try {
+        const category = await Category.findByPk(payload.categoryId, { transaction });
+        if (!category || !category.isActive) {
+            const err = new Error('Danh mục ký gửi không hợp lệ hoặc đã bị khóa');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const targetUserId = payload.userId;
+        const user = await User.findByPk(targetUserId, { transaction });
+        if (!user) {
+            const err = new Error('Người gửi không tồn tại');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const status = payload.status || 'PENDING';
+        const approvedPrice = payload.approvedPrice || null;
+
+        const consignment = await Consignment.create(
+            {
+                userId: targetUserId,
+                title: payload.title.trim(),
+                description: payload.description?.trim() || null,
+                categoryId: payload.categoryId,
+                suggestedPrice: payload.suggestedPrice,
+                approvedPrice: approvedPrice,
+                condition: payload.condition || 'used',
+                contactPhone: payload.contactPhone?.trim() || null,
+                status: status
+            },
+            { transaction }
+        );
+
+        if (payload.images && Array.isArray(payload.images)) {
+            for (const url of payload.images) {
+                if (url && typeof url === 'string' && url.trim()) {
+                    await ConsignmentImage.create(
+                        {
+                            consignmentId: consignment.id,
+                            url: url.trim()
+                        },
+                        { transaction }
+                    );
+                }
+            }
+        }
+
+        // Auto-create product if status is ON_SALE
+        if (status === 'ON_SALE') {
+            const finalPrice = approvedPrice || payload.suggestedPrice || 0;
+
+            const baseSlug = (consignment.title || 'san-pham-ky-gui')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            let slug = baseSlug;
+            let counter = 1;
+            while (true) {
+                const existingProduct = await Product.findOne({ where: { slug }, transaction });
+                if (!existingProduct) break;
+                slug = `${baseSlug}-${counter++}`;
+            }
+
+            const uniqueSku = `KG-${consignment.id}-${Date.now().toString().slice(-4)}`;
+
+            const newProduct = await Product.create(
+                {
+                    categoryId: consignment.categoryId,
+                    sellerId: consignment.userId,
+                    sku: uniqueSku,
+                    name: consignment.title,
+                    slug,
+                    description: consignment.description || '',
+                    price: finalPrice,
+                    compareAtPrice: consignment.suggestedPrice || null,
+                    stockQuantity: 1,
+                    condition: consignment.condition,
+                    productType: 'consignment',
+                    status: 'active',
+                    isFeatured: false,
+                    publishedAt: new Date()
+                },
+                { transaction }
+            );
+
+            if (payload.images && payload.images.length > 0) {
+                for (let i = 0; i < payload.images.length; i++) {
+                    await ProductImage.create(
+                        {
+                            productId: newProduct.id,
+                            url: payload.images[i],
+                            altText: consignment.title,
+                            sortOrder: i,
+                            isPrimary: i === 0
+                        },
+                        { transaction }
+                    );
+                }
+            }
+
+            consignment.productId = newProduct.id;
+            await consignment.save({ transaction });
+        }
+
+        await transaction.commit();
+
+        const result = await Consignment.findByPk(consignment.id, {
+            include: [
+                { model: ConsignmentImage, as: 'images', attributes: ['id', 'url'] },
+                { model: User, as: 'user', attributes: ['id', 'username', 'email', 'fullName', 'phone'] },
+                { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
+                { model: Product, as: 'product', attributes: ['id', 'name', 'slug', 'price', 'status'] }
+            ]
+        });
+
+        return result;
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
 module.exports = {
     listConsignments,
+    createConsignment,
     updateConsignment,
     deleteConsignment
 };

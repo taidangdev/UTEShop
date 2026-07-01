@@ -8,6 +8,7 @@ import {
 } from '../services/adminApi';
 import type { Consignment } from '../types/consignment';
 import { useNotification } from '../context/NotificationContext';
+import ConsignmentModal from '../components/profile/ConsignmentModal';
 
 const STATUS_STYLES: Record<string, string> = {
     PENDING: 'bg-amber-100 text-amber-800',
@@ -42,7 +43,7 @@ function formatCurrency(value: number) {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
-    }).format(value);
+    }).format(value * 1000);
 }
 
 function formatDate(value: string | null) {
@@ -78,6 +79,7 @@ export default function AdminConsignmentsPage() {
     const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, totalPages: 1 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const { toast, showConfirm } = useNotification();
 
@@ -92,15 +94,21 @@ export default function AdminConsignmentsPage() {
     const [statusVal, setStatusVal] = useState('');
 
     const loadConsignments = useCallback(
-        async (page = pagination.page) => {
+        async (page = pagination.page, overrideFilters?: { status?: string; search?: string }) => {
             setLoading(true);
             setError(null);
+            const targetStatus = overrideFilters && 'status' in overrideFilters 
+                ? overrideFilters.status 
+                : (statusFilter === 'all' ? undefined : statusFilter);
+            const targetSearch = overrideFilters && 'search' in overrideFilters 
+                ? overrideFilters.search 
+                : (search || undefined);
             try {
                 const data = await fetchAdminConsignments({
                     page,
                     limit: pagination.limit,
-                    status: statusFilter === 'all' ? undefined : statusFilter,
-                    search: search || undefined
+                    status: targetStatus,
+                    search: targetSearch
                 });
                 setConsignments(data.consignments);
                 setPagination(data.pagination);
@@ -112,6 +120,13 @@ export default function AdminConsignmentsPage() {
         },
         [pagination.limit, pagination.page, search, statusFilter]
     );
+
+    const handleCreateSuccess = () => {
+        setStatusFilter('all');
+        setSearch('');
+        setSearchInput('');
+        loadConsignments(1, { status: undefined, search: undefined });
+    };
 
     // Debounce search input to filter automatically as the user types
     useEffect(() => {
@@ -133,8 +148,8 @@ export default function AdminConsignmentsPage() {
         setAdminNote(item.adminNote || '');
         setApprovedPrice(
             item.approvedPrice !== null && item.approvedPrice !== undefined
-                ? String(item.approvedPrice)
-                : String(item.suggestedPrice)
+                ? String(item.approvedPrice * 1000)
+                : String(item.suggestedPrice * 1000)
         );
         setStatusVal(item.status);
     };
@@ -150,7 +165,7 @@ export default function AdminConsignmentsPage() {
         if (!selectedConsignment) return;
         setUpdating(true);
         try {
-            const priceNum = approvedPrice ? Number(approvedPrice) : undefined;
+            const priceNum = approvedPrice ? Number(approvedPrice) / 1000 : undefined;
             if (priceNum !== undefined && (Number.isNaN(priceNum) || priceNum < 0)) {
                 toast.error('Giá duyệt bán không hợp lệ');
                 setUpdating(false);
@@ -226,6 +241,17 @@ export default function AdminConsignmentsPage() {
             title="Quản lý ký gửi"
             subtitle="Duyệt yêu cầu ký gửi đồ cũ, thiết bị học tập của sinh viên theo hướng bán được mới nhận tiền."
         >
+            <div className="flex justify-end mb-6">
+                <button
+                    type="button"
+                    onClick={() => setCreateModalOpen(true)}
+                    className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-on-primary transition active:scale-95 hover:shadow-lg"
+                >
+                    <span className="material-symbols-outlined text-[20px]">add</span>
+                    Tạo yêu cầu ký gửi
+                </button>
+            </div>
+
             {/* Filters & Search */}
             <section className="rounded-[24px] bg-surface-container-lowest p-5 shadow-sm">
                 <div className="flex flex-wrap gap-2">
@@ -758,6 +784,13 @@ export default function AdminConsignmentsPage() {
                     </div>
                 </div>
             )}
+
+            <ConsignmentModal
+                open={createModalOpen}
+                onClose={() => setCreateModalOpen(false)}
+                onSuccess={handleCreateSuccess}
+                isAdmin={true}
+            />
         </AdminLayout>
     );
 }

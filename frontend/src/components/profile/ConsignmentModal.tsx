@@ -6,6 +6,7 @@ import {
     updateConsignment,
     uploadConsignmentImage
 } from '../../services/consignmentApi';
+import { fetchAdminUsers, createAdminConsignment } from '../../services/adminApi';
 import type {
     Consignment,
     ConsignmentCategoryOption,
@@ -17,27 +18,35 @@ interface ConsignmentModalProps {
     onClose: () => void;
     onSuccess: () => void;
     consignment?: Consignment | null;
+    isAdmin?: boolean;
 }
 
 export default function ConsignmentModal({
     open,
     onClose,
     onSuccess,
-    consignment
+    consignment,
+    isAdmin = false
 }: ConsignmentModalProps) {
-     const [categories, setCategories] = useState<ConsignmentCategoryOption[]>([]);
+    const [categories, setCategories] = useState<ConsignmentCategoryOption[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
 
+    const [users, setUsers] = useState<any[]>([]);
+    const [usersLoading, setUsersLoading] = useState(false);
+
     const [form, setForm] = useState({
+        userId: '',
         title: '',
         categoryId: '',
         suggestedPrice: '',
         condition: 'used' as 'new' | 'like_new' | 'used' | 'refurbished',
         contactPhone: '',
-        images: [] as string[]
+        images: [] as string[],
+        status: 'PENDING',
+        approvedPrice: ''
     });
 
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -86,24 +95,47 @@ export default function ConsignmentModal({
     }, [open]);
 
     useEffect(() => {
+        if (open && isAdmin) {
+            const loadUsers = async () => {
+                setUsersLoading(true);
+                try {
+                    const response = await fetchAdminUsers(1, 100, '', 'active', 'customer');
+                    setUsers(response.users || []);
+                } catch (err) {
+                    console.error('Failed to load users', err);
+                } finally {
+                    setUsersLoading(false);
+                }
+            };
+            loadUsers();
+        }
+    }, [open, isAdmin]);
+
+    useEffect(() => {
         if (open) {
             if (consignment) {
                 setForm({
+                    userId: consignment.userId ? String(consignment.userId) : '',
                     title: consignment.title || '',
                     categoryId: consignment.categoryId ? String(consignment.categoryId) : '',
-                    suggestedPrice: consignment.suggestedPrice ? String(consignment.suggestedPrice) : '',
+                    suggestedPrice: consignment.suggestedPrice ? String(Number(consignment.suggestedPrice) * 1000) : '',
                     condition: consignment.condition || 'used',
                     contactPhone: consignment.contactPhone || '',
-                    images: consignment.images?.map((img) => img.url) || []
+                    images: consignment.images?.map((img) => img.url) || [],
+                    status: consignment.status || 'PENDING',
+                    approvedPrice: consignment.approvedPrice ? String(Number(consignment.approvedPrice) * 1000) : ''
                 });
             } else {
                 setForm({
+                    userId: '',
                     title: '',
                     categoryId: '',
                     suggestedPrice: '',
                     condition: 'used',
                     contactPhone: '',
-                    images: []
+                    images: [],
+                    status: 'PENDING',
+                    approvedPrice: ''
                 });
             }
         }
@@ -146,21 +178,47 @@ export default function ConsignmentModal({
             return;
         }
 
+        if (isAdmin && !consignment && !form.userId) {
+            setError('Vui lòng chọn khách hàng gửi ký gửi');
+            return;
+        }
+
+        const approvedPriceNum = form.approvedPrice ? Number(form.approvedPrice) : undefined;
+        if (approvedPriceNum !== undefined && (Number.isNaN(approvedPriceNum) || approvedPriceNum < 0)) {
+            setError('Giá duyệt bán không hợp lệ');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            const payload: CreateConsignmentPayload = {
-                title: titleTrimmed,
-                categoryId: Number(form.categoryId),
-                suggestedPrice: priceNum,
-                condition: form.condition,
-                contactPhone: phoneTrimmed || undefined,
-                images: form.images
-            };
-
-            if (consignment) {
-                await updateConsignment(consignment.id, payload);
+            if (isAdmin && !consignment) {
+                // Admin creation path
+                await createAdminConsignment({
+                    userId: Number(form.userId),
+                    title: titleTrimmed,
+                    categoryId: Number(form.categoryId),
+                    suggestedPrice: priceNum / 1000,
+                    condition: form.condition,
+                    contactPhone: phoneTrimmed || undefined,
+                    images: form.images,
+                    status: form.status,
+                    approvedPrice: approvedPriceNum ? approvedPriceNum / 1000 : undefined
+                });
             } else {
-                await createConsignment(payload);
+                const payload: CreateConsignmentPayload = {
+                    title: titleTrimmed,
+                    categoryId: Number(form.categoryId),
+                    suggestedPrice: priceNum / 1000,
+                    condition: form.condition,
+                    contactPhone: phoneTrimmed || undefined,
+                    images: form.images
+                };
+
+                if (consignment) {
+                    await updateConsignment(consignment.id, payload);
+                } else {
+                    await createConsignment(payload);
+                }
             }
             onSuccess();
             onClose();
@@ -176,7 +234,7 @@ export default function ConsignmentModal({
     };
 
     const inputClass =
-        'h-12 w-full rounded-xl border-none bg-surface-container px-4 text-base text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20';
+        'h-12 w-full rounded-xl border-none bg-surface-container px-4 text-base text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 outline-none';
 
     return (
         <div
@@ -212,10 +270,33 @@ export default function ConsignmentModal({
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {isAdmin && !consignment && (
+                        <div>
+                            <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
+                                Khách hàng gửi ký gửi *
+                            </label>
+                            <select
+                                name="userId"
+                                value={form.userId}
+                                onChange={handleFieldChange}
+                                className={inputClass}
+                                required
+                                disabled={usersLoading}
+                            >
+                                <option value="">Chọn khách hàng</option>
+                                {users.map((u) => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.fullName || u.username} ({u.email})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     <div>
                         <div className="flex justify-between items-center mb-2 ml-1">
                             <label className="block text-xs font-semibold text-on-surface-variant">
-                                Tiêu đề sản phẩm ký gửi
+                                Tiêu đề sản phẩm ký gửi *
                             </label>
                             <span className={`text-[10px] ${form.title.length > 100 ? 'text-error font-bold' : form.title.length > 90 ? 'text-error font-semibold' : 'text-on-surface-variant/60'}`}>
                                 {form.title.length}/100
@@ -239,7 +320,7 @@ export default function ConsignmentModal({
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                                Danh mục
+                                Danh mục *
                             </label>
                             <select
                                 name="categoryId"
@@ -260,7 +341,7 @@ export default function ConsignmentModal({
 
                         <div>
                             <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                                Tình trạng sản phẩm
+                                Tình trạng sản phẩm *
                             </label>
                             <select
                                 name="condition"
@@ -280,7 +361,7 @@ export default function ConsignmentModal({
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
-                                Giá đề xuất (VNĐ)
+                                Giá đề xuất (VNĐ) *
                             </label>
                             <input
                                 type="number"
@@ -315,6 +396,40 @@ export default function ConsignmentModal({
                             )}
                         </div>
                     </div>
+
+                    {isAdmin && !consignment && (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 border-t border-outline-variant/20 pt-4 mt-2">
+                            <div>
+                                <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
+                                    Trạng thái ban đầu
+                                </label>
+                                <select
+                                    name="status"
+                                    value={form.status}
+                                    onChange={handleFieldChange}
+                                    className={inputClass}
+                                >
+                                    <option value="PENDING">Chờ duyệt (PENDING)</option>
+                                    <option value="APPROVED_SHIPPING">Duyệt vận chuyển (APPROVED_SHIPPING)</option>
+                                    <option value="RECEIVED">Đã nhận hàng (RECEIVED)</option>
+                                    <option value="ON_SALE">Đăng bán lên Store (ON_SALE)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">
+                                    Giá duyệt bán (approvedPrice)
+                                </label>
+                                <input
+                                    type="number"
+                                    name="approvedPrice"
+                                    value={form.approvedPrice}
+                                    onChange={handleFieldChange}
+                                    className={inputClass}
+                                    placeholder="Mặc định = giá đề xuất"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <label className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant">

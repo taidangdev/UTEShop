@@ -2,6 +2,7 @@ const express = require('express');
 const adminController = require('../controllers/admin.controller');
 const { verifyToken, authorizeRoles } = require('../middlewares/auth.middleware');
 const { validate } = require('../middlewares/validation.middleware');
+const { body } = require('express-validator');
 const {
     listOrdersValidation,
     orderNumberParamValidation,
@@ -64,7 +65,34 @@ router.delete(
 );
 
 // --- Consignments ---
+const createConsignmentValidation = [
+    body('userId')
+        .notEmpty().withMessage('ID người gửi là bắt buộc')
+        .isInt().withMessage('ID người gửi phải là số nguyên'),
+    body('title')
+        .notEmpty().withMessage('Tiêu đề ký gửi là bắt buộc')
+        .isLength({ max: 100 }).withMessage('Tiêu đề ký gửi không được vượt quá 100 ký tự'),
+    body('categoryId').isInt().withMessage('Danh mục ký gửi không hợp lệ'),
+    body('suggestedPrice').isFloat({ min: 1000, max: 100000000 }).withMessage('Giá đề xuất phải từ 1.000 VNĐ đến 100.000.000 VNĐ'),
+    body('condition')
+        .isIn(['new', 'like_new', 'used', 'refurbished'])
+        .withMessage('Tình trạng sản phẩm không hợp lệ'),
+    body('contactPhone')
+        .optional({ nullable: true, checkFalsy: true })
+        .isString().withMessage('Số điện thoại liên hệ phải là chuỗi ký tự')
+        .matches(/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/).withMessage('Số điện thoại liên hệ không đúng định dạng Việt Nam'),
+    body('images').optional().isArray().withMessage('Danh sách hình ảnh phải là một mảng'),
+    body('status')
+        .optional()
+        .isIn(['PENDING', 'APPROVED_SHIPPING', 'RECEIVED', 'ON_SALE'])
+        .withMessage('Trạng thái không hợp lệ'),
+    body('approvedPrice')
+        .optional({ nullable: true })
+        .isFloat({ min: 0 }).withMessage('Giá duyệt bán phải là số lớn hơn hoặc bằng 0')
+];
+
 router.get('/consignments', adminController.listConsignments);
+router.post('/consignments', createConsignmentValidation, validate, adminController.createConsignment);
 router.patch('/consignments/:id', adminController.updateConsignment);
 router.delete('/consignments/:id', adminController.deleteConsignment);
 

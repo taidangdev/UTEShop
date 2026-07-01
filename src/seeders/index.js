@@ -23,6 +23,19 @@ const run = async () => {
         console.log('Syncing all tables...');
         await syncDatabase({ alter: false });
 
+        console.log('Cleaning up existing database tables...');
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+        for (const modelName of Object.keys(sequelize.models)) {
+            const model = sequelize.models[modelName];
+            try {
+                await model.truncate({ cascade: true, restartIdentity: true });
+            } catch (err) {
+                await model.destroy({ where: {}, force: true });
+            }
+        }
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        console.log('Database cleanup completed.');
+
         console.log('Seeding majors...');
         const majorCodeToId = await seedMajors();
 

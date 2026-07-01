@@ -37,6 +37,173 @@
     }
   },
   {
+    "sku": "UTE-TEE-001",
+    "slug": "ao-thun-ute-oversized",
+    "name": "Áo thun UTE Over-sized",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Áo thun 100% cotton, in hình vẽ nét cổng trường UTE.",
+    "description": "Áo thun form rộng thoải mái, chất vải cotton 4 chiều mềm mịn, thấm hút mồ hôi tốt. Hình in sắc nét, không bong tróc.",
+    "price": 15,
+    "stockQuantity": 150,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/OHoodieUteLimited.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "tshirt",
+      "merchandise",
+      "ute"
+    ]
+  },
+  {
+    "sku": "UTE-JACKET-001",
+    "slug": "ao-khoac-bomber-ute-varsity",
+    "name": "Áo khoác Bomber UTE Varsity",
+    "categorySlug": "merchandise-uniform",
+    "shortDescription": "Áo khoác nỉ phối tay da cao cấp, thêu logo UTE sang xịn.",
+    "description": "Kiểu dáng học đường năng động, chất nỉ bông dày dặn kết hợp tay da mềm mại, nút bấm kim loại chắc chắn. Phù hợp mặc đi học, đi chơi.",
+    "price": 35,
+    "stockQuantity": 80,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/OHoodieUteLimited.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "jacket",
+      "merchandise",
+      "varsity"
+    ]
+  },
+  {
+    "sku": "UTE-BOTTLE-001",
+    "slug": "binh-giu-nhiet-ute-termos",
+    "name": "Bình giữ nhiệt UTE Termos",
+    "categorySlug": "merchandise-accessories",
+    "shortDescription": "Inox 304 cao cấp, giữ nóng lạnh 24h, dung tích 500ml.",
+    "description": "Bình nước giữ nhiệt thiết kế gọn nhẹ, sơn nhám chống xước in logo UTE sắc nét. Nắp đậy kín chống rò rỉ nước, kèm lưới lọc trà.",
+    "price": 12,
+    "stockQuantity": 200,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/NHcChngCnLed.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "bottle",
+      "accessory",
+      "ute"
+    ]
+  },
+  {
+    "sku": "UTE-LANYARD-001",
+    "slug": "day-deo-the-ute-premium",
+    "name": "Dây đeo thẻ sinh viên UTE Premium",
+    "categorySlug": "merchandise-accessories",
+    "shortDescription": "Dây lụa mịn màng, in chuyển nhiệt sắc nét kèm móc khóa an toàn.",
+    "description": "Dây đeo thẻ rộng 2cm, chất liệu satin mềm mại không gây ngứa cổ. Móc kim loại không gỉ cùng khóa tháo nhanh tiện lợi.",
+    "price": 3,
+    "stockQuantity": 500,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "lanyard",
+      "accessory",
+      "ute"
+    ]
+  },
+  {
+    "sku": "UTE-TOTE-001",
+    "slug": "tui-tote-canvas-ute-eco",
+    "name": "Túi Tote canvas UTE Eco",
+    "categorySlug": "merchandise-accessories",
+    "shortDescription": "Vải canvas dày dặn, có khóa kéo và ngăn phụ nhỏ tiện dụng.",
+    "description": "Túi tote thân thiện môi trường, kích thước 35x40cm đựng vừa laptop 15.6 inch và tập tài liệu A4. Phù hợp cho việc đi học hàng ngày.",
+    "price": 6,
+    "stockQuantity": 300,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "tote",
+      "bag",
+      "merchandise"
+    ]
+  },
+  {
+    "sku": "NOTEBOOK-UTE-001",
+    "slug": "so-tay-ute-engineering",
+    "name": "Sổ tay UTE Engineering",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Giấy A5 200 trang, bìa cứng in cổng trường.",
+    "description": "Giấy viết chống lóa mắt, định lượng 80gsm, bìa cứng bọc vải mỹ thuật in chìm cổng trường UTE.",
+    "price": 4.5,
+    "stockQuantity": 200,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "notebook",
+      "stationery"
+    ]
+  },
+  {
+    "sku": "UTE-PEN-001",
+    "slug": "but-ky-kim-loai-ute-lux",
+    "name": "Bút ký kim loại UTE Lux",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Ngòi bút dạ bi 0.5mm viết siêu trơn, vỏ hợp kim sang trọng.",
+    "description": "Thân bút bằng thép không gỉ sơn tĩnh điện đen mờ phối chi tiết vàng gold sang trọng. Logo UTE khắc laser bền bỉ theo thời gian.",
+    "price": 8,
+    "stockQuantity": 100,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "pen",
+      "stationery",
+      "ute"
+    ]
+  },
+  {
+    "sku": "UTE-STATIONERY-SET",
+    "slug": "bo-dung-cu-van-phong-ute",
+    "name": "Bộ dụng cụ văn phòng UTE",
+    "categorySlug": "merchandise-stationery",
+    "shortDescription": "Combo sổ tay A6, bút bi, thước kẻ gỗ và set sticker logo UTE.",
+    "description": "Bộ quà tặng văn phòng phẩm đồng bộ, thiết kế lịch lãm mang thương hiệu UTE. Hộp giấy kraft bảo vệ môi trường.",
+    "price": 10,
+    "stockQuantity": 80,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "set",
+      "stationery",
+      "ute"
+    ]
+  },
+  {
     "sku": "ARD-KIT-001",
     "slug": "engineering-starter-kit",
     "name": "Engineering Starter Kit",
@@ -57,6 +224,369 @@
       "arduino",
       "kit",
       "electronics"
+    ]
+  },
+  {
+    "sku": "ESP32-DEV-KIT",
+    "slug": "mach-esp32-wroom-32d",
+    "name": "Mạch phát triển ESP32-WROOM-32D",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Tích hợp Wi-Fi + Bluetooth, ngõ kết nối Micro-USB thông dụng.",
+    "description": "Mạch vi điều khiển mạnh mẽ cho các ứng dụng IoT và nhà thông minh. Dễ dàng lập trình bằng Arduino IDE hoặc MicroPython.",
+    "price": 15,
+    "stockQuantity": 150,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/ArduinoKitStarterPro.png",
+    "majorCodes": [
+      "IT",
+      "EE"
+    ],
+    "tags": [
+      "esp32",
+      "microcontroller",
+      "iot"
+    ]
+  },
+  {
+    "sku": "MULTIMETER-DIGI",
+    "slug": "dong-ho-do-van-nang-ky-thuat-so",
+    "name": "Đồng hồ đo vạn năng kỹ thuật số",
+    "categorySlug": "study-electronics",
+    "shortDescription": "Đo điện áp AC/DC, dòng điện, điện trở, tần số tự động.",
+    "description": "Đồng hồ đo điện tử cầm tay đa năng, có màn hình LCD lớn hiển thị rõ nét, tích hợp tính năng bảo vệ chống đo nhầm nguồn.",
+    "price": 25,
+    "stockQuantity": 60,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/ArduinoKitStarterPro.png",
+    "majorCodes": [
+      "EE",
+      "MECH"
+    ],
+    "tags": [
+      "multimeter",
+      "measurement",
+      "tools"
+    ]
+  },
+  {
+    "sku": "COMPASS-MECH-001",
+    "slug": "bo-compa-co-khi",
+    "name": "Bộ compa & thước kẹp Cơ khí",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Compa kim loại, thước kẹp cho sinh viên Cơ khí.",
+    "description": "Bộ dụng cụ đo vẽ chuyên dụng gồm thước kẹp cơ và compa kỹ thuật bằng hợp kim chống gỉ.",
+    "price": 18,
+    "stockQuantity": 40,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "MECH",
+      "CIVIL",
+      "ARCH"
+    ],
+    "tags": [
+      "drafting",
+      "mechanical"
+    ]
+  },
+  {
+    "sku": "DRAFT-BOARD-A3",
+    "slug": "ban-ve-ky-thuat-a3-thuoc-truot",
+    "name": "Bàn vẽ kỹ thuật A3 có thước trượt",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Bàn vẽ kỹ thuật chuyên nghiệp khổ A3, chất liệu nhựa ABS siêu bền.",
+    "description": "Tích hợp thước trượt song song và kẹp giấy giữ cố định chắc chắn, hỗ trợ tối đa cho môn Vẽ kỹ thuật và Đồ án kiến trúc.",
+    "price": 28,
+    "stockQuantity": 30,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/PremiumLaptop.png",
+    "majorCodes": [
+      "MECH",
+      "CIVIL",
+      "ARCH"
+    ],
+    "tags": [
+      "drafting",
+      "architecture"
+    ]
+  },
+  {
+    "sku": "PENCIL-SET-ARCH",
+    "slug": "bo-but-chi-mars-lumograph",
+    "name": "Bộ bút chì vẽ mỹ thuật MARS Lumograph",
+    "categorySlug": "study-drafting",
+    "shortDescription": "Bộ 12 bút chì cao cấp các độ cứng từ 2H đến 8B.",
+    "description": "Chì cao cấp từ Đức, chất lượng ruột mịn, chịu lực tốt, lý tưởng cho ký họa chân dung, vẽ phối cảnh và tô bóng.",
+    "price": 14,
+    "stockQuantity": 75,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "ARCH",
+      "CIVIL"
+    ],
+    "tags": [
+      "pencil",
+      "sketch",
+      "art"
+    ]
+  },
+  {
+    "sku": "BOOK-MATH-01",
+    "slug": "sach-giai-tich-1-spkt",
+    "name": "Sách Giải tích 1 - ĐH Sư phạm Kỹ thuật",
+    "categorySlug": "study-materials",
+    "shortDescription": "Giáo trình lý thuyết và bài tập giải tích 1 cho khối kỹ thuật.",
+    "description": "Cung cấp kiến thức căn bản về giới hạn, đạo hàm, vi phân, tích phân hàm một biến. Tác giả Khoa Khoa học Cơ bản trường.",
+    "price": 5,
+    "stockQuantity": 180,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "book",
+      "math",
+      "calculus"
+    ]
+  },
+  {
+    "sku": "BOOK-PROG-01",
+    "slug": "giao-trinh-ky-thuat-lap-trinh-c-cpp",
+    "name": "Giáo trình Kỹ thuật lập trình C/C++",
+    "categorySlug": "study-materials",
+    "shortDescription": "Học lập trình từ cơ bản tới nâng cao cấu trúc dữ liệu.",
+    "description": "Tài liệu giảng dạy chính thức cho sinh viên IT năm thứ nhất, bao gồm khái niệm con trỏ, mảng, cấu trúc, đệ quy, lưu trữ tệp tin.",
+    "price": 7,
+    "stockQuantity": 120,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "book",
+      "programming",
+      "cpp"
+    ]
+  },
+  {
+    "sku": "BOOK-AUTO-01",
+    "slug": "tai-lieu-ly-thuyet-dong-co-dot-trong",
+    "name": "Tài liệu Lý thuyết động cơ đốt trong",
+    "categorySlug": "study-materials",
+    "shortDescription": "Giáo trình chuyên ngành Cơ khí Động lực - Công nghệ Ô tô.",
+    "description": "Phân tích chu trình nhiệt, cấu tạo và quá trình cháy trong động cơ xăng và diesel. Tài liệu cần thiết cho sinh viên ngành ô tô.",
+    "price": 9,
+    "stockQuantity": 90,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "MECH"
+    ],
+    "tags": [
+      "book",
+      "automotive",
+      "engine"
+    ]
+  },
+  {
+    "sku": "MOUSE-RGB-001",
+    "slug": "chuot-gaming-rgb",
+    "name": "Chuột Gaming RGB",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "DPI 3200, LED RGB 7 màu, thiết kế công thái học.",
+    "description": "Chuột gaming có dây độ nhạy cao, thiết kế ergonomic giúp thoải mái sử dụng trong thời gian dài.",
+    "price": 25,
+    "stockQuantity": 60,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/ChutGamingRgb.png",
+    "majorCodes": [
+      "IT",
+      "GENERAL"
+    ],
+    "tags": [
+      "mouse",
+      "gaming"
+    ]
+  },
+  {
+    "sku": "KB-BT-001",
+    "slug": "ban-phim-co-bluetooth",
+    "name": "Bàn phím cơ Bluetooth",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Switch xanh dung cơ học, hỗ trợ kết nối đa thiết bị.",
+    "description": "Bàn phím cơ mini không dây, kết nối ổn định đồng thời 3 thiết bị điện thoại, máy tính bảng, laptop.",
+    "price": 55,
+    "stockQuantity": 35,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/BnPhmCBluetooth.png",
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "keyboard",
+      "bluetooth"
+    ]
+  },
+  {
+    "sku": "STAND-LAPTOP",
+    "slug": "gia-do-laptop-nhom-tan-nhiet",
+    "name": "Giá đỡ Laptop nhôm tản nhiệt",
+    "categorySlug": "tech-peripherals",
+    "shortDescription": "Gấp gọn thông minh, hợp kim nhôm chịu lực cao.",
+    "description": "Thiết kế rỗng giúp tản nhiệt máy tính cực tốt, đệm silicon chống trượt và trầy xước laptop. Dễ dàng gấp gọn bỏ vào balo.",
+    "price": 18,
+    "stockQuantity": 110,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/ChutGamingRgb.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "stand",
+      "laptop",
+      "accessory"
+    ]
+  },
+  {
+    "sku": "SSD-NVME-512",
+    "slug": "ssd-kingston-nvme-pcie-512gb",
+    "name": "SSD Kingston NVMe PCIe Gen4x4 512GB",
+    "categorySlug": "tech-upgrades",
+    "shortDescription": "Tốc độ đọc ghi cực cao lên tới 3500MB/s.",
+    "description": "Nâng cấp tốc độ khởi động hệ điều hành và tải ứng dụng tức thì cho máy tính xách tay của bạn.",
+    "price": 45,
+    "stockQuantity": 50,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/BnPhmCBluetooth.png",
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "ssd",
+      "storage",
+      "hardware"
+    ]
+  },
+  {
+    "sku": "RAM-LAP-8G",
+    "slug": "ram-laptop-ddr4-kingston-8gb",
+    "name": "RAM Laptop DDR4 Kingston 8GB 3200MHz",
+    "categorySlug": "tech-upgrades",
+    "shortDescription": "Nâng cao hiệu năng đa nhiệm, tương thích nhiều dòng máy.",
+    "description": "Nâng cấp RAM dung lượng 8GB để chạy mượt mà các tác vụ đồ họa nhẹ và lập trình đa luồng.",
+    "price": 22,
+    "stockQuantity": 65,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/BnPhmCBluetooth.png",
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "ram",
+      "memory",
+      "hardware"
+    ]
+  },
+  {
+    "sku": "HUB-TYPEC-6IN1",
+    "slug": "cong-chuyen-doi-hub-typec-6-in-1",
+    "name": "Cổng chuyển đổi Hub Type-C 6 in 1",
+    "categorySlug": "tech-upgrades",
+    "shortDescription": "Xuất hình HDMI 4K, 3 cổng USB 3.0, khe đọc thẻ SD/TF.",
+    "description": "Giải pháp mở rộng kết nối tuyệt vời cho Macbook và các dòng laptop mỏng nhẹ sử dụng cổng Type-C hiện đại.",
+    "price": 19,
+    "stockQuantity": 95,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/BnPhmCBluetooth.png",
+    "majorCodes": [
+      "IT",
+      "EE"
+    ],
+    "tags": [
+      "hub",
+      "adapter",
+      "usb-c"
+    ]
+  },
+  {
+    "sku": "STICKER-IT-50",
+    "slug": "combo-50-sticker-chong-nuoc-it",
+    "name": "Combo 50 Sticker chống nước chủ đề IT",
+    "categorySlug": "tech-stickers",
+    "shortDescription": "Tem dán trang trí laptop, điện thoại bền màu không sợ nước.",
+    "description": "Đầy đủ các logo lập trình vui nhộn như JS, Python, Git, Linux, Docker, Stack Overflow... Chất liệu PVC chống nước cao cấp.",
+    "price": 4,
+    "stockQuantity": 400,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "IT"
+    ],
+    "tags": [
+      "sticker",
+      "it",
+      "dev"
+    ]
+  },
+  {
+    "sku": "STICKER-ENG-50",
+    "slug": "combo-50-sticker-chu-de-ky-thuat",
+    "name": "Combo 50 Sticker chủ đề Kỹ thuật",
+    "categorySlug": "tech-stickers",
+    "shortDescription": "Chất liệu PVC cán mờ bền bỉ, dán mũ bảo hiểm, vali.",
+    "description": "Combo nhãn dán vui nhộn về thế giới cơ khí chế tạo, mạch điện tử và các hình vẽ thiết kế kỹ thuật độc đáo.",
+    "price": 4,
+    "stockQuantity": 300,
+    "condition": "new",
+    "isFeatured": false,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "MECH",
+      "EE",
+      "CIVIL"
+    ],
+    "tags": [
+      "sticker",
+      "engineering"
+    ]
+  },
+  {
+    "sku": "STICKER-UTE-10",
+    "slug": "set-10-sticker-hologram-ute",
+    "name": "Set 10 Sticker Hologram UTE độc quyền",
+    "categorySlug": "tech-stickers",
+    "shortDescription": "Thiết kế phản quang ánh cầu vồng cực đẹp mắt.",
+    "description": "Sản phẩm sticker thương hiệu UTE chất liệu hologram 7 màu cao cấp bám dính cực chắc chắn trên mọi bề mặt phẳng.",
+    "price": 2.5,
+    "stockQuantity": 500,
+    "condition": "new",
+    "isFeatured": true,
+    "image": "/STayUteEngineering.png",
+    "majorCodes": [
+      "GENERAL"
+    ],
+    "tags": [
+      "sticker",
+      "hologram",
+      "ute"
     ]
   },
   {
@@ -81,81 +611,45 @@
     ]
   },
   {
-    "sku": "MOUSE-RGB-001",
-    "slug": "chuot-gaming-rgb",
-    "name": "Chuột Gaming RGB",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "DPI 3200, LED RGB 7 màu, ergonomic.",
-    "price": 25,
-    "stockQuantity": 60,
+    "sku": "FAN-MINI-USB",
+    "slug": "quat-tich-dien-de-ban-usb",
+    "name": "Quạt tích điện để bàn USB",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Dung lượng pin 2000mAh, chạy êm, có 3 tốc độ gió.",
+    "description": "Giải pháp xua tan cái nóng phòng trọ trong những ngày hè oi bức hoặc lúc cúp điện đột xuất. Cổng sạc Type-C tiện dụng.",
+    "price": 12,
+    "stockQuantity": 140,
     "condition": "new",
     "isFeatured": false,
-    "image": "/ChutGamingRgb.png",
-    "majorCodes": [
-      "IT",
-      "GENERAL"
-    ],
-    "tags": [
-      "mouse",
-      "gaming"
-    ]
-  },
-  {
-    "sku": "KB-BT-001",
-    "slug": "ban-phim-co-bluetooth",
-    "name": "Bàn phím cơ Bluetooth",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Switch xanh, kết nối đa thiết bị.",
-    "price": 55,
-    "stockQuantity": 35,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/BnPhmCBluetooth.png",
-    "majorCodes": [
-      "IT"
-    ],
-    "tags": [
-      "keyboard",
-      "bluetooth"
-    ]
-  },
-  {
-    "sku": "NOTEBOOK-UTE-001",
-    "slug": "so-tay-ute-engineering",
-    "name": "Sổ tay UTE Engineering",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Giấy A5 200 trang, bìa cứng in cổng trường.",
-    "price": 4.5,
-    "stockQuantity": 200,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/STayUteEngineering.png",
+    "image": "/NHcChngCnLed.png",
     "majorCodes": [
       "GENERAL"
     ],
     "tags": [
-      "notebook",
-      "stationery"
+      "fan",
+      "usb",
+      "dorm"
     ]
   },
   {
-    "sku": "COMPASS-MECH-001",
-    "slug": "bo-compa-co-khi",
-    "name": "Bộ compa & thước kẹp Cơ khí",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Compa kim loại, thước kẹp cho sinh viên Cơ khí.",
-    "price": 18,
-    "stockQuantity": 40,
+    "sku": "COOKER-MINI",
+    "slug": "ca-lau-dien-mini-da-nang-1-8l",
+    "name": "Ca lẩu điện mini đa năng 1.8L",
+    "categorySlug": "life-dorm",
+    "shortDescription": "Nồi chống dính có khay hấp tiện lợi, thích hợp nấu lẩu, mì.",
+    "description": "Sản phẩm tiện ích lý tưởng cho sinh viên ở trọ, dễ dàng chế biến các món luộc, hấp, nấu mì nhanh gọn lẹ.",
+    "price": 16,
+    "stockQuantity": 90,
     "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
+    "isFeatured": true,
+    "image": "/NHcChngCnLed.png",
     "majorCodes": [
-      "MECH",
-      "CIVIL"
+      "GENERAL"
     ],
     "tags": [
-      "drafting",
-      "mechanical"
+      "cooker",
+      "electric",
+      "dorm"
     ]
   },
   {
@@ -163,7 +657,8 @@
     "slug": "may-tinh-casio-cu",
     "name": "Máy tính Casio fx-580VN X (đã qua sử dụng)",
     "categorySlug": "second-hand-consignment",
-    "shortDescription": "Ký gửi từ sinh viên khóa trước, còn tốt.",
+    "shortDescription": "Ký gửi từ sinh viên khóa trước, ngoại hình còn tốt.",
+    "description": "Nút bấm nảy tốt, màn hình không chảy mực, đầy đủ chức năng phục vụ thi THPT và tính toán đại học.",
     "price": 12,
     "stockQuantity": 3,
     "condition": "used",
@@ -181,573 +676,48 @@
     ]
   },
   {
-    "sku": "DUMMY-PROD-001",
-    "slug": "dummy-product-1",
-    "name": "Sản phẩm mẫu 1",
-    "categorySlug": "study-electronics",
-    "shortDescription": "Đây là sản phẩm mẫu số 1 dùng để test phân trang và UI trượt ngang.",
-    "price": 12.5,
-    "stockQuantity": 101,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-002",
-    "slug": "dummy-product-2",
-    "name": "Sản phẩm mẫu 2",
-    "categorySlug": "life-dorm",
-    "shortDescription": "Đây là sản phẩm mẫu số 2 dùng để test phân trang và UI trượt ngang.",
-    "price": 15,
-    "stockQuantity": 102,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-003",
-    "slug": "dummy-product-3",
-    "name": "Sản phẩm mẫu 3",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Đây là sản phẩm mẫu số 3 dùng để test phân trang và UI trượt ngang.",
-    "price": 17.5,
-    "stockQuantity": 103,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-004",
-    "slug": "dummy-product-4",
-    "name": "Sản phẩm mẫu 4",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Đây là sản phẩm mẫu số 4 dùng để test phân trang và UI trượt ngang.",
-    "price": 20,
-    "stockQuantity": 104,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-005",
-    "slug": "dummy-product-5",
-    "name": "Sản phẩm mẫu 5",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Đây là sản phẩm mẫu số 5 dùng để test phân trang và UI trượt ngang.",
-    "price": 22.5,
-    "stockQuantity": 105,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-006",
-    "slug": "dummy-product-6",
-    "name": "Sản phẩm mẫu 6",
-    "categorySlug": "merchandise-uniform",
-    "shortDescription": "Đây là sản phẩm mẫu số 6 dùng để test phân trang và UI trượt ngang.",
-    "price": 25,
-    "stockQuantity": 106,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-007",
-    "slug": "dummy-product-7",
-    "name": "Sản phẩm mẫu 7",
-    "categorySlug": "study-electronics",
-    "shortDescription": "Đây là sản phẩm mẫu số 7 dùng để test phân trang và UI trượt ngang.",
-    "price": 27.5,
-    "stockQuantity": 107,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-008",
-    "slug": "dummy-product-8",
-    "name": "Sản phẩm mẫu 8",
-    "categorySlug": "life-dorm",
-    "shortDescription": "Đây là sản phẩm mẫu số 8 dùng để test phân trang và UI trượt ngang.",
+    "sku": "USED-DRAW-01",
+    "slug": "bang-ve-dien-tu-wacom-cu",
+    "name": "Bảng vẽ điện tử Wacom Intuos Small (đã qua sử dụng)",
+    "categorySlug": "second-hand-consignment",
+    "shortDescription": "Ký gửi từ sinh viên Kiến trúc, còn full box.",
+    "description": "Bảng vẽ cảm ứng mượt mà lực nhấn tốt, phục vụ học tập phác thảo, đồ họa vẽ minh họa số.",
     "price": 30,
-    "stockQuantity": 108,
-    "condition": "new",
+    "stockQuantity": 2,
+    "condition": "used",
+    "productType": "consignment",
     "isFeatured": false,
     "image": "/PremiumLaptop.png",
     "majorCodes": [
-      "GENERAL"
+      "ARCH",
+      "IT"
     ],
     "tags": [
-      "test",
-      "dummy"
+      "second-hand",
+      "wacom",
+      "drawing"
     ]
   },
   {
-    "sku": "DUMMY-PROD-009",
-    "slug": "dummy-product-9",
-    "name": "Sản phẩm mẫu 9",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Đây là sản phẩm mẫu số 9 dùng để test phân trang và UI trượt ngang.",
-    "price": 32.5,
-    "stockQuantity": 109,
-    "condition": "new",
+    "sku": "USED-BOOK-01",
+    "slug": "sach-dac-nhan-tam-cu",
+    "name": "Sách kỹ năng Đắc Nhân Tâm (đã qua sử dụng)",
+    "categorySlug": "second-hand-consignment",
+    "shortDescription": "Bìa mềm, sách cũ nhưng trang giấy còn nguyên vẹn sạch sẽ.",
+    "description": "Ký gửi từ cựu sinh viên, không có viết vẽ bậy lên trang sách, nội dung cực kỳ truyền cảm hứng.",
+    "price": 3,
+    "stockQuantity": 5,
+    "condition": "used",
+    "productType": "consignment",
     "isFeatured": false,
-    "image": "/PremiumLaptop.png",
+    "image": "/STayUteEngineering.png",
     "majorCodes": [
       "GENERAL"
     ],
     "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-010",
-    "slug": "dummy-product-10",
-    "name": "Sản phẩm mẫu 10",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Đây là sản phẩm mẫu số 10 dùng để test phân trang và UI trượt ngang.",
-    "price": 35,
-    "stockQuantity": 110,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-011",
-    "slug": "dummy-product-11",
-    "name": "Sản phẩm mẫu 11",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Đây là sản phẩm mẫu số 11 dùng để test phân trang và UI trượt ngang.",
-    "price": 37.5,
-    "stockQuantity": 111,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-012",
-    "slug": "dummy-product-12",
-    "name": "Sản phẩm mẫu 12",
-    "categorySlug": "merchandise-uniform",
-    "shortDescription": "Đây là sản phẩm mẫu số 12 dùng để test phân trang và UI trượt ngang.",
-    "price": 40,
-    "stockQuantity": 112,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-013",
-    "slug": "dummy-product-13",
-    "name": "Sản phẩm mẫu 13",
-    "categorySlug": "study-electronics",
-    "shortDescription": "Đây là sản phẩm mẫu số 13 dùng để test phân trang và UI trượt ngang.",
-    "price": 42.5,
-    "stockQuantity": 113,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-014",
-    "slug": "dummy-product-14",
-    "name": "Sản phẩm mẫu 14",
-    "categorySlug": "life-dorm",
-    "shortDescription": "Đây là sản phẩm mẫu số 14 dùng để test phân trang và UI trượt ngang.",
-    "price": 45,
-    "stockQuantity": 114,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-015",
-    "slug": "dummy-product-15",
-    "name": "Sản phẩm mẫu 15",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Đây là sản phẩm mẫu số 15 dùng để test phân trang và UI trượt ngang.",
-    "price": 47.5,
-    "stockQuantity": 115,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-016",
-    "slug": "dummy-product-16",
-    "name": "Sản phẩm mẫu 16",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Đây là sản phẩm mẫu số 16 dùng để test phân trang và UI trượt ngang.",
-    "price": 50,
-    "stockQuantity": 116,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-017",
-    "slug": "dummy-product-17",
-    "name": "Sản phẩm mẫu 17",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Đây là sản phẩm mẫu số 17 dùng để test phân trang và UI trượt ngang.",
-    "price": 52.5,
-    "stockQuantity": 117,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-018",
-    "slug": "dummy-product-18",
-    "name": "Sản phẩm mẫu 18",
-    "categorySlug": "merchandise-uniform",
-    "shortDescription": "Đây là sản phẩm mẫu số 18 dùng để test phân trang và UI trượt ngang.",
-    "price": 55,
-    "stockQuantity": 118,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-019",
-    "slug": "dummy-product-19",
-    "name": "Sản phẩm mẫu 19",
-    "categorySlug": "study-electronics",
-    "shortDescription": "Đây là sản phẩm mẫu số 19 dùng để test phân trang và UI trượt ngang.",
-    "price": 57.5,
-    "stockQuantity": 119,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-020",
-    "slug": "dummy-product-20",
-    "name": "Sản phẩm mẫu 20",
-    "categorySlug": "life-dorm",
-    "shortDescription": "Đây là sản phẩm mẫu số 20 dùng để test phân trang và UI trượt ngang.",
-    "price": 60,
-    "stockQuantity": 120,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-021",
-    "slug": "dummy-product-21",
-    "name": "Sản phẩm mẫu 21",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Đây là sản phẩm mẫu số 21 dùng để test phân trang và UI trượt ngang.",
-    "price": 62.5,
-    "stockQuantity": 121,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-022",
-    "slug": "dummy-product-22",
-    "name": "Sản phẩm mẫu 22",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Đây là sản phẩm mẫu số 22 dùng để test phân trang và UI trượt ngang.",
-    "price": 65,
-    "stockQuantity": 122,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-023",
-    "slug": "dummy-product-23",
-    "name": "Sản phẩm mẫu 23",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Đây là sản phẩm mẫu số 23 dùng để test phân trang và UI trượt ngang.",
-    "price": 67.5,
-    "stockQuantity": 123,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-024",
-    "slug": "dummy-product-24",
-    "name": "Sản phẩm mẫu 24",
-    "categorySlug": "merchandise-uniform",
-    "shortDescription": "Đây là sản phẩm mẫu số 24 dùng để test phân trang và UI trượt ngang.",
-    "price": 70,
-    "stockQuantity": 124,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-025",
-    "slug": "dummy-product-25",
-    "name": "Sản phẩm mẫu 25",
-    "categorySlug": "study-electronics",
-    "shortDescription": "Đây là sản phẩm mẫu số 25 dùng để test phân trang và UI trượt ngang.",
-    "price": 72.5,
-    "stockQuantity": 125,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-026",
-    "slug": "dummy-product-26",
-    "name": "Sản phẩm mẫu 26",
-    "categorySlug": "life-dorm",
-    "shortDescription": "Đây là sản phẩm mẫu số 26 dùng để test phân trang và UI trượt ngang.",
-    "price": 75,
-    "stockQuantity": 126,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-027",
-    "slug": "dummy-product-27",
-    "name": "Sản phẩm mẫu 27",
-    "categorySlug": "tech-peripherals",
-    "shortDescription": "Đây là sản phẩm mẫu số 27 dùng để test phân trang và UI trượt ngang.",
-    "price": 77.5,
-    "stockQuantity": 127,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-028",
-    "slug": "dummy-product-28",
-    "name": "Sản phẩm mẫu 28",
-    "categorySlug": "merchandise-stationery",
-    "shortDescription": "Đây là sản phẩm mẫu số 28 dùng để test phân trang và UI trượt ngang.",
-    "price": 80,
-    "stockQuantity": 128,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-029",
-    "slug": "dummy-product-29",
-    "name": "Sản phẩm mẫu 29",
-    "categorySlug": "study-drafting",
-    "shortDescription": "Đây là sản phẩm mẫu số 29 dùng để test phân trang và UI trượt ngang.",
-    "price": 82.5,
-    "stockQuantity": 129,
-    "condition": "new",
-    "isFeatured": false,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
-    ]
-  },
-  {
-    "sku": "DUMMY-PROD-030",
-    "slug": "dummy-product-30",
-    "name": "Sản phẩm mẫu 30",
-    "categorySlug": "merchandise-uniform",
-    "shortDescription": "Đây là sản phẩm mẫu số 30 dùng để test phân trang và UI trượt ngang.",
-    "price": 85,
-    "stockQuantity": 130,
-    "condition": "new",
-    "isFeatured": true,
-    "image": "/PremiumLaptop.png",
-    "majorCodes": [
-      "GENERAL"
-    ],
-    "tags": [
-      "test",
-      "dummy"
+      "second-hand",
+      "book",
+      "self-help"
     ]
   }
 ]
