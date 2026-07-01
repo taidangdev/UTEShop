@@ -477,6 +477,17 @@ const updateOrderStatus = async (req, res, next) => {
     }
 };
 
+const updateOrderNote = async (req, res, next) => {
+    try {
+        const data = await adminOrderService.updateOrderNote(req.params.orderNumber, {
+            adminNote: req.body.adminNote
+        });
+        return successResponse(res, 200, 'Order admin note updated', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const listProducts = async (req, res, next) => {
     try {
         const status = req.query.status === 'all' ? undefined : req.query.status;
@@ -1143,6 +1154,7 @@ module.exports = {
     listOrders,
     getOrderDetail,
     updateOrderStatus,
+    updateOrderNote,
     listProducts,
     getProductFormOptions,
     getProductDetail,

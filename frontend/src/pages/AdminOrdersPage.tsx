@@ -4,7 +4,8 @@ import AdminPagination from '../components/admin/AdminPagination';
 import {
     fetchAdminOrders,
     fetchAdminOrderDetail,
-    updateAdminOrderStatus
+    updateAdminOrderStatus,
+    updateAdminOrderNote
 } from '../services/adminApi';
 import type { AdminOrderDetail, AdminOrderListItem } from '../types/adminOrders';
 import { useNotification } from '../context/NotificationContext';
@@ -82,8 +83,9 @@ export default function AdminOrdersPage() {
     const [detailError, setDetailError] = useState<string | null>(null);
     const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
     const [adminNote, setAdminNote] = useState('');
+    const [savingNote, setSavingNote] = useState(false);
 
-    const { toast } = useNotification();
+    const { toast, showConfirm } = useNotification();
 
     const loadOrders = useCallback(
         async (page = pagination.page) => {
@@ -148,10 +150,41 @@ export default function AdminOrdersPage() {
         }
     };
 
-    const closeDetail = () => {
+    const closeDetail = async () => {
+        if (selectedOrder && adminNote.trim() !== (selectedOrder.adminNote || '')) {
+            const confirmClose = await showConfirm({
+                title: 'Thay đổi chưa lưu',
+                message: 'Ghi chú admin có sự thay đổi chưa lưu. Bạn có chắc chắn muốn đóng và hủy bỏ các thay đổi này?',
+                type: 'warning',
+                confirmText: 'Đóng và hủy',
+                cancelText: 'Quay lại'
+            });
+            if (!confirmClose) return;
+        }
         setSelectedOrder(null);
         setDetailError(null);
         setAdminNote('');
+    };
+
+    const handleSaveNote = async () => {
+        if (!selectedOrder) return;
+        setSavingNote(true);
+        try {
+            const cleanNote = adminNote.trim() || null;
+            const data = await updateAdminOrderNote(selectedOrder.orderNumber, cleanNote);
+            setSelectedOrder(data.order);
+            setAdminNote(data.order.adminNote || '');
+            toast.success('Đã lưu ghi chú admin thành công');
+            await loadOrders(pagination.page);
+        } catch (err: unknown) {
+            const message =
+                typeof err === 'object' && err && 'message' in err
+                    ? String((err as { message?: string }).message || '')
+                    : '';
+            toast.error(message || 'Không thể lưu ghi chú admin');
+        } finally {
+            setSavingNote(false);
+        }
     };
 
     const handleStatusUpdate = async (orderNumber: string, newStatus: string) => {
@@ -572,9 +605,33 @@ export default function AdminOrdersPage() {
                                                 )}
                                             </div>
                                         )}
-                                        <label className="mb-2 block text-xs font-semibold uppercase text-on-surface-variant">
-                                            Ghi chú admin
-                                        </label>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <label className="block text-xs font-semibold uppercase text-on-surface-variant">
+                                                Ghi chú admin
+                                            </label>
+                                            <button
+                                                type="button"
+                                                disabled={savingNote || adminNote.trim() === (selectedOrder.adminNote || '')}
+                                                onClick={handleSaveNote}
+                                                className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary hover:bg-primary/95 transition disabled:opacity-50"
+                                            >
+                                                {savingNote ? (
+                                                    <>
+                                                        <span className="animate-spin material-symbols-outlined text-[14px]">
+                                                            progress_activity
+                                                        </span>
+                                                        <span>Đang lưu...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="material-symbols-outlined text-[14px]">
+                                                            save
+                                                        </span>
+                                                        <span>Lưu ghi chú</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
                                         <textarea
                                             value={adminNote}
                                             onChange={(e) => setAdminNote(e.target.value)}

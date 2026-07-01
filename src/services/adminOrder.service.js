@@ -596,10 +596,37 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
     }
 }
 
+async function updateOrderNote(orderNumber, { adminNote }) {
+    const order = await Order.findOne({
+        where: { orderNumber },
+        include: [
+            {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'fullName', 'username', 'email', 'phone'],
+                required: false
+            },
+            { model: OrderItem, as: 'items' },
+            { model: Payment, as: 'payment', required: false }
+        ]
+    });
+
+    if (!order) {
+        const err = new Error('Order not found');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    await order.update({ adminNote: adminNote || null });
+
+    return { order: mapAdminOrderDetail(order) };
+}
+
 module.exports = {
     listOrders,
     getOrderDetail,
     updateOrderStatus,
+    updateOrderNote,
     getAllowedNextStatuses,
     ADMIN_TRANSITIONS,
     MAX_DELIVERY_ATTEMPTS

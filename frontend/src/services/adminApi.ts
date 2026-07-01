@@ -115,6 +115,17 @@ export async function updateAdminOrderStatus(
     return response.data;
 }
 
+export async function updateAdminOrderNote(
+    orderNumber: string,
+    adminNote: string | null
+) {
+    const response = await axiosInstance.patch<ApiEnvelope<{ order: AdminOrderDetail }>>(
+        `/admin/orders/${orderNumber}/note`,
+        { adminNote }
+    );
+    return response.data;
+}
+
 export async function fetchAdminProducts(query: AdminProductsQuery = {}) {
     const response = await axiosInstance.get<ApiEnvelope<AdminProductsListData>>('/admin/products', {
         params: query

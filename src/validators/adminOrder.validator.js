@@ -27,8 +27,14 @@ const updateOrderStatusValidation = [
     body('adminNote').optional({ nullable: true }).isString()
 ];
 
+const updateOrderNoteValidation = [
+    ...orderNumberParamValidation,
+    body('adminNote').optional({ nullable: true }).isString().isLength({ max: 1000 }).withMessage('adminNote must be a string up to 1000 characters')
+];
+
 module.exports = {
     listOrdersValidation,
     orderNumberParamValidation,
-    updateOrderStatusValidation
+    updateOrderStatusValidation,
+    updateOrderNoteValidation
 };
