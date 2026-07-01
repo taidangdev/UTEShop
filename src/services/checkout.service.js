@@ -776,6 +776,22 @@ async function cancelOrderForUser(orderNumber, userId) {
                     transaction
                 );
             }
+
+            // Refund loyalty points if user is logged in and points were redeemed
+            const pointsToRefund = order.shippingSnapshot?.pointsRedeemed;
+            if (order.userId && pointsToRefund > 0) {
+                await loyaltyService.addPoints(
+                    order.userId,
+                    pointsToRefund,
+                    {
+                        type: 'cancel_refund_return',
+                        referenceType: 'order',
+                        referenceId: order.id,
+                        note: `Hoàn điểm do hủy đơn hàng ${order.orderNumber}`
+                    },
+                    transaction
+                );
+            }
         }
 
         await transaction.commit();
@@ -869,6 +885,22 @@ async function autoCancelPendingOrders() {
                         productId: item.productId,
                         variantId: item.variantId,
                         quantity: item.quantity
+                    },
+                    transaction
+                );
+            }
+
+            // Refund loyalty points if user is logged in and points were redeemed
+            const pointsToRefund = order.shippingSnapshot?.pointsRedeemed;
+            if (order.userId && pointsToRefund > 0) {
+                await loyaltyService.addPoints(
+                    order.userId,
+                    pointsToRefund,
+                    {
+                        type: 'cancel_refund_return',
+                        referenceType: 'order',
+                        referenceId: order.id,
+                        note: `Hoàn điểm tự động do đơn hàng ${order.orderNumber} hết hạn thanh toán`
                     },
                     transaction
                 );

@@ -10,6 +10,7 @@ const {
 } = require('../models');
 const { STATUS_LABELS, ORDER_STATUSES } = require('./adminDashboard.service');
 const notificationService = require('./notification.service');
+const loyaltyService = require('./loyalty.service');
 
 const MAX_DELIVERY_ATTEMPTS = 3;
 
@@ -530,6 +531,22 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
                         productId: item.productId,
                         variantId: item.variantId,
                         quantity: item.quantity
+                    },
+                    transaction
+                );
+            }
+
+            // Refund loyalty points if user is logged in and points were redeemed
+            const pointsToRefund = order.shippingSnapshot?.pointsRedeemed;
+            if (order.userId && pointsToRefund > 0) {
+                await loyaltyService.addPoints(
+                    order.userId,
+                    pointsToRefund,
+                    {
+                        type: 'cancel_refund_return',
+                        referenceType: 'order',
+                        referenceId: order.id,
+                        note: `Hoàn điểm do thay đổi trạng thái đơn hàng ${order.orderNumber} sang ${resolvedStatus}`
                     },
                     transaction
                 );
