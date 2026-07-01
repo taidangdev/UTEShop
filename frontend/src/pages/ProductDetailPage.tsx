@@ -13,6 +13,7 @@ import RecentlyViewed from '../components/catalog/RecentlyViewed';
 import { toggleWishlistApi } from '../services/wishlistApi';
 import { useAppSelector } from '../store/hooks';
 import type { ApiEnvelope } from '../types/api';
+import { useNotification } from '../context/NotificationContext';
 import type { CatalogProduct, ProductDetail, ProductDetailResponse } from '../types/catalog';
 
 function initials(name?: string | null, username?: string | null) {
@@ -139,6 +140,7 @@ export default function ProductDetailPage() {
     const [activeTab, setActiveTab] = useState('specs');
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [isWishlistToggling, setIsWishlistToggling] = useState(false);
+    const { toast } = useNotification();
 
     useEffect(() => {
         if (product) {
@@ -292,10 +294,22 @@ export default function ProductDetailPage() {
     }
 
     const handleAddToCart = async () => {
-        if (!inStock) return;
+        if (!inStock) {
+            toast.error('Sản phẩm này đã hết hàng!');
+            return;
+        }
         try {
             await addItemToServerCart({ productId: product.id, quantity });
-        } catch {
+            setCartMessage(`Added ${quantity} × ${product.name} to cart`);
+            window.setTimeout(() => setCartMessage(null), 3500);
+            await reloadProduct();
+        } catch (err) {
+            const apiError = err as ApiErrorPayload;
+            if (apiError && (apiError.status === 'error' || apiError.message)) {
+                toast.error(apiError.message || 'Không thể thêm sản phẩm vào giỏ hàng');
+                await reloadProduct();
+                return;
+            }
             addToCart({
                 productId: product.id,
                 slug: product.slug,
@@ -304,9 +318,9 @@ export default function ProductDetailPage() {
                 imageUrl: product.imageUrl ?? images[0]?.url ?? null,
                 quantity
             });
+            setCartMessage(`Added ${quantity} × ${product.name} to cart`);
+            window.setTimeout(() => setCartMessage(null), 3500);
         }
-        setCartMessage(`Added ${quantity} × ${product.name} to cart`);
-        window.setTimeout(() => setCartMessage(null), 3500);
     };
 
     return (

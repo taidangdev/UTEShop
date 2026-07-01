@@ -73,6 +73,9 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
         e.preventDefault();
         e.stopPropagation();
 
+        const isOutOfStock = product.stockQuantity !== undefined && product.stockQuantity <= 0;
+        if (isOutOfStock) return;
+
         try {
             await addItemToServerCart({ productId: product.id, quantity: 1 });
         } catch {
@@ -157,8 +160,9 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
                     <button
                         type="button"
                         onClick={handleCartClick}
-                        className="flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:scale-105 active:scale-95 z-10"
-                        style={{ backgroundColor: PRIMARY }}
+                        disabled={product.stockQuantity !== undefined && product.stockQuantity <= 0}
+                        className="flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                        style={{ backgroundColor: product.stockQuantity !== undefined && product.stockQuantity <= 0 ? '#9CA3AF' : PRIMARY }}
                         aria-label="Thêm vào giỏ hàng"
                     >
                         <FiShoppingCart className="h-5 w-5" strokeWidth={2} />
