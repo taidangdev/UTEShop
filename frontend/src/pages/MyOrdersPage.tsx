@@ -20,6 +20,7 @@ const TABS = [
   { id: "returned", label: "Hoàn trả" },
   { id: "cancelled", label: "Đã hủy" },
   { id: "refunded", label: "Đã hoàn tiền" },
+  { id: "cancel_requested", label: "Yêu cầu hủy" },
 ];
 
 
@@ -250,8 +251,11 @@ export default function MyOrdersPage() {
           {!ordersLoading && !ordersError && filteredOrders.length > 0 && (
             <div className="flex flex-col gap-4">
               {filteredOrders.map((order) => {
+                const isWithin30Mins = order.placedAt
+                  ? (new Date().getTime() - new Date(order.placedAt).getTime()) < 30 * 60 * 1000
+                  : false;
                 const canCancel =
-                  order.status === "pending";
+                  (order.status === "pending" || order.status === "confirmed" || order.status === "processing") && isWithin30Mins;
                 const canReview = canReviewOrder(order.orderNumber, order.status);
 
                 return (
@@ -382,51 +386,69 @@ export default function MyOrdersPage() {
       />
 
       {/* Premium Confirm Cancellation Dialog Modal popup */}
-      {cancellingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6">
-          <div className="soft-shadow w-full max-w-md rounded-[28px] bg-surface-container-low p-8 border border-outline-variant/30 text-on-surface">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-container text-on-error-container">
-              <span className="material-symbols-outlined text-[24px]">
-                warning
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-on-surface">
-              Xác nhận hủy đơn hàng?
-            </h3>
-            <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
-              Bạn có chắc chắn muốn hủy đơn hàng **#{cancellingOrder}**? Quyết
-              định hủy đơn sẽ hoàn kho sản phẩm ngay lập tức và không thể hoàn
-              tác.
-            </p>
+      {cancellingOrder && (() => {
+        const targetOrder = orders.find(o => o.orderNumber === cancellingOrder);
+        const isProcessing = targetOrder?.status === "processing";
+        const isConfirmed = targetOrder?.status === "confirmed";
 
-            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setCancellingOrder(null)}
-                disabled={cancelling}
-                className="h-12 rounded-full bg-surface-container-high px-6 text-sm font-semibold text-on-surface transition active:scale-95"
-              >
-                Bỏ qua
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCancelOrder(cancellingOrder)}
-                disabled={cancelling}
-                className="flex h-12 items-center justify-center gap-2 rounded-full bg-error px-6 text-sm font-semibold text-on-error hover:bg-red-700 hover:shadow-md transition active:scale-95 disabled:opacity-60"
-              >
-                {cancelling ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Đang hủy...
-                  </>
-                ) : (
-                  "Đồng ý hủy đơn"
-                )}
-              </button>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6">
+            <div className="soft-shadow w-full max-w-md rounded-[28px] bg-surface-container-low p-8 border border-outline-variant/30 text-on-surface">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-container text-on-error-container">
+                <span className="material-symbols-outlined text-[24px]">
+                  warning
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-on-surface">
+                {isProcessing ? "Xác nhận yêu cầu hủy?" : "Xác nhận hủy đơn hàng?"}
+              </h3>
+              {isProcessing ? (
+                <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                  Đơn hàng của bạn đang được chuẩn bị. Gửi yêu cầu hủy đơn lúc này sẽ cần chờ shop duyệt. Bạn có chắc chắn muốn tiếp tục không?
+                </p>
+              ) : isConfirmed ? (
+                <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                  Đơn hàng của bạn **đã được xác nhận**. Hủy đơn hàng lúc này sẽ kích hoạt quy trình **Hoàn trả tiền tự động**. Bạn có chắc chắn muốn tiếp tục không?
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                  Bạn có chắc chắn muốn hủy đơn hàng **#{cancellingOrder}**? Quyết
+                  định hủy đơn sẽ hoàn kho sản phẩm ngay lập tức và không thể hoàn
+                  tác.
+                </p>
+              )}
+
+              <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCancellingOrder(null)}
+                  disabled={cancelling}
+                  className="h-12 rounded-full bg-surface-container-high px-6 text-sm font-semibold text-on-surface transition active:scale-95"
+                >
+                  Bỏ qua
+                </button>
+                <button
+                  type="button"
+                  onClick={() => cancellingOrder && handleCancelOrder(cancellingOrder)}
+                  disabled={cancelling}
+                  className="flex h-12 items-center justify-center gap-2 rounded-full bg-error px-6 text-sm font-semibold text-on-error hover:bg-red-700 hover:shadow-md transition active:scale-95 disabled:opacity-60"
+                >
+                  {cancelling ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Đang xử lý...
+                    </>
+                  ) : isProcessing ? (
+                    "Gửi yêu cầu hủy"
+                  ) : (
+                    "Đồng ý hủy đơn"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Return Request Modal */}
       {returningOrderNumber && (

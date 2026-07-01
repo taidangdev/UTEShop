@@ -35,7 +35,9 @@ const PAYMENT_METHOD_MAP = {
  * Mọi trạng thái khác phải được xử lý bởi Admin.
  */
 const CUSTOMER_TRANSITIONS = {
-    pending: ['cancelled']
+    pending: ['cancelled'],
+    confirmed: ['refunded', 'cancelled'],
+    processing: ['cancel_requested']
 };
 
 function generateOrderNumber() {
@@ -693,20 +695,49 @@ async function cancelOrderForUser(orderNumber, userId) {
             throw err;
         }
 
+        if (order.status === 'cancel_requested') {
+            const err = new Error('Yêu cầu hủy đơn hàng của bạn đang chờ shop duyệt.');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        if (order.status === 'cancelled' || order.status === 'refunded') {
+            const err = new Error('Đơn hàng đã được hủy trước đó.');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const now = new Date();
+        const placedTime = new Date(order.placedAt);
+        const diffMinutes = (now.getTime() - placedTime.getTime()) / (60 * 1000);
+
+        if (diffMinutes > 30) {
+            const err = new Error('Đơn hàng chỉ có thể hủy hoặc yêu cầu hủy trong vòng 30 phút kể từ khi đặt hàng.');
+            err.statusCode = 400;
+            throw err;
+        }
+
         const allowedNextStatuses = CUSTOMER_TRANSITIONS[order.status] || [];
-        if (!allowedNextStatuses.includes('cancelled')) {
+        let targetStatus;
+        if (order.status === 'pending') {
+            targetStatus = 'cancelled';
+        } else if (order.status === 'confirmed') {
+            targetStatus = order.payment && order.payment.status === 'paid' ? 'refunded' : 'cancelled';
+        } else if (order.status === 'processing') {
+            targetStatus = 'cancel_requested';
+        }
+
+        if (!targetStatus || !allowedNextStatuses.includes(targetStatus)) {
             const err = new Error(
-                `Không thể hủy đơn hàng ở trạng thái "${order.status}". ` +
-                `Chỉ được hủy khi đơn đang ở trạng thái chờ xác nhận (pending).`
+                `Không thể hủy đơn hàng ở trạng thái "${order.status}".`
             );
-            err.statusCode = 403;
+            err.statusCode = 400;
             throw err;
         }
 
         const originalStatus = order.status;
-        const now = new Date();
 
-        if (originalStatus === 'pending') {
+        if (targetStatus === 'cancelled') {
             await order.update({
                 status: 'cancelled',
                 cancelledAt: now
@@ -717,7 +748,7 @@ async function cancelOrderForUser(orderNumber, userId) {
                     status: 'failed'
                 }, { transaction });
             }
-        } else if (originalStatus === 'confirmed') {
+        } else if (targetStatus === 'refunded') {
             await order.update({
                 status: 'refunded',
                 cancelledAt: now
@@ -728,33 +759,58 @@ async function cancelOrderForUser(orderNumber, userId) {
                     status: 'refunded'
                 }, { transaction });
             }
+        } else if (targetStatus === 'cancel_requested') {
+            await order.update({
+                status: 'cancel_requested'
+            }, { transaction });
         }
 
-        for (const item of order.items) {
-            await incrementStock(
-                {
-                    productId: item.productId,
-                    variantId: item.variantId,
-                    quantity: item.quantity
-                },
-                transaction
-            );
+        if (targetStatus === 'cancelled' || targetStatus === 'refunded') {
+            for (const item of order.items) {
+                await incrementStock(
+                    {
+                        productId: item.productId,
+                        variantId: item.variantId,
+                        quantity: item.quantity
+                    },
+                    transaction
+                );
+            }
         }
 
         await transaction.commit();
 
-        // Real-time notification cho user khi hủy/hoàn tiền đơn hàng
+        // Real-time notifications
         if (order.userId) {
-            const isConfirmed = originalStatus === 'confirmed';
-            const titleText = isConfirmed ? '💸 Đơn hàng đã được hoàn tiền' : '❌ Đơn hàng đã bị hủy';
-            const contentText = isConfirmed ? `Đơn hàng ${order.orderNumber} đã được hủy và chuyển trạng thái hoàn tiền.` : `Đơn hàng ${order.orderNumber} đã được hủy thành công.`;
-            notificationService.createNotification({
-                userId: order.userId,
-                title: titleText,
-                content: contentText,
-                type: 'order_status_update',
-                relatedId: order.orderNumber
-            }).catch(err => console.error('Error sending cancel notification:', err));
+            if (targetStatus === 'cancel_requested') {
+                notificationService.createNotification({
+                    userId: order.userId,
+                    title: '❓ Yêu cầu hủy đơn hàng',
+                    content: `Yêu cầu hủy đơn hàng ${order.orderNumber} đã được gửi và đang chờ shop duyệt.`,
+                    type: 'order_status_update',
+                    relatedId: order.orderNumber
+                }).catch(err => console.error('Error sending cancel request notification:', err));
+
+                // Gửi thông báo cho admin
+                notificationService.createNotification({
+                    userId: null,
+                    title: `❓ Yêu cầu hủy đơn hàng mới: ${order.orderNumber}`,
+                    content: `Khách hàng đã gửi yêu cầu hủy đơn hàng ${order.orderNumber}.`,
+                    type: 'order_new',
+                    relatedId: order.orderNumber
+                }).catch(err => console.error('Error sending cancel request notification to admin:', err));
+            } else {
+                const isRefunded = targetStatus === 'refunded';
+                const titleText = isRefunded ? '💸 Đơn hàng đã được hoàn tiền' : '❌ Đơn hàng đã bị hủy';
+                const contentText = isRefunded ? `Đơn hàng ${order.orderNumber} đã được hủy và chuyển trạng thái hoàn tiền.` : `Đơn hàng ${order.orderNumber} đã được hủy thành công.`;
+                notificationService.createNotification({
+                    userId: order.userId,
+                    title: titleText,
+                    content: contentText,
+                    type: 'order_status_update',
+                    relatedId: order.orderNumber
+                }).catch(err => console.error('Error sending cancel notification:', err));
+            }
         }
 
         const updatedOrder = await Order.findOne({
@@ -911,6 +967,62 @@ async function requestReturnForUser(orderNumber, userId, { reason }) {
     }
 }
 
+async function autoConfirmPendingOrders() {
+    const { Op } = require('sequelize');
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    const ordersToConfirm = await Order.findAll({
+        where: {
+            status: 'pending',
+            placedAt: {
+                [Op.lte]: thirtyMinutesAgo
+            }
+        },
+        include: [
+            { model: Payment, as: 'payment' }
+        ]
+    });
+
+    if (ordersToConfirm.length === 0) return 0;
+
+    let count = 0;
+    for (const order of ordersToConfirm) {
+        const transaction = await sequelize.transaction();
+        try {
+            await order.update({
+                status: 'confirmed'
+            }, { transaction });
+
+            if (order.payment) {
+                const onlineMethods = ['bank_transfer', 'momo', 'vnpay'];
+                if (onlineMethods.includes(order.payment.method) && order.payment.status === 'pending') {
+                    await order.payment.update({ status: 'paid', paidAt: new Date() }, { transaction });
+                    await order.update({ paidAt: new Date() }, { transaction });
+                }
+            }
+
+            await transaction.commit();
+            count++;
+            console.log(`[AutoConfirm] Successfully confirmed order: ${order.orderNumber}`);
+
+            if (order.userId) {
+                notificationService.createNotification({
+                    userId: order.userId,
+                    title: `✅ Đơn hàng đã được xác nhận tự động`,
+                    content: `Đơn hàng ${order.orderNumber} của bạn đã được xác nhận tự động sau 30 phút.`,
+                    type: 'order_status_update',
+                    relatedId: order.orderNumber
+                }).catch(err => console.error('Error sending auto-confirm notification:', err));
+            }
+        } catch (err) {
+            await transaction.rollback();
+            console.error(`[AutoConfirm] Failed to confirm order ${order.orderNumber}:`, err);
+        }
+    }
+
+    return count;
+}
+
 module.exports = {
     previewCheckout,
     placeOrder,
@@ -918,6 +1030,7 @@ module.exports = {
     cancelOrderForUser,
     requestReturnForUser,
     autoCancelPendingOrders,
+    autoConfirmPendingOrders,
     validatePromotionForCart,
     normalizeInformation,
     buildCheckoutLines,

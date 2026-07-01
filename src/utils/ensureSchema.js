@@ -341,7 +341,7 @@ const ensureOrderDeliveryColumns = async (sequelize) => {
 
         try {
             await sequelize.query(
-                "ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'delivered', 'return_requested', 'return_approved', 'returned', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending'"
+                "ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'delivered', 'return_requested', 'return_approved', 'returned', 'cancelled', 'refunded', 'cancel_requested') NOT NULL DEFAULT 'pending'"
             );
             console.log('  + Verified orders.status ENUM values');
         } catch (err) {

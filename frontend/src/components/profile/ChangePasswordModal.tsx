@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent, ChangeEvent } from 'react';
+import type { FormEvent } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import axiosInstance from '../../services/axiosConfig';
 import OtpBoxes from '../auth/OtpBoxes';

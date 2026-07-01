@@ -52,6 +52,11 @@ const STATUS_UI = {
         label: 'Hoàn trả hàng',
         statusClass: 'bg-error-container text-on-error-container',
         progress: 0
+    },
+    cancel_requested: {
+        label: 'Yêu cầu hủy đơn',
+        statusClass: 'bg-amber-500/10 text-amber-500',
+        progress: 2
     }
 };
 
@@ -99,6 +104,9 @@ function orderDetailText(order) {
             ? `Cancelled on ${formatDate(order.cancelledAt)}`
             : 'Order was cancelled';
     }
+    if (order.status === 'cancel_requested') {
+        return 'Yêu cầu hủy đơn hàng đang chờ duyệt';
+    }
     if (snapshot.deliveryType === 'campus') {
         return 'Campus delivery';
     }
@@ -125,7 +133,7 @@ function mapOrderRow(order) {
             : first.productName
         : 'Order items';
 
-    const isActive = ['pending', 'confirmed', 'processing', 'shipping', 'delivery_failed'].includes(
+    const isActive = ['pending', 'confirmed', 'processing', 'shipping', 'delivery_failed', 'cancel_requested'].includes(
         order.status
     );
 

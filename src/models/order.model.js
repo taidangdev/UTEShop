@@ -46,7 +46,8 @@ const Order = sequelize.define(
                 'return_approved',
                 'returned',
                 'cancelled',
-                'refunded'
+                'refunded',
+                'cancel_requested'
             ),
             allowNull: false,
             defaultValue: 'pending'

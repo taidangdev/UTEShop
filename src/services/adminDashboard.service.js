@@ -12,7 +12,8 @@ const STATUS_LABELS = {
     return_approved: 'Chờ thu hồi hàng',
     returned: 'Hoàn trả hàng',
     cancelled: 'Đã hủy',
-    refunded: 'Đã hoàn tiền'
+    refunded: 'Đã hoàn tiền',
+    cancel_requested: 'Yêu cầu hủy'
 };
 
 const ORDER_STATUSES = [
@@ -26,7 +27,8 @@ const ORDER_STATUSES = [
     'return_approved',
     'returned',
     'cancelled',
-    'refunded'
+    'refunded',
+    'cancel_requested'
 ];
 
 function startOfDay(date) {

@@ -20,7 +20,8 @@ const STATUS_STYLES: Record<string, string> = {
     return_approved: 'bg-indigo-500/10 text-indigo-500',
     returned: 'bg-error-container text-on-error-container',
     cancelled: 'bg-error-container text-on-error-container',
-    refunded: 'bg-error-container text-on-error-container'
+    refunded: 'bg-error-container text-on-error-container',
+    cancel_requested: 'bg-amber-500/10 text-amber-500'
 };
 
 const PAYMENT_METHODS: Record<string, string> = {

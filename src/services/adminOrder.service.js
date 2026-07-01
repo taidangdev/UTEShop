@@ -24,7 +24,8 @@ const ADMIN_TRANSITIONS = {
     return_approved: ['returned'],
     returned: ['refunded'],
     cancelled: [],
-    refunded: []
+    refunded: [],
+    cancel_requested: ['cancelled', 'processing']
 };
 
 /** Nhãn nút hành động admin (ưu tiên hơn STATUS_LABELS cho một số chuyển trạng thái) */
@@ -86,6 +87,11 @@ const STATUS_NOTIFICATIONS = {
         title: '📦 Yêu cầu trả hàng được phê duyệt',
         content: (orderNumber) =>
             `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đã được phê duyệt. Vui lòng chờ shipper thu hồi.`
+    },
+    cancel_requested: {
+        title: '❓ Yêu cầu hủy đơn hàng',
+        content: (orderNumber) =>
+            `Đơn hàng ${orderNumber} của bạn có yêu cầu hủy đang chờ shop phê duyệt.`
     }
 };
 
@@ -123,6 +129,10 @@ function getAllowedNextStatuses(order) {
                 label = 'Từ chối trả hàng';
             } else if (currentStatus === 'delivery_failed' && nextStatus === 'shipping') {
                 label = 'Giao lại';
+            } else if (currentStatus === 'cancel_requested' && nextStatus === 'cancelled') {
+                label = 'Duyệt hủy đơn';
+            } else if (currentStatus === 'cancel_requested' && nextStatus === 'processing') {
+                label = 'Từ chối hủy đơn';
             } else if (nextStatus === 'shipping') {
                 label = 'Giao hàng';
             }
@@ -558,6 +568,11 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
             notification = {
                 title: '❌ Yêu cầu trả hàng bị từ chối',
                 content: (orderNumber) => `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đã bị shop từ chối.`
+            };
+        } else if (originalStatusBeforeEffects === 'cancel_requested' && resolvedStatus === 'processing') {
+            notification = {
+                title: '❌ Yêu cầu hủy đơn bị từ chối',
+                content: (orderNumber) => `Yêu cầu hủy đơn hàng ${orderNumber} đã bị shop từ chối. Shop tiếp tục chuẩn bị hàng.`
             };
         }
         if (notification && order.userId) {

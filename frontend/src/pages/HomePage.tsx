@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import {
     FiBook,
     FiMonitor,
     FiPackage,
-    FiSearch,
 
     FiArrowRight,
     FiAward,
@@ -23,7 +22,7 @@ import axiosInstance from '../services/axiosConfig';
 import { useAppSelector } from '../store/hooks';
 
 import type { ApiEnvelope } from '../types/api';
-import type { CatalogProduct, CategoryWithCount, HomePageData, Major, PromoBanner } from '../types/catalog';
+import type { CatalogProduct, CategoryWithCount, HomePageData, PromoBanner } from '../types/catalog';
 import ProductCard from '../components/catalog/ProductCard';
 
 const PRIMARY = '#004AC6';

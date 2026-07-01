@@ -19,7 +19,8 @@ const STATUS_CONFIG: Record<string, { label: string; icon: string; colorClass: s
     return_approved: { label: 'Chờ thu hồi hàng', icon: 'forward_to_inbox', colorClass: 'bg-indigo-500/10 text-indigo-500', step: 0 },
     returned: { label: 'Hoàn trả hàng', icon: 'undo', colorClass: 'bg-error-container text-on-error-container', step: 0 },
     cancelled: { label: 'Đã hủy đơn hàng', icon: 'cancel', colorClass: 'bg-error-container text-on-error-container', step: 0 },
-    refunded: { label: 'Đã hoàn tiền', icon: 'keyboard_return', colorClass: 'bg-error-container text-on-error-container', step: 0 }
+    refunded: { label: 'Đã hoàn tiền', icon: 'keyboard_return', colorClass: 'bg-error-container text-on-error-container', step: 0 },
+    cancel_requested: { label: 'Yêu cầu hủy', icon: 'pending_actions', colorClass: 'bg-amber-500/10 text-amber-500', step: 0 }
 };
 
 const PAYMENT_METHODS: Record<string, string> = {
@@ -146,7 +147,7 @@ export default function OrderTrackingPage() {
     }
 
     const currentStatus = order.status;
-    const isDisputeState = currentStatus === 'return_requested' || currentStatus === 'return_approved';
+    const isDisputeState = currentStatus === 'return_requested' || currentStatus === 'return_approved' || currentStatus === 'cancel_requested';
     const isTerminalFailure =
         currentStatus === 'cancelled' ||
         currentStatus === 'refunded' ||
@@ -183,7 +184,6 @@ export default function OrderTrackingPage() {
         { key: 5, label: 'Đã giao', desc: 'Hoàn tất đơn hàng' }
     ];
 
-    const canCancel = currentStatus === 'pending';
 
     return (
         <div className="min-h-screen bg-surface py-10 text-on-surface antialiased">
@@ -264,17 +264,25 @@ export default function OrderTrackingPage() {
                         {isDisputeState ? (
                             <div className="flex flex-col items-center justify-center rounded-2xl bg-amber-500/10 p-8 text-center border border-amber-500/20">
                                 <span className="material-symbols-outlined text-[48px] text-amber-600">
-                                    {currentStatus === 'return_requested' ? 'assignment_return' : 'local_shipping'}
+                                    {currentStatus === 'cancel_requested'
+                                        ? 'cancel_presentation'
+                                        : currentStatus === 'return_requested'
+                                          ? 'assignment_return'
+                                          : 'local_shipping'}
                                 </span>
                                 <h3 className="mt-3 text-lg font-bold text-amber-700">
-                                    {currentStatus === 'return_requested'
-                                        ? 'Đang chờ duyệt Yêu cầu Trả hàng'
-                                        : 'Yêu cầu Trả hàng được Chấp nhận'}
+                                    {currentStatus === 'cancel_requested'
+                                        ? 'Đang chờ duyệt Yêu cầu Hủy đơn'
+                                        : currentStatus === 'return_requested'
+                                          ? 'Đang chờ duyệt Yêu cầu Trả hàng'
+                                          : 'Yêu cầu Trả hàng được Chấp nhận'}
                                 </h3>
                                 <p className="mt-1 max-w-lg text-sm text-on-surface-variant leading-relaxed">
-                                    {currentStatus === 'return_requested'
-                                        ? 'Yêu cầu trả hàng của bạn đã được ghi nhận và đang chờ shop phê duyệt.'
-                                        : 'Shop đã phê duyệt yêu cầu trả hàng của bạn. Vui lòng chờ shipper liên hệ để thu hồi sản phẩm.'}
+                                    {currentStatus === 'cancel_requested'
+                                        ? 'Yêu cầu hủy đơn hàng của bạn đã được ghi nhận và đang chờ shop phê duyệt.'
+                                        : currentStatus === 'return_requested'
+                                          ? 'Yêu cầu trả hàng của bạn đã được ghi nhận và đang chờ shop phê duyệt.'
+                                          : 'Shop đã phê duyệt yêu cầu trả hàng của bạn. Vui lòng chờ shipper liên hệ để thu hồi sản phẩm.'}
                                 </p>
                                 {order.returnReason && (
                                     <p className="mt-2 text-sm text-on-surface-variant font-medium">
@@ -441,29 +449,58 @@ export default function OrderTrackingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end p-8 gap-6 bg-surface-container-lowest">
                         {/* Cancellation options */}
                         <div>
-                            {canCancel ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCancelModal(true)}
-                                    className="flex items-center gap-2 rounded-full border border-error/30 px-6 py-3 text-sm font-semibold text-error hover:bg-error/5 active:scale-95 transition-all"
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">cancel</span>
-                                    Hủy đơn hàng này
-                                </button>
-                            ) : order.status === 'delivered' ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowReturnModal(true)}
-                                    className="flex items-center gap-2 rounded-full border border-amber-500/30 px-6 py-3 text-sm font-semibold text-amber-500 hover:bg-amber-500/5 active:scale-95 transition-all"
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">keyboard_return</span>
-                                    Yêu cầu Trả hàng / Hoàn tiền
-                                </button>
-                            ) : ['return_requested', 'return_approved', 'returned', 'refunded'].includes(order.status) ? null : (
-                                <p className="text-xs text-on-surface-variant italic">
-                                    * Đơn hàng đã ở trạng thái xử lý/vận chuyển, không thể tự hủy trực tuyến.
-                                </p>
-                            )}
+                            {(() => {
+                                const isWithin30Mins = order.placedAt
+                                    ? (new Date().getTime() - new Date(order.placedAt).getTime()) < 30 * 60 * 1000
+                                    : false;
+                                const canDirectCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && isWithin30Mins;
+                                const canRequestCancel = currentStatus === 'processing' && isWithin30Mins;
+
+                                if (canDirectCancel) {
+                                    return (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCancelModal(true)}
+                                            className="flex items-center gap-2 rounded-full border border-error/30 px-6 py-3 text-sm font-semibold text-error hover:bg-error/5 active:scale-95 transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                            Hủy đơn hàng này
+                                        </button>
+                                    );
+                                }
+                                if (canRequestCancel) {
+                                    return (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCancelModal(true)}
+                                            className="flex items-center gap-2 rounded-full border border-amber-500/30 px-6 py-3 text-sm font-semibold text-amber-600 hover:bg-amber-500/5 active:scale-95 transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">cancel_presentation</span>
+                                            Yêu cầu hủy đơn hàng
+                                        </button>
+                                    );
+                                }
+                                if (order.status === 'delivered') {
+                                    return (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowReturnModal(true)}
+                                            className="flex items-center gap-2 rounded-full border border-amber-500/30 px-6 py-3 text-sm font-semibold text-amber-500 hover:bg-amber-500/5 active:scale-95 transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">keyboard_return</span>
+                                            Yêu cầu Trả hàng / Hoàn tiền
+                                        </button>
+                                    );
+                                }
+                                if (['return_requested', 'return_approved', 'returned', 'refunded', 'cancel_requested'].includes(order.status)) {
+                                    return null;
+                                }
+                                return (
+                                    <p className="text-xs text-on-surface-variant italic">
+                                        * Đơn hàng đã đặt quá 30 phút hoặc ở trạng thái không thể tự hủy trực tuyến.
+                                    </p>
+                                );
+                            })()}
                         </div>
 
                         {/* Summary totals values */}
@@ -518,9 +555,15 @@ export default function OrderTrackingPage() {
                         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-container text-on-error-container">
                             <span className="material-symbols-outlined text-[24px]">warning</span>
                         </div>
-                        <h3 className="text-xl font-bold text-on-surface">Xác nhận hủy đơn hàng?</h3>
+                        <h3 className="text-xl font-bold text-on-surface">
+                            {currentStatus === 'processing' ? 'Xác nhận yêu cầu hủy?' : 'Xác nhận hủy đơn hàng?'}
+                        </h3>
                         
-                        {currentStatus === 'confirmed' ? (
+                        {currentStatus === 'processing' ? (
+                            <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+                                Đơn hàng của bạn đang được chuẩn bị. Gửi yêu cầu hủy đơn lúc này sẽ cần chờ shop duyệt. Bạn có chắc chắn muốn tiếp tục không?
+                            </p>
+                        ) : currentStatus === 'confirmed' ? (
                             <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
                                 Đơn hàng của bạn **đã được xác nhận**. Hủy đơn hàng lúc này sẽ kích hoạt quy trình **Hoàn trả tiền tự động** (qua VNPAY/MoMo/Chuyển khoản). Bạn có chắc chắn muốn tiếp tục không?
                             </p>
@@ -548,8 +591,10 @@ export default function OrderTrackingPage() {
                                 {cancelling ? (
                                     <>
                                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        Đang hủy...
+                                        Đang xử lý...
                                     </>
+                                ) : currentStatus === 'processing' ? (
+                                    'Gửi yêu cầu hủy'
                                 ) : (
                                     'Đồng ý hủy đơn'
                                 )}
