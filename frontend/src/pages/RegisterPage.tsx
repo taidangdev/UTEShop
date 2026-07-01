@@ -88,6 +88,11 @@ const RegisterPage = () => {
         e.preventDefault();
         setLocalError(null);
         setResendHint(null);
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail.toLowerCase().endsWith('@student.hcmute.edu.vn')) {
+            setLocalError('Email phải là email sinh viên HCMUTE (đuôi @student.hcmute.edu.vn).');
+            return;
+        }
         if (password !== confirmPassword) {
             setLocalError('Passwords do not match.');
             return;
@@ -95,7 +100,7 @@ const RegisterPage = () => {
         await dispatch(
             registerUser({
                 username: username.trim(),
-                email: email.trim(),
+                email: trimmedEmail,
                 password,
                 fullName: fullName.trim(),
                 studentId: studentId.trim(),
@@ -308,7 +313,7 @@ const RegisterPage = () => {
                                 setEmail(e.target.value);
                                 clearErrors();
                             }}
-                            placeholder="student@university.edu"
+                            placeholder="sv@student.hcmute.edu.vn"
                             autoComplete="email"
                             error={fieldErrors.email}
                         />

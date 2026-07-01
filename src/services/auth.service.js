@@ -51,6 +51,12 @@ const generateOtp = () => String(crypto.randomInt(100000, 1000000));
 const registerUser = async ({ username, email, password, fullName, studentId, majorId }) => {
     const normalizedEmail = normalizeEmailForAuth(email);
 
+    if (!normalizedEmail.toLowerCase().endsWith('@student.hcmute.edu.vn')) {
+        const err = new Error('Email phải là email sinh viên HCMUTE (đuôi @student.hcmute.edu.vn)');
+        err.statusCode = 400;
+        throw err;
+    }
+
     const existing = await User.findOne({
         where: { email: normalizedEmail }
     });

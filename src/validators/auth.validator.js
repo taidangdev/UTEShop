@@ -13,6 +13,12 @@ const registerValidation = [
         .withMessage('Email là bắt buộc')
         .isEmail()
         .withMessage('Email không hợp lệ')
+        .custom((value) => {
+            if (!value.toLowerCase().endsWith('@student.hcmute.edu.vn')) {
+                throw new Error('Email phải là email sinh viên HCMUTE (đuôi @student.hcmute.edu.vn)');
+            }
+            return true;
+        })
         .normalizeEmail(),
     body('password')
         .notEmpty()
