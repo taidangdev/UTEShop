@@ -571,13 +571,13 @@ export default function CheckoutInformationPage() {
                 <CheckoutStepper currentStep={1} />
 
                 {formError && (
-                    <p className="mb-6 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
+                    <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
                         {formError}
                     </p>
                 )}
 
                 {previewError && (
-                    <p className="mb-6 rounded-lg bg-error-container/80 px-4 py-3 text-sm text-on-error-container">
+                    <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
                         {previewError}
                     </p>
                 )}

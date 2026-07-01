@@ -358,7 +358,7 @@ export default function ProfileAddressesTab() {
                     </div>
 
                     {formError && (
-                        <div className="mb-4 rounded-xl bg-error-container/80 px-4 py-3 text-sm text-on-error-container">
+                        <div className="mb-4 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
                             {formError}
                         </div>
                     )}
