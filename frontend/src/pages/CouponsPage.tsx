@@ -10,6 +10,7 @@ import {
     promotionMinOrderLabel,
     promotionScopeLabel
 } from '../utils/promotionDisplay';
+import { formatPrice } from '../utils/formatPrice';
 
 const HERO_IMAGE = '/PremiumLaptop.png';
 
@@ -134,7 +135,7 @@ function PersonalCouponCard({ coupon }: { coupon: UserCoupon }) {
         coupon.discountType === 'free_shipping'
             ? 'Miễn phí ship'
             : coupon.discountType === 'fixed_amount'
-              ? `Giảm $${coupon.discountValue}`
+              ? `Giảm ${formatPrice(coupon.discountValue)}`
               : `Giảm ${coupon.discountValue}%`;
 
     return (

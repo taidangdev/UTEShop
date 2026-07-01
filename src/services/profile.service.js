@@ -67,8 +67,8 @@ function serializeUser(user) {
 
 function formatMoney(value) {
     const n = Number(value);
-    if (Number.isNaN(n)) return '$0.00';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+    if (Number.isNaN(n)) return '0 VNĐ';
+    return `${new Intl.NumberFormat('vi-VN').format(n)} VNĐ`;
 }
 
 function formatDate(date) {

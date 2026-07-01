@@ -98,12 +98,12 @@ async function redeemPoints(userId, pointsToRedeem, { referenceType, referenceId
 
 function pointsToDiscountAmount(points) {
     const dollars = points / rewardConfig.pointsPerDollar;
-    return Math.round(dollars * 100) / 100;
+    return Math.round(dollars * 1000);
 }
 
 function maxRedeemablePoints(subtotal, userBalance) {
     const maxByPercent =
-        (subtotal * rewardConfig.maxPointsDiscountPercent) / 100 * rewardConfig.pointsPerDollar;
+        (subtotal * rewardConfig.maxPointsDiscountPercent) / 100 * (rewardConfig.pointsPerDollar / 1000);
     const maxPoints = Math.floor(maxByPercent);
     return Math.min(userBalance, maxPoints);
 }

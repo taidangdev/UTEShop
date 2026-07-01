@@ -143,7 +143,7 @@ export default function PromotionsTab() {
     // Format helpers
     const formatCurrency = (val: number | null) => {
         if (val == null) return '—';
-        return `${new Intl.NumberFormat('vi-VN').format(val * 1000)} VNĐ`;
+        return `${new Intl.NumberFormat('vi-VN').format(val)} VNĐ`;
     };
 
     const formatDateInput = (dateStr: string | null) => {

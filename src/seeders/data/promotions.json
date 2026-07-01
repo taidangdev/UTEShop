@@ -6,8 +6,10 @@
     "scope": "category",
     "type": "percentage",
     "value": 20,
-    "minOrderAmount": 30,
-    "categorySlugs": ["merchandise"],
+    "minOrderAmount": 30000,
+    "categorySlugs": [
+      "merchandise"
+    ],
     "maxUsesPerUser": 3,
     "isActive": true
   },
@@ -19,7 +21,9 @@
     "type": "percentage",
     "value": 15,
     "minOrderAmount": 0,
-    "productSlugs": ["engineering-starter-kit"],
+    "productSlugs": [
+      "engineering-starter-kit"
+    ],
     "maxUsesPerUser": 1,
     "isActive": true
   },
@@ -30,8 +34,11 @@
     "scope": "product",
     "type": "percentage",
     "value": 10,
-    "minOrderAmount": 50,
-    "productSlugs": ["chuot-gaming-rgb", "ban-phim-co-bluetooth"],
+    "minOrderAmount": 50000,
+    "productSlugs": [
+      "chuot-gaming-rgb",
+      "ban-phim-co-bluetooth"
+    ],
     "isActive": true
   },
   {
@@ -41,7 +48,7 @@
     "scope": "shop",
     "type": "free_shipping",
     "value": 0,
-    "minOrderAmount": 25,
+    "minOrderAmount": 25000,
     "isActive": true
   }
 ]

@@ -10,6 +10,12 @@ const {
 } = require('../models');
 const notificationService = require('./notification.service');
 
+function formatMoney(value) {
+    const n = Number(value);
+    if (Number.isNaN(n)) return '0 VNĐ';
+    return `${new Intl.NumberFormat('vi-VN').format(n)} VNĐ`;
+}
+
 /**
  * Lists all consignments for admin with filters, search, and pagination.
  */
@@ -255,11 +261,11 @@ async function updateConsignment(id, payload) {
                 } else if (finalStatus === 'RECEIVED') {
                     content = `Cửa hàng đã nhận sản phẩm ký gửi "${updatedConsignment.title}" từ bạn.`;
                 } else if (finalStatus === 'ON_SALE') {
-                    content = `Sản phẩm ký gửi "${updatedConsignment.title}" đã được đăng bán chính thức trên cửa hàng với giá chốt $${updatedConsignment.approvedPrice} (Phí sàn: $${updatedConsignment.consignmentFee}, Thực nhận: $${updatedConsignment.receiveAmount}).`;
+                    content = `Sản phẩm ký gửi "${updatedConsignment.title}" đã được đăng bán chính thức trên cửa hàng với giá chốt ${formatMoney(updatedConsignment.approvedPrice)} (Phí sàn: ${formatMoney(updatedConsignment.consignmentFee)}, Thực nhận: ${formatMoney(updatedConsignment.receiveAmount)}).`;
                 } else if (finalStatus === 'SOLD') {
                     content = `Sản phẩm ký gửi "${updatedConsignment.title}" của bạn đã bán thành công. Đang chờ đối soát thanh toán.`;
                 } else if (finalStatus === 'COMPLETED') {
-                    content = `Yêu cầu ký gửi "${updatedConsignment.title}" đã hoàn thành. Cửa hàng đã tất toán số tiền thực nhận là $${updatedConsignment.receiveAmount} cho bạn (sau khi trừ 10% phí sàn). Cảm ơn bạn đã tin tưởng dịch vụ!`;
+                    content = `Yêu cầu ký gửi "${updatedConsignment.title}" đã hoàn thành. Cửa hàng đã tất toán số tiền thực nhận là ${formatMoney(updatedConsignment.receiveAmount)} cho bạn (sau khi trừ 10% phí sàn). Cảm ơn bạn đã tin tưởng dịch vụ!`;
                 } else if (finalStatus === 'RETURNED') {
                     content = `Sản phẩm ký gửi "${updatedConsignment.title}" đã được hoàn trả lại cho bạn.`;
                 } else if (finalStatus === 'REJECTED') {
@@ -280,9 +286,9 @@ async function updateConsignment(id, payload) {
                         ${finalStatus === 'ON_SALE' ? `
                         <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2e7d32;">
                             <p style="margin: 0 0 5px 0; color: #2e7d32; font-weight: bold;">Thông tin bán hàng:</p>
-                            <p style="margin: 0 0 5px 0;">Giá bán niêm yết: <strong>$${updatedConsignment.approvedPrice}</strong></p>
-                            <p style="margin: 0 0 5px 0;">Phí sàn (10%): <strong>$${updatedConsignment.consignmentFee}</strong></p>
-                            <p style="margin: 0;">Thực nhận sau khi bán (90%): <strong>$${updatedConsignment.receiveAmount}</strong></p>
+                            <p style="margin: 0 0 5px 0;">Giá bán niêm yết: <strong>${formatMoney(updatedConsignment.approvedPrice)}</strong></p>
+                            <p style="margin: 0 0 5px 0;">Phí sàn (10%): <strong>${formatMoney(updatedConsignment.consignmentFee)}</strong></p>
+                            <p style="margin: 0;">Thực nhận sau khi bán (90%): <strong>${formatMoney(updatedConsignment.receiveAmount)}</strong></p>
                         </div>
                         ` : ''}
                         <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">

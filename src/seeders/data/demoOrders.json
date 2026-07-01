@@ -9,7 +9,12 @@
     "discountAmount": 0,
     "daysAgo": 0,
     "note": "Đơn mới đặt — chờ xác nhận",
-    "items": [{ "productSlug": "engineering-starter-kit", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "engineering-starter-kit",
+        "quantity": 1
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0002",
@@ -17,13 +22,19 @@
     "paymentMethod": "bank_transfer",
     "paymentStatus": "pending",
     "deliveryType": "home",
-    "shippingFee": 12,
+    "shippingFee": 12000,
     "discountAmount": 0,
     "daysAgo": 1,
     "note": "Chờ chuyển khoản ngân hàng",
     "items": [
-      { "productSlug": "ute-engineering-hoodie", "quantity": 1 },
-      { "productSlug": "minimalist-study-lamp", "quantity": 1 }
+      {
+        "productSlug": "ute-engineering-hoodie",
+        "quantity": 1
+      },
+      {
+        "productSlug": "minimalist-study-lamp",
+        "quantity": 1
+      }
     ]
   },
   {
@@ -33,11 +44,16 @@
     "paymentStatus": "paid",
     "deliveryType": "campus",
     "shippingFee": 0,
-    "discountAmount": 10,
+    "discountAmount": 10000,
     "daysAgo": 2,
     "paidDaysAgo": 2,
     "note": "Đã thanh toán — chờ shop xác nhận giao",
-    "items": [{ "productSlug": "chuot-gaming-rgb", "quantity": 2 }]
+    "items": [
+      {
+        "productSlug": "chuot-gaming-rgb",
+        "quantity": 2
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0004",
@@ -45,12 +61,17 @@
     "paymentMethod": "momo",
     "paymentStatus": "paid",
     "deliveryType": "home",
-    "shippingFee": 12,
+    "shippingFee": 12000,
     "discountAmount": 0,
     "daysAgo": 3,
     "paidDaysAgo": 3,
     "note": "Đang chuẩn bị hàng",
-    "items": [{ "productSlug": "ban-phim-co-bluetooth", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "ban-phim-co-bluetooth",
+        "quantity": 1
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0005",
@@ -58,15 +79,21 @@
     "paymentMethod": "vnpay",
     "paymentStatus": "paid",
     "deliveryType": "home",
-    "shippingFee": 12,
-    "discountAmount": 5,
+    "shippingFee": 12000,
+    "discountAmount": 5000,
     "daysAgo": 5,
     "paidDaysAgo": 5,
     "shippedDaysAgo": 1,
     "note": "Đang giao hàng",
     "items": [
-      { "productSlug": "engineering-starter-kit", "quantity": 1 },
-      { "productSlug": "ute-engineering-hoodie", "quantity": 1 }
+      {
+        "productSlug": "engineering-starter-kit",
+        "quantity": 1
+      },
+      {
+        "productSlug": "ute-engineering-hoodie",
+        "quantity": 1
+      }
     ]
   },
   {
@@ -80,7 +107,12 @@
     "daysAgo": 4,
     "shippedDaysAgo": 2,
     "note": "Giao campus — COD khi nhận",
-    "items": [{ "productSlug": "minimalist-study-lamp", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "minimalist-study-lamp",
+        "quantity": 1
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0007",
@@ -89,13 +121,18 @@
     "paymentStatus": "paid",
     "deliveryType": "campus",
     "shippingFee": 0,
-    "discountAmount": 15,
+    "discountAmount": 15000,
     "daysAgo": 10,
     "paidDaysAgo": 10,
     "shippedDaysAgo": 8,
     "deliveredDaysAgo": 7,
     "note": "Đã giao — có thể đánh giá & nhận thưởng",
-    "items": [{ "productSlug": "engineering-starter-kit", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "engineering-starter-kit",
+        "quantity": 1
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0008",
@@ -103,7 +140,7 @@
     "paymentMethod": "momo",
     "paymentStatus": "paid",
     "deliveryType": "home",
-    "shippingFee": 12,
+    "shippingFee": 12000,
     "discountAmount": 0,
     "daysAgo": 14,
     "paidDaysAgo": 14,
@@ -111,8 +148,14 @@
     "deliveredDaysAgo": 11,
     "note": "Đơn cũ đã hoàn thành",
     "items": [
-      { "productSlug": "chuot-gaming-rgb", "quantity": 1 },
-      { "productSlug": "ban-phim-co-bluetooth", "quantity": 1 }
+      {
+        "productSlug": "chuot-gaming-rgb",
+        "quantity": 1
+      },
+      {
+        "productSlug": "ban-phim-co-bluetooth",
+        "quantity": 1
+      }
     ]
   },
   {
@@ -121,14 +164,19 @@
     "paymentMethod": "cod",
     "paymentStatus": "paid",
     "deliveryType": "home",
-    "shippingFee": 12,
-    "discountAmount": 20,
+    "shippingFee": 12000,
+    "discountAmount": 20000,
     "daysAgo": 21,
     "paidDaysAgo": 20,
     "shippedDaysAgo": 19,
     "deliveredDaysAgo": 18,
     "note": "Đơn đã giao — dùng thử review",
-    "items": [{ "productSlug": "ute-engineering-hoodie", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "ute-engineering-hoodie",
+        "quantity": 1
+      }
+    ]
   },
   {
     "orderNumber": "DEMO-2026-0010",
@@ -142,6 +190,11 @@
     "cancelledDaysAgo": 5,
     "adminNote": "Hủy do quá hạn thanh toán.",
     "note": "Đơn đã hủy",
-    "items": [{ "productSlug": "minimalist-study-lamp", "quantity": 1 }]
+    "items": [
+      {
+        "productSlug": "minimalist-study-lamp",
+        "quantity": 1
+      }
+    ]
   }
 ]

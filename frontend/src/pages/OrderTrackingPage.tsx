@@ -5,6 +5,7 @@ import { fetchOrder, cancelOrder, requestOrderReturn } from '../services/checkou
 import { fetchEligibleReviewItems } from '../services/reviewApi';
 import type { OrderDto } from '../types/checkout';
 import { useNotification } from '../context/NotificationContext';
+import { formatPrice } from '../utils/formatPrice';
 
 const REVIEWABLE_STATUSES = new Set(['delivered']);
 
@@ -168,10 +169,10 @@ export default function OrderTrackingPage() {
         });
     };
 
-    const formattedTotal = `${new Intl.NumberFormat('vi-VN').format(order.total * 1000)} VNĐ`;
-    const formattedSubtotal = `${new Intl.NumberFormat('vi-VN').format(order.subtotal * 1000)} VNĐ`;
-    const formattedShippingFee = `${new Intl.NumberFormat('vi-VN').format(order.shippingFee * 1000)} VNĐ`;
-    const formattedDiscount = `${new Intl.NumberFormat('vi-VN').format(order.discountAmount * 1000)} VNĐ`;
+    const formattedTotal = `${new Intl.NumberFormat('vi-VN').format(order.total)} VNĐ`;
+    const formattedSubtotal = `${new Intl.NumberFormat('vi-VN').format(order.subtotal)} VNĐ`;
+    const formattedShippingFee = `${new Intl.NumberFormat('vi-VN').format(order.shippingFee)} VNĐ`;
+    const formattedDiscount = `${new Intl.NumberFormat('vi-VN').format(order.discountAmount)} VNĐ`;
 
     // Extract shipping snapshot address info safely
     const snapshot = (order.shippingSnapshot as any) || {};
@@ -433,8 +434,8 @@ export default function OrderTrackingPage() {
                                     </div>
                                     <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
                                         <div className="text-right">
-                                            <p className="text-sm font-bold text-primary">${Number(item.lineTotal).toFixed(2)}</p>
-                                            <p className="text-xs text-on-surface-variant">${Number(item.unitPrice).toFixed(2)} / cái</p>
+                                            <p className="text-sm font-bold text-primary">{formatPrice(item.lineTotal)}</p>
+                                            <p className="text-xs text-on-surface-variant">{formatPrice(item.unitPrice)} / cái</p>
                                         </div>
                                         {REVIEWABLE_STATUSES.has(order.status) &&
                                             reviewableItemIds.has(item.id) && (

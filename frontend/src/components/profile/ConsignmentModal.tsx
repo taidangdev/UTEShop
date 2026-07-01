@@ -118,12 +118,12 @@ export default function ConsignmentModal({
                     userId: consignment.userId ? String(consignment.userId) : '',
                     title: consignment.title || '',
                     categoryId: consignment.categoryId ? String(consignment.categoryId) : '',
-                    suggestedPrice: consignment.suggestedPrice ? String(Number(consignment.suggestedPrice) * 1000) : '',
+                    suggestedPrice: consignment.suggestedPrice ? String(consignment.suggestedPrice) : '',
                     condition: consignment.condition || 'used',
                     contactPhone: consignment.contactPhone || '',
                     images: consignment.images?.map((img) => img.url) || [],
                     status: consignment.status || 'PENDING',
-                    approvedPrice: consignment.approvedPrice ? String(Number(consignment.approvedPrice) * 1000) : ''
+                    approvedPrice: consignment.approvedPrice ? String(consignment.approvedPrice) : ''
                 });
             } else {
                 setForm({
@@ -197,18 +197,18 @@ export default function ConsignmentModal({
                     userId: Number(form.userId),
                     title: titleTrimmed,
                     categoryId: Number(form.categoryId),
-                    suggestedPrice: priceNum / 1000,
+                    suggestedPrice: priceNum,
                     condition: form.condition,
                     contactPhone: phoneTrimmed || undefined,
                     images: form.images,
                     status: form.status,
-                    approvedPrice: approvedPriceNum ? approvedPriceNum / 1000 : undefined
+                    approvedPrice: approvedPriceNum
                 });
             } else {
                 const payload: CreateConsignmentPayload = {
                     title: titleTrimmed,
                     categoryId: Number(form.categoryId),
-                    suggestedPrice: priceNum / 1000,
+                    suggestedPrice: priceNum,
                     condition: form.condition,
                     contactPhone: phoneTrimmed || undefined,
                     images: form.images

@@ -150,7 +150,7 @@ function applyPromotionToLines(promotion, lineItems) {
     const minOrder = promotion.minOrderAmount != null ? Number(promotion.minOrderAmount) : 0;
     if (eligibleSubtotal < minOrder) {
         const err = new Error(
-            `Minimum order amount for this code is $${minOrder.toFixed(2)} (eligible items: $${eligibleSubtotal.toFixed(2)})`
+            `Đơn hàng tối thiểu để áp dụng mã này là ${new Intl.NumberFormat('vi-VN').format(minOrder)} VNĐ (Sản phẩm hợp lệ hiện tại: ${new Intl.NumberFormat('vi-VN').format(eligibleSubtotal)} VNĐ)`
         );
         err.statusCode = 400;
         err.code = 'PROMOTION_MIN_ORDER';

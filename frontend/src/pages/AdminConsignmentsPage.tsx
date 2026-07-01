@@ -43,7 +43,7 @@ function formatCurrency(value: number) {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
-    }).format(value * 1000);
+    }).format(value);
 }
 
 function formatDate(value: string | null) {
@@ -148,8 +148,8 @@ export default function AdminConsignmentsPage() {
         setAdminNote(item.adminNote || '');
         setApprovedPrice(
             item.approvedPrice !== null && item.approvedPrice !== undefined
-                ? String(item.approvedPrice * 1000)
-                : String(item.suggestedPrice * 1000)
+                ? String(item.approvedPrice)
+                : String(item.suggestedPrice)
         );
         setStatusVal(item.status);
     };
@@ -165,7 +165,7 @@ export default function AdminConsignmentsPage() {
         if (!selectedConsignment) return;
         setUpdating(true);
         try {
-            const priceNum = approvedPrice ? Number(approvedPrice) / 1000 : undefined;
+            const priceNum = approvedPrice ? Number(approvedPrice) : undefined;
             if (priceNum !== undefined && (Number.isNaN(priceNum) || priceNum < 0)) {
                 toast.error('Giá duyệt bán không hợp lệ');
                 setUpdating(false);

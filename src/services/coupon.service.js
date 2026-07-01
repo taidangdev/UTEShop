@@ -94,7 +94,7 @@ async function findValidUserCoupon(userId, code) {
 function calculateCouponDiscount(coupon, subtotal) {
     const min = coupon.minOrderAmount != null ? Number(coupon.minOrderAmount) : 0;
     if (subtotal < min) {
-        const err = new Error(`Minimum order amount is $${min.toFixed(2)} for this coupon`);
+        const err = new Error(`Đơn hàng tối thiểu để sử dụng phiếu này là ${new Intl.NumberFormat('vi-VN').format(min)} VNĐ`);
         err.statusCode = 400;
         err.code = 'COUPON_MIN_ORDER';
         throw err;
