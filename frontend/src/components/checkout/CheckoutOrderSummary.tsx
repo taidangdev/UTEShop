@@ -352,7 +352,7 @@ export default function CheckoutOrderSummary({
                                 className="h-10 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
                             />
                             <p className="text-[11px] text-on-surface-variant">
-                                100 điểm = $1 giảm giá (tối đa 20% giá trị hàng sau khuyến mãi)
+                                100 điểm = 1.000đ giảm giá (tối đa 20% giá trị hàng sau khuyến mãi)
                             </p>
                         </div>
                     )}
