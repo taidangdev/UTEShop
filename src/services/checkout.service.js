@@ -21,7 +21,7 @@ const loyaltyService = require('./loyalty.service');
 const promotionService = require('./promotion.service');
 const notificationService = require('./notification.service');
 
-const HOME_SHIPPING_FEE = 12;
+const HOME_SHIPPING_FEE = 12000;
 
 const PAYMENT_METHOD_MAP = {
     cash: 'cod',
