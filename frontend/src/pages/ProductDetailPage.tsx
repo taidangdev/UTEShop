@@ -70,9 +70,6 @@ function buildSpecRows(product: ProductDetail): [string, string][] {
     return rows;
 }
 
-    );
-}
-
 export default function ProductDetailPage() {
     const { slug } = useParams();
     const navigate = useNavigate();

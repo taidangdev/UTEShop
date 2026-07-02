@@ -21,9 +21,6 @@ const HERO_IMAGE = '/PremiumLaptop.png';
 
 
 
-// Reusable ProductCard is now imported from components/catalog/ProductCard
-
-}
 
 export default function CategoriesPage() {
     const [searchParams, setSearchParams] = useSearchParams();
