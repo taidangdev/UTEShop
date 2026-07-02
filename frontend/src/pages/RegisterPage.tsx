@@ -20,6 +20,16 @@ function digitsOnly(value: string | null | undefined) {
     return String(value ?? '').replace(/\D/g, '').slice(0, 6);
 }
 
+/** Chữ Latin không dấu + số, không khoảng trắng */
+const USERNAME_PATTERN = /^[a-zA-Z0-9]+$/;
+
+function sanitizeUsernameInput(value: string) {
+    return value
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toLowerCase()
+        .slice(0, 50);
+}
+
 const loginSecondary = {
     to: '/login',
     title: 'Bạn đã có tài khoản?',
@@ -97,9 +107,18 @@ const RegisterPage = () => {
             setLocalError('Mật khẩu xác nhận không khớp.');
             return;
         }
+        const normalizedUsername = username.trim().toLowerCase();
+        if (!USERNAME_PATTERN.test(normalizedUsername)) {
+            setLocalError('Tên tài khoản chỉ gồm chữ cái không dấu và số, không có khoảng trắng (3–50 ký tự).');
+            return;
+        }
+        if (normalizedUsername.length < 3) {
+            setLocalError('Tên tài khoản phải có ít nhất 3 ký tự.');
+            return;
+        }
         await dispatch(
             registerUser({
-                username: username.trim(),
+                username: normalizedUsername,
                 email: trimmedEmail,
                 password,
                 fullName: fullName.trim(),
@@ -281,13 +300,18 @@ const RegisterPage = () => {
                             icon="person"
                             value={username}
                             onChange={(e) => {
-                                setUsername(e.target.value);
+                                setUsername(sanitizeUsernameInput(e.target.value));
                                 clearErrors();
                             }}
-                            placeholder="Từ 3 đến 50 ký tự"
+                            placeholder="vd: nguyenvana99"
                             autoComplete="username"
                             error={fieldErrors.username}
                         />
+                        {!fieldErrors.username && (
+                            <p className="-mt-2 ml-1 text-xs text-on-surface-variant">
+                                Chỉ chữ cái không dấu (a–z) và số, 3–50 ký tự, không khoảng trắng.
+                            </p>
+                        )}
 
                         <AuthField
                             id="register-fullname"
