@@ -25,14 +25,14 @@ export default function QuantitySelector({
 
     return (
         <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-on-surface-variant">Quantity</span>
+            <span className="text-sm font-semibold text-on-surface-variant">Số lượng</span>
             <div className="flex h-12 items-center rounded-full border border-outline-variant/40 bg-surface-container-low">
                 <button
                     type="button"
                     onClick={decrease}
                     disabled={disabled || value <= min}
                     className="flex h-12 w-12 items-center justify-center rounded-l-full text-on-surface transition hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Decrease quantity"
+                    aria-label="Giảm số lượng"
                 >
                     <span className="material-symbols-outlined text-[20px]">remove</span>
                 </button>
@@ -63,13 +63,13 @@ export default function QuantitySelector({
                     onClick={increase}
                     disabled={disabled || value >= max}
                     className="flex h-12 w-12 items-center justify-center rounded-r-full text-on-surface transition hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Increase quantity"
+                    aria-label="Tăng số lượng"
                 >
                     <span className="material-symbols-outlined text-[20px]">add</span>
                 </button>
             </div>
             {max > 0 && max <= 10 && (
-                <span className="text-xs text-on-surface-variant">Max {max}</span>
+                <span className="text-xs text-on-surface-variant">Tối đa {max}</span>
             )}
         </div>
     );

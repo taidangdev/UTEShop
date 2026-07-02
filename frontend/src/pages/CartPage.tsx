@@ -31,37 +31,37 @@ function CartFooter() {
                 <div>
                     <div className="mb-4 text-2xl font-bold text-on-surface">UTEShop</div>
                     <p className="mb-4 max-w-xs text-base text-on-surface-variant">
-                        Engineering Excellence. Delivered daily to the innovators of tomorrow.
+                        "Chất lượng chuẩn kỹ thuật. Được cung cấp hàng ngày cho những người đổi mới của ngày mai."
                     </p>
                 </div>
                 <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Resources</h4>
+                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Tài nguyên</h4>
                     <nav className="flex flex-col gap-3">
                         <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Academic Support
+                            Hỗ trợ sinh viên
                         </a>
                         <Link to="/categories" className="text-sm text-on-surface-variant hover:text-primary">
-                            Student Discounts
+                            Giảm giá sinh viên
                         </Link>
                         <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Warranty &amp; Repairs
+                            Bảo hành & Sửa chữa
                         </a>
                     </nav>
                 </div>
                 <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Company</h4>
+                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Công ty</h4>
                     <nav className="flex flex-col gap-3">
                         <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Privacy Policy
+                            Chính sách bảo mật
                         </a>
                         <Link to="/profile" className="text-sm text-on-surface-variant hover:text-primary">
-                            Faculty Portal
+                            Cổng Giáo viên
                         </Link>
                     </nav>
                 </div>
                 <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Newsletter</h4>
-                    <p className="mb-4 text-sm text-on-surface-variant">Get hardware updates and lab guides.</p>
+                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Bản tin</h4>
+                    <p className="mb-4 text-sm text-on-surface-variant">Nhận cập nhật phần cứng và hướng dẫn phòng thí nghiệm.</p>
                     <div className="flex overflow-hidden rounded-full border border-outline-variant">
                         <input
                             type="email"
@@ -69,14 +69,14 @@ function CartFooter() {
                             className="w-full border-none bg-transparent px-4 py-2 text-sm focus:ring-0"
                         />
                         <button type="button" className="bg-primary px-4 text-sm font-medium text-on-primary">
-                            Join
+                            Tham gia
                         </button>
                     </div>
                 </div>
             </div>
             <div className="border-t border-outline-variant/30 px-6 py-8 text-center lg:text-left">
                 <p className="mx-auto max-w-[1280px] text-sm text-outline lg:px-8">
-                    © 2024 UTEShop Technology. Engineering Excellence.
+                    © 2024 UTEShop Technology. Chất lượng chuẩn kỹ thuật.
                 </p>
             </div>
         </footer>
@@ -198,7 +198,7 @@ function CartItemRow({
                     <span
                         className={`text-sm font-medium ${isOutOfStock ? 'text-error' : 'text-outline'}`}
                     >
-                        {isOutOfStock ? 'Out of Stock' : 'In Stock'}
+                        {isOutOfStock ? 'Hết hàng' : 'Còn hàng'}
                     </span>
                     {item.priceChanged && (
                         <>
@@ -209,7 +209,7 @@ function CartItemRow({
                     {!isOutOfStock && (
                         <>
                             <span className="h-1.5 w-1.5 rounded-full bg-primary/20" aria-hidden />
-                            <span className="text-sm font-medium text-primary">Student Discount Eligible</span>
+                            <span className="text-sm font-medium text-primary">Đủ điều kiện giảm giá sinh viên</span>
                         </>
                     )}
                 </div>
@@ -229,7 +229,7 @@ function CartItemRow({
                     onClick={onRemove}
                     className="text-sm font-medium text-error hover:underline"
                 >
-                    Remove
+                    Xóa
                 </button>
             </div>
         </article>

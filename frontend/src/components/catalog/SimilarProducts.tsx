@@ -14,18 +14,18 @@ export default function SimilarProducts({ products, categoryName }: SimilarProdu
         <section className="mt-20">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-on-surface">Similar Products</h2>
+                    <h2 className="text-3xl font-bold text-on-surface">Sản phẩm tương tự</h2>
                     <p className="mt-2 text-on-surface-variant">
                         {categoryName
-                            ? `More items in ${categoryName}`
-                            : 'You might also like these products'}
+                            ? `Thêm sản phẩm trong ${categoryName}`
+                            : 'Có thể bạn cũng thích các sản phẩm này'}
                     </p>
                 </div>
                 <Link
                     to="/categories"
                     className="text-sm font-semibold text-primary hover:underline"
                 >
-                    View all
+                    Xem tất cả
                 </Link>
             </div>
 

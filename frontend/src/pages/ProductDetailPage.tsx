@@ -47,22 +47,22 @@ function buildSpecRows(product: ProductDetail): [string, string][] {
 
     const str = (v: unknown) => (Array.isArray(v) ? v.join(', ') : String(v ?? ''));
 
-    if (attrs.microcontroller) rows.push(['Microcontroller', str(attrs.microcontroller)]);
-    if (attrs.compatibility) rows.push(['Compatibility', str(attrs.compatibility)]);
-    if (attrs.components) rows.push(['Components', str(attrs.components)]);
-    if (attrs.voltage) rows.push(['Operating Voltage', str(attrs.voltage)]);
-    if (attrs.sizes) rows.push(['Sizes', str(attrs.sizes)]);
-    if (attrs.colors) rows.push(['Colors', str(attrs.colors)]);
+    if (attrs.microcontroller) rows.push(['Vi điều khiển', str(attrs.microcontroller)]);
+    if (attrs.compatibility) rows.push(['Tương thích', str(attrs.compatibility)]);
+    if (attrs.components) rows.push(['Thành phần', str(attrs.components)]);
+    if (attrs.voltage) rows.push(['Điện áp hoạt động', str(attrs.voltage)]);
+    if (attrs.sizes) rows.push(['Kích thước', str(attrs.sizes)]);
+    if (attrs.colors) rows.push(['Màu sắc', str(attrs.colors)]);
 
     if (rows.length === 0) {
-        rows.push(['SKU', product.sku || '—']);
-        rows.push(['Condition', product.condition?.replace('_', ' ') || 'New']);
-        rows.push(['Product type', product.productType === 'consignment' ? 'Consignment' : 'Standard']);
+        rows.push(['Mã sản phẩm (SKU)', product.sku || '—']);
+        rows.push(['Tình trạng', product.condition?.replace('_', ' ') || 'Mới']);
+        rows.push(['Loại sản phẩm', product.productType === 'consignment' ? 'Ký gửi' : 'Tiêu chuẩn']);
         if (product.stockQuantity != null) {
-            rows.push(['Stock', `${product.stockQuantity} units available`]);
+            rows.push(['Kho', `${product.stockQuantity} sản phẩm có sẵn`]);
         }
         if ((product.soldCount ?? 0) > 0) {
-            rows.push(['Units sold', String(product.soldCount)]);
+            rows.push(['Đã bán', String(product.soldCount)]);
         }
     }
 
@@ -286,7 +286,7 @@ export default function ProductDetailPage() {
             <div className="mx-auto max-w-[1280px] px-6 py-20 text-center lg:px-8">
                 <p className="text-error">{error || 'Product not found'}</p>
                 <Link to="/categories" className="mt-4 inline-block text-primary hover:underline">
-                    Back to Categories
+                    Quay lại danh mục
                 </Link>
             </div>
         );
@@ -376,7 +376,7 @@ export default function ProductDetailPage() {
                     <div className="lg:col-span-5 lg:sticky lg:top-28">
                         {product.isFeatured && (
                             <span className="mb-4 inline-flex items-center rounded-full bg-surface-container-highest px-3 py-1 text-xs font-semibold text-on-surface-variant">
-                                NEW RELEASE
+                                PHÁT HÀNH MỚI
                             </span>
                         )}
                         <h1 className="mb-2 text-4xl font-bold leading-tight tracking-tight text-on-surface md:text-5xl">
@@ -398,7 +398,7 @@ export default function ProductDetailPage() {
                                         </span>
                                         {product.discountPercent != null && (
                                             <span className="rounded bg-tertiary-fixed px-2 py-1 text-xs font-semibold text-on-tertiary-fixed-variant">
-                                                Save {product.discountPercent}%
+                                                Giảm {product.discountPercent}%
                                             </span>
                                         )}
                                     </>
@@ -411,7 +411,7 @@ export default function ProductDetailPage() {
                                     <span className="material-symbols-outlined text-[18px] text-primary">
                                         trending_up
                                     </span>
-                                    {soldCount.toLocaleString()} sold
+                                    {soldCount.toLocaleString()} đã bán
                                 </span>
                             )}
                             {product.buyersCount != null && product.buyersCount > 0 && (
@@ -442,9 +442,9 @@ export default function ProductDetailPage() {
                                 </span>
                                 {inStock
                                     ? isLowStock
-                                        ? `Only ${stockQty} left in stock`
-                                        : `${stockQty} in stock`
-                                    : 'Out of stock'}
+                                        ? `Chỉ còn ${stockQty} sản phẩm`
+                                        : `Còn ${stockQty} sản phẩm`
+                                    : 'Hết hàng'}
                             </span>
                             {categoryName && (
                                 <Link
@@ -483,14 +483,14 @@ export default function ProductDetailPage() {
                                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-[24px] bg-primary text-sm font-bold text-on-primary transition hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <span className="material-symbols-outlined">shopping_cart</span>
-                                {inStock ? 'Add to Cart' : 'Out of Stock'}
+                                {inStock ? 'Thêm vào giỏ' : 'Hết hàng'}
                             </button>
                             <button
                                 type="button"
                                 onClick={handleWishlistToggle}
                                 disabled={isWishlistToggling}
                                 className="flex h-14 w-14 items-center justify-center rounded-[24px] border border-outline-variant bg-surface-container-low transition hover:bg-surface-container-high active:scale-95 shrink-0"
-                                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                                aria-label={isWishlisted ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'}
                             >
                                 <span
                                     className={`material-symbols-outlined text-[24px] transition-all ${
@@ -504,30 +504,30 @@ export default function ProductDetailPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="rounded-xl bg-surface-container-low p-4">
-                                <div className="mb-1 text-xs text-on-surface-variant">COMPATIBILITY</div>
+                                <div className="mb-1 text-xs text-on-surface-variant">TƯƠNG THÍCH</div>
                                 <div className="font-bold">
                                     {String(product.attributes?.compatibility ?? 'Arduino / ESP32')}
                                 </div>
                             </div>
                             <div className="rounded-xl bg-surface-container-low p-4">
-                                <div className="mb-1 text-xs text-on-surface-variant">COMPONENTS</div>
+                                <div className="mb-1 text-xs text-on-surface-variant">THÀNH PHẦN</div>
                                 <div className="font-bold">
                                     {String(product.attributes?.components ?? '140+ Pieces')}
                                 </div>
                             </div>
                             <div className="rounded-xl bg-surface-container-low p-4">
-                                <div className="mb-1 text-xs text-on-surface-variant">AVAILABILITY</div>
+                                <div className="mb-1 text-xs text-on-surface-variant">TÌNH TRẠNG</div>
                                 <div className={`flex items-center gap-1 font-bold ${inStock ? 'text-primary' : 'text-error'}`}>
                                     <span
                                         className={`h-2 w-2 rounded-full ${inStock ? 'bg-primary' : 'bg-error'}`}
                                     />
-                                    {inStock ? 'In Stock' : 'Out of Stock'}
+                                    {inStock ? 'Còn hàng' : 'Hết hàng'}
                                 </div>
                             </div>
                             <div className="rounded-xl bg-surface-container-low p-4">
-                                <div className="mb-1 text-xs text-on-surface-variant">SHIPPING</div>
+                                <div className="mb-1 text-xs text-on-surface-variant">GIAO HÀNG</div>
                                 <div className="font-bold">
-                                    {inStock ? 'Same-Day Pickup' : 'Notify when available'}
+                                    {inStock ? 'Nhận hàng trong ngày' : 'Thông báo khi có sẵn'}
                                 </div>
                             </div>
                         </div>
@@ -539,9 +539,9 @@ export default function ProductDetailPage() {
                     <div className="mb-12 border-b border-outline-variant">
                         <div className="flex gap-8 overflow-x-auto">
                             {[
-                                { id: 'specs', label: 'Specifications' },
-                                { id: 'box', label: 'Inside the Box' },
-                                { id: 'majors', label: 'Course Alignment' }
+                                { id: 'specs', label: 'Thông số kỹ thuật' },
+                                { id: 'box', label: 'Bên trong hộp' },
+                                { id: 'majors', label: 'Phù hợp khóa học' }
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
@@ -562,7 +562,7 @@ export default function ProductDetailPage() {
                     <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
                         {activeTab === 'specs' && (
                             <div className="space-y-12">
-                                <h3 className="text-3xl font-semibold text-on-surface">Precision Control</h3>
+                                <h3 className="text-3xl font-semibold text-on-surface">Chi tiết thông số</h3>
                                 <div className="space-y-6">
                                     {specRows.map(([label, value]) => (
                                         <div
@@ -581,10 +581,10 @@ export default function ProductDetailPage() {
 
                         {activeTab === 'box' && (
                             <div className="space-y-6">
-                                <h3 className="text-3xl font-semibold text-on-surface">Inside the Box</h3>
+                                <h3 className="text-3xl font-semibold text-on-surface">Bên trong hộp</h3>
                                 <p className="text-base leading-relaxed text-on-surface-variant whitespace-pre-line">
                                     {product.description ||
-                                        'Complete kit with all components required for introductory engineering labs.'}
+                                        'Bộ sản phẩm hoàn chỉnh với đầy đủ các thành phần cần thiết cho các bài thực hành kỹ thuật cơ sở.'}
                                 </p>
                                 {(product.tags?.length ?? 0) > 0 && (
                                     <div className="flex flex-wrap gap-2">
@@ -604,10 +604,10 @@ export default function ProductDetailPage() {
                         {activeTab === 'majors' && (
                             <div className="soft-shadow rounded-[24px] bg-surface-container-low p-8 md:col-span-2">
                                 <h3 className="mb-6 text-3xl font-semibold text-on-surface">
-                                    Major Compatibility
+                                    Tương thích chuyên ngành
                                 </h3>
                                 <p className="mb-8 text-base text-on-surface-variant">
-                                    This product is recommended for students in the following programs:
+                                    Sản phẩm này được khuyên dùng cho sinh viên trong các chương trình sau:
                                 </p>
                                 <div className="flex flex-wrap gap-3">
                                     {(product.majors?.length ?? 0) > 0 ? (
@@ -621,7 +621,7 @@ export default function ProductDetailPage() {
                                         ))
                                     ) : (
                                         <span className="text-on-surface-variant">
-                                            Suitable for all engineering majors.
+                                            Phù hợp với tất cả các ngành kỹ thuật.
                                         </span>
                                     )}
                                 </div>
@@ -631,10 +631,10 @@ export default function ProductDetailPage() {
                         {activeTab === 'specs' && (
                             <div className="soft-shadow rounded-[24px] bg-surface-container-low p-8">
                                 <h3 className="mb-6 text-3xl font-semibold text-on-surface">
-                                    Major Compatibility
+                                    Tương thích chuyên ngành
                                 </h3>
                                 <p className="mb-8 text-base text-on-surface-variant">
-                                    Verified and recommended for curriculum modules aligned with:
+                                    Được xác minh và khuyên dùng cho các học phần liên quan đến:
                                 </p>
                                 <div className="flex flex-wrap gap-3">
                                     {(product.majors || []).map((m) => (
@@ -659,7 +659,7 @@ export default function ProductDetailPage() {
                 <section className="mt-20">
                     <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                            <h2 className="mb-2 text-4xl font-bold text-on-surface">Student Reviews</h2>
+                            <h2 className="mb-2 text-4xl font-bold text-on-surface">Đánh giá của sinh viên</h2>
                             <div className="flex flex-wrap items-center gap-4">
                                 <StarRating value={reviewAverage} />
                                 {reviewCount > 0 && (
@@ -668,12 +668,12 @@ export default function ProductDetailPage() {
                                             {reviewAverage.toFixed(1)} / 5.0
                                         </span>
                                         <span className="text-on-surface-variant">
-                                            Based on {reviewCount} student{reviewCount !== 1 ? 's' : ''}
+                                            Dựa trên {reviewCount} sinh viên
                                         </span>
                                     </>
                                 )}
                                 {reviewCount === 0 && (
-                                    <span className="text-on-surface-variant">No reviews yet</span>
+                                    <span className="text-on-surface-variant">Chưa có đánh giá nào</span>
                                 )}
                             </div>
                         </div>
@@ -682,13 +682,13 @@ export default function ProductDetailPage() {
                             onClick={handleWriteReview}
                             className="rounded-full bg-surface-container-highest px-6 py-3 text-sm font-bold text-on-surface transition hover:bg-surface-container-high"
                         >
-                            Write a Review
+                            Viết đánh giá
                         </button>
                     </div>
 
                     {reviews.length === 0 && (
                         <p className="mb-8 rounded-[24px] bg-surface-container-low px-6 py-10 text-center text-on-surface-variant">
-                            Be the first to review this product after your order is confirmed.
+                            Hãy là người đầu tiên đánh giá sản phẩm này sau khi đơn hàng của bạn được xác nhận.
                         </p>
                     )}
 
@@ -700,10 +700,10 @@ export default function ProductDetailPage() {
                             >
                                 <StarRating value={review.rating} size={18} />
                                 <p className="mb-3 mt-4 font-bold text-on-surface">
-                                    {review.title || 'Student review'}
+                                    {review.title || 'Đánh giá của sinh viên'}
                                 </p>
                                 <p className="flex-grow text-base text-on-surface-variant">
-                                    {review.comment ? `"${review.comment}"` : 'No written comment.'}
+                                    {review.comment ? `"${review.comment}"` : 'Không có bình luận.'}
                                 </p>
                                 <div className="mt-6 flex items-center gap-3">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-highest text-sm font-bold text-primary">
@@ -716,7 +716,7 @@ export default function ProductDetailPage() {
                                         <div className="text-sm font-bold text-on-surface">
                                             {review.user?.fullName || review.user?.username}
                                         </div>
-                                        <div className="text-xs text-on-surface-variant">Verified student</div>
+                                        <div className="text-xs text-on-surface-variant">Sinh viên đã xác thực</div>
                                     </div>
                                 </div>
                             </div>

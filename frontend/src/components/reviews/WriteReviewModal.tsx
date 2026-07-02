@@ -59,7 +59,7 @@ export default function WriteReviewModal({
             const msg =
                 typeof err === 'string'
                     ? err
-                    : (err as { message?: string })?.message || 'Could not load items to review';
+                    : (err as { message?: string })?.message || 'Không thể tải các sản phẩm để đánh giá';
             setError(msg);
         } finally {
             setLoading(false);
@@ -86,7 +86,7 @@ export default function WriteReviewModal({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedItemId) {
-            setError('Please select a product from your orders');
+            setError('Vui lòng chọn một sản phẩm từ đơn hàng của bạn');
             return;
         }
         setSubmitting(true);
@@ -101,8 +101,8 @@ export default function WriteReviewModal({
             });
             const rewardMsg =
                 result.reward.type === 'points'
-                    ? `You earned ${result.reward.points ?? 0} loyalty points! Balance: ${result.loyaltyPoints}`
-                    : `You received coupon ${result.reward.coupon?.code ?? ''} (${result.reward.coupon?.discountValue ?? 0}% off)`;
+                    ? `Bạn nhận được ${result.reward.points ?? 0} điểm thưởng! Số dư: ${result.loyaltyPoints}`
+                    : `Bạn nhận được mã giảm giá ${result.reward.coupon?.code ?? ''} (Giảm ${result.reward.coupon?.discountValue ?? 0}%)`;
             setSuccessMessage(rewardMsg);
             onSuccess?.();
             window.setTimeout(() => {
@@ -115,7 +115,7 @@ export default function WriteReviewModal({
                     : (err as { response?: { data?: { message?: string } }; message?: string })
                           ?.response?.data?.message ||
                       (err as { message?: string })?.message ||
-                      'Could not submit review';
+                      'Không thể gửi đánh giá';
             setError(msg);
         } finally {
             setSubmitting(false);
@@ -134,7 +134,7 @@ export default function WriteReviewModal({
             />
             <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[24px] bg-surface-container-lowest p-6 shadow-xl">
                 <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-on-surface">Write a Review</h2>
+                    <h2 className="text-xl font-semibold text-on-surface">Viết đánh giá</h2>
                     <button
                         type="button"
                         onClick={onClose}
@@ -161,8 +161,7 @@ export default function WriteReviewModal({
 
                         {!loading && items.length === 0 && (
                             <p className="rounded-xl bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
-                                No purchased items are eligible for review yet. Only items from
-                                successfully delivered orders can be reviewed.
+                                Chưa có sản phẩm nào đủ điều kiện đánh giá. Chỉ các sản phẩm từ những đơn hàng đã giao thành công mới có thể đánh giá.
                             </p>
                         )}
 
@@ -183,7 +182,7 @@ export default function WriteReviewModal({
                                             className="h-12 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
                                             required
                                         >
-                                            <option value="">Select…</option>
+                                            <option value="">Chọn…</option>
                                             {items.map((item) => (
                                                 <option key={item.orderItemId} value={item.orderItemId}>
                                                     {item.productName} (#{item.orderNumber})
@@ -211,7 +210,7 @@ export default function WriteReviewModal({
                                                 {selectedItem.productName}
                                             </p>
                                             <p className="text-xs text-on-surface-variant">
-                                                Order #{selectedItem.orderNumber}
+                                                Đơn hàng #{selectedItem.orderNumber}
                                             </p>
                                         </div>
                                     </div>
@@ -219,41 +218,41 @@ export default function WriteReviewModal({
 
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-on-surface-variant">
-                                        Your rating
+                                        Đánh giá của bạn
                                     </label>
                                     <StarRatingInput value={rating} onChange={setRating} disabled={submitting} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-medium text-on-surface-variant">
-                                        Title (optional)
+                                        Tiêu đề (tùy chọn)
                                     </label>
                                     <input
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         maxLength={200}
-                                        placeholder="Summarize your experience"
+                                        placeholder="Tóm tắt trải nghiệm của bạn"
                                         className="h-11 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary"
                                     />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-medium text-on-surface-variant">
-                                        Comment (optional)
+                                        Nhận xét (tùy chọn)
                                     </label>
                                     <textarea
                                         value={comment}
                                         onChange={(e) => setComment(e.target.value)}
                                         rows={4}
-                                        placeholder="Share details for other students…"
+                                        placeholder="Chia sẻ chi tiết cho các sinh viên khác…"
                                         className="rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
                                     />
                                 </div>
 
                                 <div>
                                     <p className="mb-2 text-sm font-medium text-on-surface-variant">
-                                        Choose your reward
+                                        Chọn phần thưởng của bạn
                                     </p>
                                     <div className="grid grid-cols-2 gap-3">
                                         <button
@@ -268,9 +267,9 @@ export default function WriteReviewModal({
                                             <span className="material-symbols-outlined text-primary">
                                                 stars
                                             </span>
-                                            <p className="mt-2 text-sm font-bold text-on-surface">Loyalty points</p>
+                                            <p className="mt-2 text-sm font-bold text-on-surface">Điểm thưởng</p>
                                             <p className="text-xs text-on-surface-variant">
-                                                Use on your next checkout
+                                                Sử dụng cho lần thanh toán tiếp theo
                                             </p>
                                         </button>
                                         <button
@@ -285,9 +284,9 @@ export default function WriteReviewModal({
                                             <span className="material-symbols-outlined text-primary">
                                                 local_offer
                                             </span>
-                                            <p className="mt-2 text-sm font-bold text-on-surface">Discount coupon</p>
+                                            <p className="mt-2 text-sm font-bold text-on-surface">Mã giảm giá</p>
                                             <p className="text-xs text-on-surface-variant">
-                                                Percent off your next order
+                                                Giảm phần trăm cho đơn hàng tiếp theo
                                             </p>
                                         </button>
                                     </div>
@@ -307,7 +306,7 @@ export default function WriteReviewModal({
                                 disabled={submitting || !selectedItemId}
                                 className="flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary disabled:opacity-50"
                             >
-                                {submitting ? 'Submitting…' : 'Submit Review & Claim Reward'}
+                                {submitting ? 'Đang gửi…' : 'Gửi đánh giá & Nhận thưởng'}
                             </button>
                         )}
                     </form>
