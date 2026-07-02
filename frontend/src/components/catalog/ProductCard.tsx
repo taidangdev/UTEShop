@@ -22,7 +22,7 @@ const TEXT_BODY = '#434655';
 
 function categoryLabel(product: CatalogProduct) {
     const c = product.category;
-    if (!c) return 'General';
+    if (!c) return 'Khác';
     if (c.parentName) return `${c.parentName} · ${c.name}`;
     return c.name;
 }
@@ -124,7 +124,7 @@ export default function ProductCard({ product, onWishlistToggle }: ProductCardPr
                     onClick={handleWishlistClick}
                     disabled={isToggling}
                     className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-md backdrop-blur-sm transition-all hover:scale-110 active:scale-95 active:bg-white hover:bg-white"
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isWishlisted ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
                 >
                     {isWishlisted ? (
                         <FaHeart className="h-5 w-5 text-red-500 scale-110 transition-transform duration-200" />

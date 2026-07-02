@@ -32,27 +32,27 @@ const SURFACE = '#F3F3FE';
 const PAGE_BG = '#FAF8FF';
 
 const CATEGORY_META: Record<string, { label: string; Icon: IconType }> = {
-    merchandise: { label: 'University Merchandise', Icon: FiAward },
-    'study-tools': { label: 'Study Tools', Icon: FiBook },
-    technology: { label: 'Technology', Icon: FiMonitor },
-    'student-life': { label: 'Student Life', Icon: FiHome },
-    'second-hand': { label: 'Second-hand', Icon: FiRefreshCw }
+    merchandise: { label: 'Đồ lưu niệm trường', Icon: FiAward },
+    'study-tools': { label: 'Công cụ học tập', Icon: FiBook },
+    technology: { label: 'Công nghệ & Điện tử', Icon: FiMonitor },
+    'student-life': { label: 'Đời sống sinh viên', Icon: FiHome },
+    'second-hand': { label: 'Đồ cũ / Sách cũ', Icon: FiRefreshCw }
 };
 
 const FALLBACK_PROMOS: PromoBanner[] = [
     {
         id: 0,
-        title: 'Back to School: 20% Off All Merchandise.',
-        subtitle: 'Seasonal Sale',
-        badgeText: 'Seasonal Sale',
+        title: 'Mừng tựu trường: Giảm giá 20% các sản phẩm lưu niệm.',
+        subtitle: 'Khuyến mãi mùa tựu trường',
+        badgeText: 'Ưu đãi lớn',
         linkUrl: '/categories?category=merchandise',
         placement: 'promo_left'
     },
     {
         id: -1,
-        title: 'Starter Kits for Freshmen: Everything you need for Circuit Design 101.',
-        subtitle: 'New Arrivals',
-        badgeText: 'New Arrivals',
+        title: 'Bộ dụng cụ tân sinh viên: Đầy đủ dụng cụ thực hành Thiết kế Mạch 101.',
+        subtitle: 'Sản phẩm mới',
+        badgeText: 'Mới về',
         linkUrl: '/categories?sort=newest',
         placement: 'promo_right'
     }
@@ -104,12 +104,12 @@ function MemberWelcomeBanner({ name }: { name: string }) {
         <section className="w-full px-6 pt-6 lg:px-8">
             <div className="mx-auto max-w-[1280px] rounded-2xl border border-primary/15 bg-primary/5 px-6 py-4 md:flex md:items-center md:justify-between md:gap-6">
                 <div>
-                    <p className="font-inter text-sm font-semibold text-primary">Member portal</p>
+                    <p className="font-inter text-sm font-semibold text-primary">Cổng thành viên</p>
                     <p className="mt-1 font-inter text-lg font-semibold" style={{ color: TEXT }}>
-                        Welcome back, {name}
+                        Chào mừng quay trở lại, {name}
                     </p>
                     <p className="mt-1 font-inter text-sm" style={{ color: TEXT_BODY }}>
-                        Browse promotions, newest arrivals, and best sellers curated for UTE students.
+                        Khám phá khuyến mãi, sản phẩm mới nhất và các mặt hàng bán chạy dành riêng cho sinh viên UTE.
                     </p>
                 </div>
                 <Link
@@ -117,7 +117,7 @@ function MemberWelcomeBanner({ name }: { name: string }) {
                     className="mt-4 inline-flex h-11 shrink-0 items-center justify-center rounded-full px-6 font-inter text-sm font-semibold text-white md:mt-0"
                     style={{ backgroundColor: PRIMARY }}
                 >
-                    My account
+                    Tài khoản của tôi
                 </Link>
             </div>
         </section>
@@ -141,18 +141,17 @@ function HeroSection({ isMember }: { isMember: boolean }) {
                             className="mb-4 inline-flex w-fit rounded-full px-4 py-1 font-inter text-xs font-semibold"
                             style={{ backgroundColor: 'rgba(0, 74, 198, 0.1)', color: PRIMARY }}
                         >
-                            Signed in · Member pricing & picks
+                            Đã đăng nhập · Lựa chọn & Ưu đãi thành viên
                         </span>
                     )}
                     <h1
                         className="font-inter text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl lg:text-[56px] lg:leading-[1.1]"
                         style={{ color: TEXT }}
                     >
-                        Engineered for Excellence. Designed for Students.
+                        Kiến tạo Chất lượng. Thiết kế cho Sinh viên.
                     </h1>
                     <p className="mt-6 max-w-[549px] font-inter text-lg leading-[29px]" style={{ color: TEXT_BODY }}>
-                        The complete ecosystem for UTE students. From high-end engineering tools to campus
-                        essentials, get everything you need for your university journey.
+                        Hệ sinh thái toàn diện cho sinh viên UTE. Từ thiết bị thực hành kỹ thuật chuyên dụng đến các đồ dùng học tập thiết yếu.
                     </p>
                     <div className="mt-8 flex flex-wrap items-center gap-4">
                         <a
@@ -160,14 +159,14 @@ function HeroSection({ isMember }: { isMember: boolean }) {
                             className="inline-flex h-14 items-center justify-center rounded-full px-8 font-inter text-base font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition hover:opacity-90"
                             style={{ backgroundColor: PRIMARY }}
                         >
-                            Shop Now
+                            Mua sắm ngay
                         </a>
                         <Link
                             to="/categories"
                             className="inline-flex h-14 items-center justify-center rounded-full px-8 font-inter text-base font-medium shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition hover:bg-gray-200"
                             style={{ backgroundColor: '#F5F5F7', color: TEXT }}
                         >
-                            Explore Categories
+                            Danh mục sản phẩm
                         </Link>
                     </div>
                 </div>
@@ -202,7 +201,7 @@ function CategorySection({ categories }: { categories: CategoryWithCount[] }) {
         <section id="categories" className="scroll-mt-24 w-full px-6 py-20 lg:px-8">
             <div className="mx-auto max-w-[1280px]">
                 <h2 className="font-inter text-2xl font-semibold" style={{ color: TEXT }}>
-                    Shop by Category
+                    Mua sắm theo Danh mục
                 </h2>
                 <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
                     {items.map((cat) => {
@@ -231,7 +230,7 @@ function CategorySection({ categories }: { categories: CategoryWithCount[] }) {
                                 </span>
                                 {cat.productCount > 0 && (
                                     <span className="text-center font-inter text-xs text-primary">
-                                        {cat.productCount} items
+                                        {cat.productCount} sản phẩm
                                     </span>
                                 )}
                             </Link>
@@ -278,7 +277,7 @@ function ProductCarouselSection({
                         className="font-inter text-sm font-medium transition hover:underline"
                         style={{ color: PRIMARY }}
                     >
-                        View all
+                        Xem tất cả
                     </Link>
                 </div>
                 <Swiper
@@ -328,7 +327,7 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
                         }}
                     >
                         <span className="inline-flex rounded-full bg-white/20 px-4 py-1 font-inter text-sm text-white backdrop-blur-md">
-                            {left.badgeText || left.subtitle || 'Promotion'}
+                            {left.badgeText || left.subtitle || 'Khuyến mãi'}
                         </span>
                         <h2 className="mt-6 max-w-md font-inter text-3xl font-semibold leading-tight text-white">
                             {left.title}
@@ -337,7 +336,7 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
                             to={left.linkUrl || '/categories'}
                             className="mt-6 inline-flex items-center gap-2 font-inter text-sm font-medium text-white transition hover:opacity-90"
                         >
-                            Shop Collection
+                            Mua ngay bộ sưu tập
                             <FiArrowRight className="h-5 w-5" />
                         </InternalLink>
                     </div>
@@ -361,7 +360,7 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
                                 className="inline-flex rounded-full px-4 py-1 font-inter text-sm font-medium"
                                 style={{ backgroundColor: 'rgba(0, 74, 198, 0.1)', color: PRIMARY }}
                             >
-                                {right.badgeText || right.subtitle || 'New'}
+                                {right.badgeText || right.subtitle || 'Mới'}
                             </span>
                             <h2
                                 className="mt-6 max-w-md font-inter text-3xl font-semibold leading-tight"
@@ -374,7 +373,7 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
                                 className="mt-6 inline-flex items-center gap-2 font-inter text-sm font-medium transition hover:opacity-80"
                                 style={{ color: PRIMARY }}
                             >
-                                Build Your Kit
+                                Tự build trọn bộ
                                 <FiArrowRight className="h-5 w-5" />
                             </InternalLink>
                         </div>
@@ -395,62 +394,61 @@ function ShopFooter() {
                             UTEShop
                         </p>
                         <p className="mt-4 max-w-xs font-inter text-sm leading-[22px]" style={{ color: TEXT_BODY }}>
-                            Elevating the student experience through precision-engineered tools and
-                            university-grade essentials.
+                            Nâng tầm trải nghiệm học tập của sinh viên thông qua các công cụ kỹ thuật chính xác và đồ dùng thiết yếu chuẩn trường học.
                         </p>
                     </div>
                     <div>
                         <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Support
+                            Hỗ trợ
                         </p>
                         <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
                             <li>
                                 <Link to="/support" className="hover:underline">
-                                    Student Support
+                                    Hỗ trợ sinh viên
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/support#contact" className="hover:underline">
-                                    Contact Us
+                                    Liên hệ chúng tôi
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/categories" className="hover:underline">
-                                    Browse catalog
+                                    Duyệt danh mục
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
                         <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Legal
+                            Pháp lý
                         </p>
                         <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
                             <li>
                                 <Link to="/support" className="hover:underline">
-                                    Privacy Policy
+                                    Chính sách bảo mật
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/support" className="hover:underline">
-                                    Terms of Service
+                                    Điều khoản dịch vụ
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
                         <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Shop
+                            Cửa hàng
                         </p>
                         <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
                             <li>
                                 <Link to="/categories?sort=popular" className="hover:underline">
-                                    Best sellers
+                                    Bán chạy nhất
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/categories?sort=newest" className="hover:underline">
-                                    New arrivals
+                                    Sản phẩm mới về
                                 </Link>
                             </li>
                         </ul>
@@ -461,7 +459,7 @@ function ShopFooter() {
                     style={{ borderColor: '#C3C6D7' }}
                 >
                     <p className="font-inter text-sm" style={{ color: TEXT_BODY }}>
-                        © 2024 UTEShop. Engineering-Grade Quality.
+                        © 2024 UTEShop. Chất lượng chuẩn kỹ thuật.
                     </p>
                 </div>
             </div>
@@ -490,7 +488,7 @@ export default function HomePage() {
                     const msg =
                         typeof err === 'string'
                             ? err
-                            : (err as { message?: string })?.message || 'Failed to load homepage';
+                            : (err as { message?: string })?.message || 'Không thể tải dữ liệu trang chủ';
                     setError(msg);
                 }
             } finally {
@@ -503,7 +501,7 @@ export default function HomePage() {
         };
     }, []);
 
-    const memberName = user?.fullName || user?.username || user?.email || 'Student';
+    const memberName = user?.fullName || user?.username || user?.email || 'Sinh viên';
 
     const bestSellers = data?.bestSellers ?? [];
     const mostViewed = data?.mostViewed ?? [];
@@ -529,14 +527,14 @@ export default function HomePage() {
                         <PromoBanners banners={banners} />
                         <ProductCarouselSection
                             id="bestsellers"
-                            title="Best Sellers"
+                            title="Bán chạy nhất"
                             products={bestSellers}
                             viewAllTo="/categories?sort=popular"
                             background={SURFACE}
                         />
                         <ProductCarouselSection
                             id="mostviewed"
-                            title="Most Viewed"
+                            title="Xem nhiều nhất"
                             products={mostViewed}
                             viewAllTo="/categories?sort=popular"
                         />
