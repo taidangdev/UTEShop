@@ -231,9 +231,7 @@ const ProfilePage = () => {
                                     </div>
                                     <div>
                                         <h1 className="text-3xl font-semibold text-on-surface">{name}</h1>
-                                        <p className="mt-1 text-base text-on-surface-variant">
-                                            {profileSubtitle(user)}
-                                        </p>
+
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             {user?.major?.name && (
                                                 <span className="rounded-full bg-surface-container-high px-3 py-1 text-xs font-semibold text-on-surface-variant">
