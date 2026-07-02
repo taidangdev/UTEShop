@@ -9,7 +9,7 @@ export function AuthBrand() {
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-primary">UTEShop</h1>
             <p className="mt-2 text-sm font-medium text-on-surface-variant">
-                Engineering-Grade Tech Supply
+                Thiết bị Công nghệ Chuẩn Kỹ thuật
             </p>
         </div>
     );
@@ -32,7 +32,7 @@ export function AuthTabs({ active }: AuthTabsProps) {
                 }`}
                 aria-current={loginActive ? 'page' : undefined}
             >
-                Login
+                Đăng nhập
             </Link>
             <Link
                 to="/register"
@@ -43,7 +43,7 @@ export function AuthTabs({ active }: AuthTabsProps) {
                 }`}
                 aria-current={!loginActive ? 'page' : undefined}
             >
-                Sign Up
+                Đăng ký
             </Link>
         </div>
     );
@@ -53,25 +53,25 @@ export function AuthFooter() {
     return (
         <footer className="w-full border-t border-outline-variant/10 bg-surface py-2">
             <div className="mx-auto flex max-w-[1280px] flex-col items-center justify-between gap-4 px-6 md:flex-row md:px-6">
-                <p className="text-xs text-on-surface-variant">© 2024 UTEShop. Engineering-Grade Quality.</p>
+                <p className="text-xs text-on-surface-variant">© 2024 UTEShop. Chất lượng chuẩn kỹ thuật.</p>
                 <div className="flex gap-6">
                     <a
                         href="#support"
                         className="text-xs text-on-surface-variant transition-colors hover:text-primary"
                     >
-                        Privacy Policy
+                        Chính sách bảo mật
                     </a>
                     <a
                         href="#support"
                         className="text-xs text-on-surface-variant transition-colors hover:text-primary"
                     >
-                        Terms of Service
+                        Điều khoản dịch vụ
                     </a>
                     <a
                         href="#support"
                         className="text-xs text-on-surface-variant transition-colors hover:text-primary"
                     >
-                        Support
+                        Hỗ trợ
                     </a>
                 </div>
             </div>
@@ -98,8 +98,8 @@ export default function AuthShell({
     showBrand = false,
     secondaryLink = {
         to: '/register',
-        title: 'New Student? Sign up first.',
-        subtitle: 'Verification sent via university email.'
+        title: 'Sinh viên mới? Đăng ký tài khoản ngay.',
+        subtitle: 'Mã xác thực sẽ được gửi qua email sinh viên.'
     }
 }: AuthShellProps) {
     return (
@@ -137,7 +137,7 @@ export default function AuthShell({
                     )}
 
                     <p className="mt-12 text-center text-xs text-on-surface-variant/60">
-                        Authorized Engineering Department Retail Terminal v2.4
+                        Cổng cung cấp thiết bị Khoa Kỹ thuật v2.4
                     </p>
                 </div>
             </main>

@@ -22,8 +22,8 @@ function digitsOnly(value: string | null | undefined) {
 
 const loginSecondary = {
     to: '/login',
-    title: 'Already have an account?',
-    subtitle: 'Sign in to access your academic hardware portal.'
+    title: 'Bạn đã có tài khoản?',
+    subtitle: 'Đăng nhập để vào cổng thiết bị học tập.'
 };
 
 const RegisterPage = () => {
@@ -94,7 +94,7 @@ const RegisterPage = () => {
             return;
         }
         if (password !== confirmPassword) {
-            setLocalError('Passwords do not match.');
+            setLocalError('Mật khẩu xác nhận không khớp.');
             return;
         }
         await dispatch(
@@ -115,7 +115,7 @@ const RegisterPage = () => {
         setResendHint(null);
         const code = digitsOnly(otp);
         if (code.length !== 6) {
-            setLocalError('Please enter all 6 digits.');
+            setLocalError('Vui lòng nhập đầy đủ mã OTP 6 chữ số.');
             return;
         }
         await dispatch(
@@ -132,7 +132,7 @@ const RegisterPage = () => {
         if (!activationEmail) return;
         try {
             await dispatch(resendRegistrationOtp({ email: activationEmail })).unwrap();
-            setResendHint('A new code was sent. Check your email (or server console in dev).');
+            setResendHint('Mã xác thực mới đã được gửi. Vui lòng kiểm tra email sinh viên.');
         } catch {
             /* Redux error */
         }
@@ -163,9 +163,9 @@ const RegisterPage = () => {
                     <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <span className="material-symbols-outlined text-[48px]">verified</span>
                     </div>
-                    <h2 className="text-2xl font-semibold text-on-surface">Account verified</h2>
+                    <h2 className="text-2xl font-semibold text-on-surface">Xác thực tài khoản thành công</h2>
                     <p className="mt-2 text-base text-on-surface-variant">
-                        Your email is confirmed. You can sign in now.
+                        Email của bạn đã được xác nhận. Bạn có thể đăng nhập ngay.
                     </p>
                 </div>
                 <button
@@ -175,7 +175,7 @@ const RegisterPage = () => {
                     }
                     className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-on-primary transition-all hover:shadow-lg active:scale-95"
                 >
-                    <span>Continue to Login</span>
+                    <span>Tiếp tục Đăng nhập</span>
                     <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                 </button>
             </div>
@@ -184,9 +184,9 @@ const RegisterPage = () => {
         content = (
             <div className="space-y-6 p-8 md:p-10">
                 <div className="text-center">
-                    <h2 className="text-2xl font-semibold text-on-surface">Check your inbox</h2>
+                    <h2 className="text-2xl font-semibold text-on-surface">Kiểm tra hộp thư của bạn</h2>
                     <p className="mt-2 text-base text-on-surface-variant">
-                        We sent a 6-digit code to{' '}
+                        Chúng tôi đã gửi mã xác thực 6 chữ số đến{' '}
                         <span className="font-semibold text-on-surface">{activationEmail}</span>
                     </p>
                 </div>
@@ -228,28 +228,28 @@ const RegisterPage = () => {
                         disabled={verifyEmailLoading}
                         className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-on-primary transition-all hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        <span>{verifyEmailLoading ? 'Verifying…' : 'Verify Account'}</span>
+                        <span>{verifyEmailLoading ? 'Đang xác thực…' : 'Xác thực tài khoản'}</span>
                         {!verifyEmailLoading && (
                             <span className="material-symbols-outlined text-[20px]">verified</span>
                         )}
                     </button>
 
                     <p className="text-center text-sm text-on-surface-variant">
-                        Didn&apos;t get the code?{' '}
+                        Chưa nhận được mã?{' '}
                         <button
                             type="button"
                             onClick={handleResendOtp}
                             disabled={resendOtpLoading || verifyEmailLoading}
                             className="font-semibold text-primary hover:underline disabled:opacity-60"
                         >
-                            {resendOtpLoading ? 'Sending…' : 'Resend'}
+                            {resendOtpLoading ? 'Đang gửi…' : 'Gửi lại'}
                         </button>
                     </p>
                 </form>
 
                 <p className="text-center text-sm text-on-surface-variant">
                     <Link to="/login" className="font-medium text-primary hover:underline">
-                        Back to login
+                        Quay lại Đăng nhập
                     </Link>
                 </p>
             </div>
@@ -259,9 +259,9 @@ const RegisterPage = () => {
             <div className="p-8 md:p-10">
                 <div className="space-y-6">
                     <div className="text-center">
-                        <h2 className="text-2xl font-semibold text-on-surface">Create your account</h2>
+                        <h2 className="text-2xl font-semibold text-on-surface">Tạo tài khoản mới</h2>
                         <p className="mt-1 text-base text-on-surface-variant">
-                            Join UTEShop — verification code sent to your email
+                            Tham gia UTEShop — mã xác thực sẽ được gửi tới email của bạn
                         </p>
                     </div>
 
@@ -277,35 +277,35 @@ const RegisterPage = () => {
                     <form onSubmit={handleSubmitRegister} className="space-y-4">
                         <AuthField
                             id="register-username"
-                            label="Username"
+                            label="Tên tài khoản"
                             icon="person"
                             value={username}
                             onChange={(e) => {
                                 setUsername(e.target.value);
                                 clearErrors();
                             }}
-                            placeholder="3–50 characters"
+                            placeholder="Từ 3 đến 50 ký tự"
                             autoComplete="username"
                             error={fieldErrors.username}
                         />
 
                         <AuthField
                             id="register-fullname"
-                            label="Full name"
+                            label="Họ và tên"
                             icon="badge"
                             value={fullName}
                             onChange={(e) => {
                                 setFullName(e.target.value);
                                 clearErrors();
                             }}
-                            placeholder="Nguyen Van A"
+                            placeholder="Nguyễn Văn A"
                             autoComplete="name"
                             error={fieldErrors.fullName}
                         />
 
                         <AuthField
                             id="register-email"
-                            label="Student Email"
+                            label="Email sinh viên"
                             icon="alternate_email"
                             type="email"
                             value={email}
@@ -320,7 +320,7 @@ const RegisterPage = () => {
 
                         <AuthField
                             id="register-student-id"
-                            label="Student ID (optional)"
+                            label="Mã số sinh viên (tùy chọn)"
                             icon="numbers"
                             value={studentId}
                             onChange={(e) => {
@@ -333,7 +333,7 @@ const RegisterPage = () => {
 
                         <AuthField
                             id="register-major"
-                            label="Major (optional)"
+                            label="Ngành học (tùy chọn)"
                             icon="school"
                             as="select"
                             value={majorId}
@@ -343,7 +343,7 @@ const RegisterPage = () => {
                             }}
                             error={fieldErrors.majorId}
                         >
-                            <option value="">Select your degree program</option>
+                            <option value="">Chọn ngành học của bạn</option>
                             {majors.map((m) => (
                                 <option key={m.id} value={m.id}>
                                     {m.name}
@@ -353,7 +353,7 @@ const RegisterPage = () => {
 
                         <AuthField
                             id="register-password"
-                            label="Password"
+                            label="Mật khẩu"
                             icon="lock"
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -361,7 +361,7 @@ const RegisterPage = () => {
                                 setPassword(e.target.value);
                                 clearErrors();
                             }}
-                            placeholder="Min. 8 chars, letter + number"
+                            placeholder="Tối thiểu 8 ký tự, gồm cả chữ và số"
                             autoComplete="new-password"
                             error={fieldErrors.password}
                             rightSlot={passwordToggle(showPassword, setShowPassword)}
@@ -369,7 +369,7 @@ const RegisterPage = () => {
 
                         <AuthField
                             id="register-confirm"
-                            label="Confirm password"
+                            label="Xác nhận mật khẩu"
                             icon="lock"
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={confirmPassword}
@@ -377,7 +377,7 @@ const RegisterPage = () => {
                                 setConfirmPassword(e.target.value);
                                 clearErrors();
                             }}
-                            placeholder="Re-enter password"
+                            placeholder="Nhập lại mật khẩu"
                             autoComplete="new-password"
                             rightSlot={passwordToggle(showConfirmPassword, setShowConfirmPassword)}
                         />
@@ -387,45 +387,13 @@ const RegisterPage = () => {
                             disabled={registerLoading}
                             className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-on-primary transition-all hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                            <span>{registerLoading ? 'Creating account…' : 'Create Account'}</span>
+                            <span>{registerLoading ? 'Đang tạo tài khoản…' : 'Đăng ký'}</span>
                             {!registerLoading && (
                                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                             )}
                         </button>
                     </form>
 
-                    <div className="relative flex items-center py-2">
-                        <div className="flex-grow border-t border-outline-variant/30" />
-                        <span className="mx-4 shrink-0 text-xs font-semibold uppercase tracking-widest text-outline">
-                            Or Secure SSO
-                        </span>
-                        <div className="flex-grow border-t border-outline-variant/30" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            type="button"
-                            disabled
-                            title="Coming soon"
-                            className="group flex h-12 items-center justify-center rounded-xl border border-outline-variant/40 transition-all hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span className="material-symbols-outlined mr-2 text-on-surface-variant group-hover:text-primary">
-                                school
-                            </span>
-                            <span className="text-xs text-on-surface">EDU Login</span>
-                        </button>
-                        <button
-                            type="button"
-                            disabled
-                            title="Coming soon"
-                            className="group flex h-12 items-center justify-center rounded-xl border border-outline-variant/40 transition-all hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span className="material-symbols-outlined mr-2 text-on-surface-variant group-hover:text-primary">
-                                token
-                            </span>
-                            <span className="text-xs text-on-surface">SAML 2.0</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         );
