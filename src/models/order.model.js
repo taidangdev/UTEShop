@@ -116,6 +116,18 @@ const Order = sequelize.define(
         returnedAt: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        returnReason: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        returnRequestedAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        returnApprovedAt: {
+            type: DataTypes.DATE,
+            allowNull: true
         }
     },
     {
