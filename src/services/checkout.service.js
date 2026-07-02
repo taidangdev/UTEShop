@@ -792,6 +792,12 @@ async function cancelOrderForUser(orderNumber, userId) {
                     transaction
                 );
             }
+
+            // Rollback personal coupon usage if applied
+            await couponService.rollbackCouponUsage(order.id, transaction);
+
+            // Rollback store promotion redemptions if applied
+            await promotionService.rollbackPromotionRedemption(order.id, transaction);
         }
 
         await transaction.commit();
@@ -905,6 +911,12 @@ async function autoCancelPendingOrders() {
                     transaction
                 );
             }
+
+            // Rollback personal coupon usage if applied
+            await couponService.rollbackCouponUsage(order.id, transaction);
+
+            // Rollback store promotion redemptions if applied
+            await promotionService.rollbackPromotionRedemption(order.id, transaction);
 
             await transaction.commit();
             count++;

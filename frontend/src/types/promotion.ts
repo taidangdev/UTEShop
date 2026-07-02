@@ -11,6 +11,9 @@ export interface ShopPromotion {
     productIds?: number[];
     categories?: Array<{ id: number; name: string }>;
     products?: Array<{ id: number; name: string }>;
+    maxUsesPerUser?: number;
+    usageLimit?: number;
+    usedCount?: number;
 }
 
 export interface PromotionValidateResult {

@@ -126,11 +126,26 @@ async function markCouponUsed(couponId, orderId, transaction) {
     );
 }
 
+async function rollbackCouponUsage(orderId, transaction) {
+    await UserCoupon.update(
+        {
+            isUsed: false,
+            usedAt: null,
+            usedOnOrderId: null
+        },
+        {
+            where: { usedOnOrderId: orderId },
+            transaction
+        }
+    );
+}
+
 module.exports = {
     createReviewRewardCoupon,
     listActiveCoupons,
     findValidUserCoupon,
     calculateCouponDiscount,
     markCouponUsed,
+    rollbackCouponUsage,
     mapCouponRow
 };
