@@ -20,7 +20,7 @@ for (let i = 1; i <= 30; i++) {
         name: `Sản phẩm mẫu ${i}`,
         categorySlug: categories[i % categories.length],
         shortDescription: `Đây là sản phẩm mẫu số ${i} dùng để test phân trang và UI trượt ngang.`,
-        price: 10 + (i * 2.5),
+        price: 100000 + (i * 25000),
         stockQuantity: 100 + i,
         condition: 'new',
         isFeatured: i % 5 === 0,

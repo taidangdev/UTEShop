@@ -6,7 +6,7 @@
     "scope": "category",
     "type": "percentage",
     "value": 20,
-    "minOrderAmount": 30000,
+    "minOrderAmount": 300000,
     "categorySlugs": [
       "merchandise"
     ],
@@ -36,7 +36,7 @@
     "scope": "product",
     "type": "percentage",
     "value": 10,
-    "minOrderAmount": 50000,
+    "minOrderAmount": 500000,
     "productSlugs": [
       "chuot-gaming-rgb",
       "ban-phim-co-bluetooth"
@@ -52,7 +52,7 @@
     "scope": "shop",
     "type": "free_shipping",
     "value": 0,
-    "minOrderAmount": 25000,
+    "minOrderAmount": 250000,
     "maxUsesPerUser": 1,
     "usageLimit": 1000,
     "isActive": true
