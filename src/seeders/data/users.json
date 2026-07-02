@@ -10,7 +10,7 @@
     "username": "demo",
     "email": "demo@uteshop.local",
     "plainPassword": "Demo123!",
-    "fullName": "Demo Student",
+    "fullName": "Sinh Viên Demo",
     "phone": "0987654321",
     "role": "customer",
     "studentId": "21110001",
@@ -22,7 +22,7 @@
     "email": "reviewer1@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Alex Johnson",
+    "fullName": "Lê Anh Tuấn",
     "studentId": "21110002",
     "majorCode": "IT",
     "status": "active"
@@ -32,7 +32,7 @@
     "email": "reviewer2@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Sarah Chen",
+    "fullName": "Trần Thu Trang",
     "studentId": "21110003",
     "majorCode": "IT",
     "status": "active"
@@ -42,7 +42,7 @@
     "email": "reviewer3@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Marcus Rodriguez",
+    "fullName": "Nguyễn Minh Quân",
     "studentId": "21110004",
     "majorCode": "IT",
     "status": "active"
@@ -52,7 +52,7 @@
     "email": "customer1@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Nguyen Van An",
+    "fullName": "Nguyễn Văn An",
     "studentId": "21110005",
     "majorCode": "IT",
     "status": "active"
@@ -62,7 +62,7 @@
     "email": "customer2@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Tran Thi Binh",
+    "fullName": "Trần Thị Bình",
     "studentId": "21110006",
     "majorCode": "IT",
     "status": "active"
@@ -72,7 +72,7 @@
     "email": "customer3@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Le Van Cuong",
+    "fullName": "Lê Văn Cường",
     "studentId": "21110007",
     "majorCode": "IT",
     "status": "active"
@@ -82,7 +82,7 @@
     "email": "customer4@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Pham Minh Duc",
+    "fullName": "Phạm Minh Đức",
     "studentId": "21110008",
     "majorCode": "IT",
     "status": "active"
@@ -92,7 +92,7 @@
     "email": "customer5@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Hoang Thi Em",
+    "fullName": "Hoàng Thị Em",
     "studentId": "21110009",
     "majorCode": "IT",
     "status": "active"
@@ -102,7 +102,7 @@
     "email": "customer6@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Vu Thanh Phong",
+    "fullName": "Vũ Thanh Phong",
     "studentId": "21110010",
     "majorCode": "IT",
     "status": "active"
@@ -112,7 +112,7 @@
     "email": "customer7@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Doan Van Giang",
+    "fullName": "Đoàn Văn Giang",
     "studentId": "21110011",
     "majorCode": "IT",
     "status": "active"
@@ -122,7 +122,7 @@
     "email": "customer8@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Bui Thi Hoa",
+    "fullName": "Bùi Thị Hoa",
     "studentId": "21110012",
     "majorCode": "IT",
     "status": "active"
@@ -132,7 +132,7 @@
     "email": "customer9@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Dinh Van Hieu",
+    "fullName": "Đinh Văn Hiếu",
     "studentId": "21110013",
     "majorCode": "IT",
     "status": "active"
@@ -142,7 +142,7 @@
     "email": "customer10@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Quach Thi Lan",
+    "fullName": "Quách Thị Lan",
     "studentId": "21110014",
     "majorCode": "IT",
     "status": "active"
@@ -152,7 +152,7 @@
     "email": "customer11@uteshop.local",
     "plainPassword": "Demo123!",
     "role": "customer",
-    "fullName": "Mai Quoc Nam",
+    "fullName": "Mai Quốc Nam",
     "studentId": "21110015",
     "majorCode": "IT",
     "status": "active"

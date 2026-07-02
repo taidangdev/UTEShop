@@ -61,7 +61,7 @@ export default function ProfileRewardsPanel({ loyaltyPoints: initialPoints }: Pr
                     <p className="text-xs font-semibold uppercase text-primary">Điểm tích lũy</p>
                     <p className="mt-2 text-4xl font-bold text-primary">{balance}</p>
                     <p className="mt-2 text-xs text-on-surface-variant">
-                        Đổi điểm khi thanh toán (100 điểm = $1, tối đa 20% đơn)
+                        Đổi điểm khi thanh toán (100 điểm = 1.000đ, tối đa 20% đơn)
                     </p>
                     <Link
                         to="/categories"

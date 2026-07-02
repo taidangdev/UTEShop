@@ -2,7 +2,7 @@
   {
     "sku": "UTE-HOODIE-001",
     "slug": "ute-engineering-hoodie",
-    "name": "UTE Engineering Hoodie",
+    "name": "Áo Hoodie UTE Engineering",
     "categorySlug": "merchandise-uniform",
     "shortDescription": "Áo hoodie cotton 100%, in logo UTE phiên bản kỹ thuật.",
     "description": "Áo Hoodie UTE Limited — thiết kế dành cho sinh viên kỹ thuật, cotton 100%, form unisex.",
@@ -31,8 +31,8 @@
         "XL"
       ],
       "colors": [
-        "Navy",
-        "Black"
+        "Xanh đen",
+        "Đen"
       ]
     }
   },
@@ -206,7 +206,7 @@
   {
     "sku": "ARD-KIT-001",
     "slug": "engineering-starter-kit",
-    "name": "Engineering Starter Kit",
+    "name": "Bộ Kit Học Tập Arduino Kỹ Thuật (Starter Kit)",
     "categorySlug": "study-electronics",
     "shortDescription": "Arduino Uno R3, cảm biến, LED và điện trở cho thực hành.",
     "description": "Bộ kit hoàn chỉnh cho các môn thực hành điện tử và nhúng.",
@@ -592,7 +592,7 @@
   {
     "sku": "LAMP-LED-001",
     "slug": "minimalist-study-lamp",
-    "name": "Minimalist Study Lamp",
+    "name": "Đèn Học Để Bàn Tối Giản (Minimalist)",
     "categorySlug": "life-dorm",
     "shortDescription": "Đèn học chống cận, 3 chế độ ánh sáng.",
     "description": "Đèn bàn LED tối giản, phù hợp phòng trọ và bàn học.",
