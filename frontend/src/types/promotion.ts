@@ -14,6 +14,8 @@ export interface ShopPromotion {
     maxUsesPerUser?: number;
     usageLimit?: number;
     usedCount?: number;
+    /** Số lần user hiện tại đã dùng mã (chỉ có khi đã đăng nhập) */
+    userUsedCount?: number;
 }
 
 export interface PromotionValidateResult {

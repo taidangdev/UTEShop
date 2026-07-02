@@ -46,6 +46,7 @@ export default function CheckoutInformationPage() {
     const [userCoupons, setUserCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState(0);
     const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
+    const [promotionRejections, setPromotionRejections] = useState<Record<string, string>>({});
     const [shopPromotions, setShopPromotions] = useState<ShopPromotion[]>([]);
     const [promotionsLoading, setPromotionsLoading] = useState(true);
     const [promotionApplying, setPromotionApplying] = useState(false);
@@ -408,11 +409,22 @@ export default function CheckoutInformationPage() {
     };
 
     const clearPromotion = () => {
-        setInformation((prev) => ({
-            ...prev,
-            appliedDiscountCode: '',
-            discountCode: ''
-        }));
+        setInformation((prev) => {
+            const next = {
+                ...prev,
+                appliedDiscountCode: '',
+                discountCode: ''
+            };
+            saveCheckoutInformation(next);
+            if (prev.appliedDiscountCode) {
+                setPromotionRejections((r) => {
+                    const cleared = { ...r };
+                    delete cleared[prev.appliedDiscountCode];
+                    return cleared;
+                });
+            }
+            return next;
+        });
         setPromotionMessage(null);
     };
 
@@ -422,11 +434,13 @@ export default function CheckoutInformationPage() {
         try {
             const result = await validatePromotionCode(code, productIds);
             if (!result.valid) {
-                setPromotionMessage(result.message || 'Mã không hợp lệ với giỏ hàng hiện tại');
+                const msg = result.message || 'Mã không hợp lệ với giỏ hàng hiện tại';
+                setPromotionMessage(msg);
+                setPromotionRejections((prev) => ({ ...prev, [code]: msg }));
                 setInformation((prev) => {
                     const next = {
                         ...prev,
-                        appliedDiscountCode: prev.appliedDiscountCode === code ? '' : prev.appliedDiscountCode,
+                        appliedDiscountCode: '',
                         discountCode: ''
                     };
                     saveCheckoutInformation(next);
@@ -439,11 +453,20 @@ export default function CheckoutInformationPage() {
                     result.freeShipping ? ', miễn phí ship' : ''
                 }`
             );
-            setInformation((prev) => ({
-                ...prev,
-                appliedDiscountCode: code,
-                discountCode: code
-            }));
+            setPromotionRejections((prev) => {
+                const next = { ...prev };
+                delete next[code];
+                return next;
+            });
+            setInformation((prev) => {
+                const next = {
+                    ...prev,
+                    appliedDiscountCode: code,
+                    discountCode: code
+                };
+                saveCheckoutInformation(next);
+                return next;
+            });
             return true;
         } catch (err) {
             const msg =
@@ -451,6 +474,12 @@ export default function CheckoutInformationPage() {
                     ? err
                     : (err as { message?: string })?.message || 'Không thể áp dụng mã';
             setPromotionMessage(msg);
+            setPromotionRejections((prev) => ({ ...prev, [code]: msg }));
+            setInformation((prev) => {
+                const next = clearCheckoutDiscounts(prev);
+                saveCheckoutInformation(next);
+                return next;
+            });
             return false;
         } finally {
             setPromotionApplying(false);
@@ -463,7 +492,6 @@ export default function CheckoutInformationPage() {
             return;
         }
         if (code === information.appliedDiscountCode) return;
-        setInformation((prev) => ({ ...prev, discountCode: code }));
         await applyPromotionByCode(code);
     };
 
@@ -960,6 +988,7 @@ export default function CheckoutInformationPage() {
                                 promotionApplying={promotionApplying}
                                 onPromotionSelect={handlePromotionSelect}
                                 promotionMessage={promotionMessage}
+                                rejectedPromotions={promotionRejections}
                                 userCoupons={userCoupons}
                                 pointsBalance={pointsBalance}
                                 maxPointsRedeemable={maxPointsRedeemable}

@@ -57,7 +57,8 @@ function normalizeInformation(raw = {}) {
         state: String(raw.state || '').trim(),
         postalCode: String(raw.postalCode || '').trim(),
         discountCode: String(raw.discountCode || '').trim(),
-        appliedDiscountCode: String(raw.appliedDiscountCode || raw.discountCode || '').trim(),
+        /** Chỉ mã đã xác nhận áp dụng — không fallback từ discountCode (tránh gửi mã đang thử/lỗi) */
+        appliedDiscountCode: String(raw.appliedDiscountCode || '').trim(),
         userCouponCode: String(raw.userCouponCode || '').trim(),
         pointsToRedeem: Math.max(0, parseInt(raw.pointsToRedeem, 10) || 0),
         addressId: raw.addressId ? parseInt(raw.addressId, 10) : null,

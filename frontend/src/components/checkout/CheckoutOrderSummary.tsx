@@ -24,7 +24,18 @@ function isPromotionUsableForCart(p: ShopPromotion, items: CartLine[]) {
     return false;
 }
 
-function getPromotionIneligibilityReason(p: ShopPromotion, items: CartLine[], subtotal: number) {
+function getPromotionIneligibilityReason(
+    p: ShopPromotion,
+    items: CartLine[],
+    subtotal: number,
+    rejectedPromotions?: Record<string, string>
+) {
+    if (rejectedPromotions?.[p.code]) {
+        return rejectedPromotions[p.code];
+    }
+    if (p.maxUsesPerUser != null && (p.userUsedCount ?? 0) >= p.maxUsesPerUser) {
+        return 'Bạn đã sử dụng mã khuyến mãi này tối đa số lần cho phép';
+    }
     if (p.usageLimit !== undefined && p.usedCount !== undefined && p.usedCount >= p.usageLimit) {
         return "Mã đã hết lượt sử dụng trên hệ thống.";
     }
@@ -59,6 +70,7 @@ interface CheckoutOrderSummaryProps {
     promotionApplying?: boolean;
     onPromotionSelect?: (code: string) => void;
     promotionMessage?: string | null;
+    rejectedPromotions?: Record<string, string>;
     userCoupons?: UserCoupon[];
     pointsBalance?: number;
     maxPointsRedeemable?: number;
@@ -77,6 +89,7 @@ export default function CheckoutOrderSummary({
     promotionApplying = false,
     onPromotionSelect,
     promotionMessage,
+    rejectedPromotions = {},
     userCoupons = [],
     pointsBalance = 0,
     maxPointsRedeemable = 0,
@@ -152,17 +165,24 @@ export default function CheckoutOrderSummary({
                                         if (aSelected && !bSelected) return -1;
                                         if (!aSelected && bSelected) return 1;
 
-                                        const aUsable = !getPromotionIneligibilityReason(a, items, totals.subtotal);
-                                        const bUsable = !getPromotionIneligibilityReason(b, items, totals.subtotal);
+                                        const aUsable = !getPromotionIneligibilityReason(a, items, totals.subtotal, rejectedPromotions);
+                                        const bUsable = !getPromotionIneligibilityReason(b, items, totals.subtotal, rejectedPromotions);
                                         if (aUsable && !bUsable) return -1;
                                         if (!aUsable && bUsable) return 1;
 
                                         return 0;
                                     })
                                     .map((p) => {
-                                    const ineligibilityReason = getPromotionIneligibilityReason(p, items, totals.subtotal);
-                                    const isSelected = information.appliedDiscountCode === p.code;
-                                    const isUsable = !ineligibilityReason || isSelected;
+                                    const ineligibilityReason = getPromotionIneligibilityReason(
+                                        p,
+                                        items,
+                                        totals.subtotal,
+                                        rejectedPromotions
+                                    );
+                                    const isSelected =
+                                        information.appliedDiscountCode === p.code &&
+                                        totals.promotionCode === p.code;
+                                    const isUsable = !ineligibilityReason;
 
                                     return (
                                         <div
@@ -263,8 +283,10 @@ export default function CheckoutOrderSummary({
                                     })
                                     .map((c) => {
                                     const ineligibilityReason = getCouponIneligibilityReason(c, subtotalAfterPromo);
-                                    const isSelected = information.userCouponCode === c.code;
-                                    const isUsable = !ineligibilityReason || isSelected;
+                                    const isSelected =
+                                        information.userCouponCode === c.code &&
+                                        totals.userCouponCode === c.code;
+                                    const isUsable = !ineligibilityReason;
                                     
                                     const discountValueLabel =
                                         c.discountType === 'free_shipping'

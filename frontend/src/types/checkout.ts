@@ -14,7 +14,7 @@ export interface CheckoutInformation {
     state: string;
     postalCode: string;
     discountCode: string;
-    /** Shop promotion code from promotions table */
+    /** Mã khuyến mãi đã validate thành công — chỉ field này được gửi lên API */
     appliedDiscountCode: string;
     /** Personal coupon from user_coupons (review rewards) */
     userCouponCode: string;

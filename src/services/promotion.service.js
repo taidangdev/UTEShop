@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const sequelize = require('../config/db');
 const {
     Promotion,
     PromotionRedemption,
@@ -369,7 +370,7 @@ async function rollbackPromotionRedemption(orderId, transaction) {
     }
 }
 
-async function listActivePromotions() {
+async function listActivePromotions(userId = null) {
     const now = new Date();
     const rows = await Promotion.findAll({
         where: {
@@ -402,9 +403,23 @@ async function listActivePromotions() {
         raw: true
     });
 
-    return rows
-        .filter((p) => p.usageLimit == null || p.usedCount < p.usageLimit)
-        .map((p) => {
+    const filtered = rows.filter((p) => p.usageLimit == null || p.usedCount < p.usageLimit);
+
+    let userUsedByPromoId = new Map();
+    if (userId && filtered.length > 0) {
+        const promoIds = filtered.map((p) => p.id);
+        const usageRows = await PromotionRedemption.findAll({
+            attributes: ['promotionId', [sequelize.fn('COUNT', sequelize.col('id')), 'usedCount']],
+            where: { userId, promotionId: { [Op.in]: promoIds } },
+            group: ['promotionId'],
+            raw: true
+        });
+        for (const row of usageRows) {
+            userUsedByPromoId.set(row.promotionId, Number(row.usedCount));
+        }
+    }
+
+    return filtered.map((p) => {
             const mapped = mapPromotionPublic(p);
 
             let finalCategoryIds = [];
@@ -426,7 +441,8 @@ async function listActivePromotions() {
                 categoryIds: finalCategoryIds,
                 productIds: (p.products || []).map((prod) => prod.id),
                 categories: (p.categories || []).map((c) => ({ id: c.id, name: c.name })),
-                products: (p.products || []).map((prod) => ({ id: prod.id, name: prod.name }))
+                products: (p.products || []).map((prod) => ({ id: prod.id, name: prod.name })),
+                userUsedCount: userId ? userUsedByPromoId.get(p.id) || 0 : undefined
             };
         });
 }
