@@ -35,7 +35,7 @@ const createNotification = async ({ userId, title, content, type, relatedId, ema
             socketService.sendToUser(userId, 'new_notification', notification);
         } else {
             // Gửi tới Admin hoặc tất cả người dùng
-            if (type === 'order_new' || type === 'review_new') {
+            if (type === 'order_new' || type === 'review_new' || type === 'consignment_new') {
                 socketService.sendToAdmins('new_notification', notification);
             } else {
                 // Bài viết mới, sự kiện mới -> Broadcast cho tất cả
