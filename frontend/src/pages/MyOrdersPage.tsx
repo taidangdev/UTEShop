@@ -126,8 +126,14 @@ export default function MyOrdersPage() {
   // Filter and search logic
   const filteredOrders = orders.filter((order) => {
     // 1. Filter by status tab
-    if (activeTab !== "all" && order.status !== activeTab) {
-      return false;
+    if (activeTab !== "all") {
+      if (activeTab === "returned") {
+        if (!["returned", "return_requested", "return_approved"].includes(order.status)) {
+          return false;
+        }
+      } else if (order.status !== activeTab) {
+        return false;
+      }
     }
 
     // 2. Filter by search query (match orderNumber or product titles)
