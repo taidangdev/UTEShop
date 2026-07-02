@@ -76,47 +76,46 @@ function ProductDetailFooter() {
                 <div className="col-span-2">
                     <div className="mb-4 text-2xl font-bold text-on-surface">UTEShop</div>
                     <p className="mb-6 max-w-xs text-base text-on-surface-variant">
-                        Providing engineering students with the tools required for academic excellence and
-                        innovation.
+                        Cung cấp cho sinh viên kỹ thuật các công cụ cần thiết để đạt thành tích xuất sắc và đổi mới trong học tập.
                     </p>
-                    <p className="font-semibold text-on-surface">© 2024 UTEShop. Engineering-Grade Quality.</p>
+                    <p className="font-semibold text-on-surface">© 2024 UTEShop. Chất lượng chuẩn kỹ thuật.</p>
                 </div>
                 <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Shop</h4>
+                    <h4 className="text-sm font-bold text-on-surface">Cửa hàng</h4>
                     <nav className="flex flex-col gap-2">
                         <Link to="/categories?category=study-tools" className="text-xs text-on-surface-variant hover:text-primary">
-                            Hardware Kits
+                            Công cụ học tập
                         </Link>
                         <Link to="/categories?category=technology" className="text-xs text-on-surface-variant hover:text-primary">
-                            Technology
+                            Công nghệ & Điện tử
                         </Link>
                         <Link to="/categories" className="text-xs text-on-surface-variant hover:text-primary">
-                            All Products
+                            Tất cả sản phẩm
                         </Link>
                     </nav>
                 </div>
                 <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Support</h4>
+                    <h4 className="text-sm font-bold text-on-surface">Hỗ trợ</h4>
                     <nav className="flex flex-col gap-2">
                         <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Student Support
+                            Hỗ trợ sinh viên
                         </a>
                         <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Shipping
+                            Giao hàng
                         </a>
                         <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Contact
+                            Liên hệ
                         </a>
                     </nav>
                 </div>
                 <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Legal</h4>
+                    <h4 className="text-sm font-bold text-on-surface">Pháp lý</h4>
                     <nav className="flex flex-col gap-2">
                         <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Privacy Policy
+                            Chính sách bảo mật
                         </a>
                         <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Terms of Service
+                            Điều khoản dịch vụ
                         </a>
                     </nav>
                 </div>
