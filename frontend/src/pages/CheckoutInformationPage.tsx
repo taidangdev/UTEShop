@@ -17,10 +17,12 @@ import {
     getCheckoutInformation,
     getCheckoutProductIds,
     hasCheckoutSelection,
-    saveCheckoutInformation
+    saveCheckoutInformation,
+    clearCheckoutDiscounts
 } from '../utils/checkoutStorage';
 import { fetchMyAddresses, updateUserAddress, createUserAddress } from '../services/addressApi';
 import type { UserAddress } from '../types/address';
+import { formatPrice } from '../utils/formatPrice';
 
 interface ProfileUser {
     fullName?: string | null;
@@ -388,6 +390,19 @@ export default function CheckoutInformationPage() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!previewError) return;
+        setPromotionMessage(previewError);
+        setInformation((prev) => {
+            if (!prev.appliedDiscountCode && !prev.userCouponCode && !prev.pointsToRedeem) {
+                return prev;
+            }
+            const next = clearCheckoutDiscounts(prev);
+            saveCheckoutInformation(next);
+            return next;
+        });
+    }, [previewError]);
+
     const updateField = <K extends keyof CheckoutInformation>(key: K, value: CheckoutInformation[K]) => {
         setInformation((prev) => ({ ...prev, [key]: value }));
     };
@@ -408,10 +423,19 @@ export default function CheckoutInformationPage() {
             const result = await validatePromotionCode(code, productIds);
             if (!result.valid) {
                 setPromotionMessage(result.message || 'Mã không hợp lệ với giỏ hàng hiện tại');
+                setInformation((prev) => {
+                    const next = {
+                        ...prev,
+                        appliedDiscountCode: prev.appliedDiscountCode === code ? '' : prev.appliedDiscountCode,
+                        discountCode: ''
+                    };
+                    saveCheckoutInformation(next);
+                    return next;
+                });
                 return false;
             }
             setPromotionMessage(
-                `✓ ${result.promotion?.name || code} — giảm $${result.promotionDiscount?.toFixed(2) ?? '0'}${
+                `✓ ${result.promotion?.name || code} — giảm ${formatPrice(result.promotionDiscount ?? 0)}${
                     result.freeShipping ? ', miễn phí ship' : ''
                 }`
             );
@@ -533,7 +557,7 @@ export default function CheckoutInformationPage() {
             return;
         }
 
-        saveCheckoutInformation(information);
+        saveCheckoutInformation(previewError ? clearCheckoutDiscounts(information) : information);
         navigate('/checkout/payment');
     };
 
@@ -573,12 +597,6 @@ export default function CheckoutInformationPage() {
                 {formError && (
                     <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
                         {formError}
-                    </p>
-                )}
-
-                {previewError && (
-                    <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
-                        {previewError}
                     </p>
                 )}
 

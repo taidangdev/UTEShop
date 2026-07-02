@@ -81,3 +81,14 @@ export function clearCheckoutSession() {
 export function hasCheckoutSelection(): boolean {
     return readSession().productIds.length > 0;
 }
+
+/** Xóa mã giảm giá / điểm khi preview hoặc đặt hàng thất bại do khuyến mãi không hợp lệ */
+export function clearCheckoutDiscounts(information: CheckoutInformation): CheckoutInformation {
+    return {
+        ...information,
+        appliedDiscountCode: '',
+        discountCode: '',
+        userCouponCode: '',
+        pointsToRedeem: 0
+    };
+}

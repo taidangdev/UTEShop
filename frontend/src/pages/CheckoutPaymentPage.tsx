@@ -13,9 +13,12 @@ import {
     getCheckoutProductIds,
     getPaymentMethod,
     hasCheckoutSelection,
-    savePaymentMethod
+    saveCheckoutInformation,
+    savePaymentMethod,
+    clearCheckoutDiscounts
 } from '../utils/checkoutStorage';
 import { clearLocalCart } from '../utils/cartStorage';
+import { extractApiError } from '../utils/apiError';
 
 const cardInputClass =
     'h-12 w-full rounded-lg border-none bg-surface-container-low px-4 outline-none transition focus:ring-2 focus:ring-primary-container';
@@ -113,10 +116,23 @@ export default function CheckoutPaymentPage() {
         setSubmitError(null);
         savePaymentMethod(paymentMethod);
 
+        const productIds = getCheckoutProductIds();
+        if (productIds.length === 0) {
+            setSubmitError('Chưa chọn sản phẩm nào để thanh toán. Vui lòng quay lại giỏ hàng.');
+            setProcessing(false);
+            return;
+        }
+
+        let orderInformation = getCheckoutInformation();
+        if (previewError) {
+            orderInformation = clearCheckoutDiscounts(orderInformation);
+            saveCheckoutInformation(orderInformation);
+        }
+
         try {
             const result = await placeOrder({
-                productIds: getCheckoutProductIds(),
-                information,
+                productIds,
+                information: orderInformation,
                 paymentMethod
             });
 
@@ -129,11 +145,7 @@ export default function CheckoutPaymentPage() {
                 }
             });
         } catch (err) {
-            const msg =
-                typeof err === 'string'
-                    ? err
-                    : (err as { message?: string })?.message || 'Could not place order';
-            setSubmitError(msg);
+            setSubmitError(extractApiError(err, 'Không thể đặt hàng'));
         } finally {
             setProcessing(false);
         }
@@ -174,7 +186,7 @@ export default function CheckoutPaymentPage() {
             <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
                 <CheckoutStepper currentStep={2} />
 
-                {(previewError || submitError) && (
+                {(submitError || (previewError && !information.appliedDiscountCode && !information.userCouponCode)) && (
                     <p className="mb-6 rounded-lg bg-error-container px-4 py-3 text-sm text-on-error-container">
                         {submitError || previewError}
                     </p>
@@ -189,7 +201,7 @@ export default function CheckoutPaymentPage() {
                                     id="cash_payment"
                                     name="payment_method"
                                     title="Tiền mặt"
-                                    subtitle="Cash"
+                                    subtitle="Thanh toán khi nhận hàng (COD)"
                                     icon="payments"
                                     checked={paymentMethod === 'cash'}
                                     onChange={() => setPaymentMethod('cash')}
@@ -198,7 +210,7 @@ export default function CheckoutPaymentPage() {
                                     id="bank_transfer"
                                     name="payment_method"
                                     title="Chuyển khoản"
-                                    subtitle="Bank Transfer"
+                                    subtitle="Chuyển khoản ngân hàng"
                                     icon="account_balance"
                                     checked={paymentMethod === 'bank_transfer'}
                                     onChange={() => setPaymentMethod('bank_transfer')}
@@ -207,14 +219,14 @@ export default function CheckoutPaymentPage() {
                                     id="credit_card"
                                     name="payment_method"
                                     title="Thẻ"
-                                    subtitle="Credit / Debit Card"
+                                    subtitle="Thẻ tín dụng / ghi nợ"
                                     icon="credit_card"
                                     checked={paymentMethod === 'credit_card'}
                                     onChange={() => setPaymentMethod('credit_card')}
                                 >
                                     <div className="space-y-2">
                                         <label className="text-xs font-semibold uppercase text-on-surface-variant">
-                                            Card Number
+                                            Số thẻ
                                         </label>
                                         <input
                                             type="text"
@@ -227,7 +239,7 @@ export default function CheckoutPaymentPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                Expiry Date
+                                                Ngày hết hạn
                                             </label>
                                             <input
                                                 type="text"
@@ -239,7 +251,7 @@ export default function CheckoutPaymentPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                CVV
+                                                Mã CVV
                                             </label>
                                             <input
                                                 type="text"
@@ -259,7 +271,7 @@ export default function CheckoutPaymentPage() {
                                 to="/checkout"
                                 className="inline-flex h-14 w-full items-center justify-center rounded-full bg-surface-container-low px-8 text-sm font-medium leading-none text-on-surface transition hover:bg-surface-container-high active:scale-95 sm:w-auto"
                             >
-                                Back to Information
+                                Quay lại thông tin giao hàng
                             </Link>
                             <button
                                 type="button"
@@ -270,10 +282,10 @@ export default function CheckoutPaymentPage() {
                                 {processing ? (
                                     <span className="flex items-center justify-center gap-2">
                                         <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        Processing...
+                                        Đang xử lý...
                                     </span>
                                 ) : (
-                                    'Confirm'
+                                    'Xác nhận đặt hàng'
                                 )}
                             </button>
                         </div>
@@ -295,9 +307,9 @@ export default function CheckoutPaymentPage() {
                                 <div className="mt-8 flex items-start gap-3 rounded-lg bg-tertiary-fixed p-4 text-on-tertiary-fixed-variant">
                                     <span className="material-symbols-outlined mt-0.5">verified_user</span>
                                     <div>
-                                        <p className="text-xs font-bold">Secure University Billing</p>
+                                        <p className="text-xs font-bold">Thanh toán an toàn</p>
                                         <p className="mt-1 text-[11px] leading-tight">
-                                            Transaction is encrypted via UTE Enterprise Security Protocols.
+                                            Giao dịch được mã hóa theo tiêu chuẩn bảo mật của UTEShop.
                                         </p>
                                     </div>
                                 </div>

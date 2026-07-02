@@ -96,7 +96,7 @@ export default function CheckoutOrderSummary({
             }
         >
             <div>
-                <h3 className="mb-4 text-2xl font-semibold text-on-surface">Order Summary</h3>
+                <h3 className="mb-4 text-2xl font-semibold text-on-surface">Tóm tắt đơn hàng</h3>
                 <div className="max-h-[300px] space-y-4 overflow-y-auto pr-2">
                     {items.map((item) => (
                         <div key={item.cartItemId ?? item.productId} className="flex items-center gap-4">
@@ -110,7 +110,7 @@ export default function CheckoutOrderSummary({
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-bold text-on-surface">{item.name}</p>
                                 <p className="truncate text-xs text-on-surface-variant">
-                                    Qty {item.quantity} × {formatPrice(item.price)}
+                                    SL {item.quantity} × {formatPrice(item.price)}
                                 </p>
                                 <p className="mt-0.5 text-sm font-medium text-primary">
                                     {formatPrice(item.price * item.quantity)}
@@ -268,7 +268,7 @@ export default function CheckoutOrderSummary({
                                     
                                     const discountValueLabel =
                                         c.discountType === 'free_shipping'
-                                            ? 'Free ship'
+                                            ? 'Miễn phí ship'
                                             : c.discountType === 'fixed_amount'
                                               ? `Giảm ${formatPrice(c.discountValue)}`
                                               : `Giảm ${c.discountValue}%`;
@@ -367,7 +367,7 @@ export default function CheckoutOrderSummary({
                 <div className="flex justify-between text-sm text-on-surface-variant">
                     <span>Phí vận chuyển</span>
                     <span className={totals.shippingFee === 0 ? 'font-bold text-primary' : ''}>
-                        {totals.shippingFee === 0 ? 'FREE' : formatPrice(totals.shippingFee)}
+                        {totals.shippingFee === 0 ? 'Miễn phí' : formatPrice(totals.shippingFee)}
                     </span>
                 </div>
                 {(totals.promotionDiscount ?? 0) > 0 && (

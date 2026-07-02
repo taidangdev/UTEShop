@@ -36,13 +36,13 @@ function mapPromotionPublic(promotion) {
 function assertPromotionWindow(promotion) {
     const now = new Date();
     if (promotion.startsAt && now < new Date(promotion.startsAt)) {
-        const err = new Error('This promotion is not active yet');
+        const err = new Error('Chương trình khuyến mãi chưa bắt đầu');
         err.statusCode = 400;
         err.code = 'PROMOTION_NOT_STARTED';
         throw err;
     }
     if (promotion.endsAt && now > new Date(promotion.endsAt)) {
-        const err = new Error('This promotion has expired');
+        const err = new Error('Chương trình khuyến mãi đã hết hạn');
         err.statusCode = 400;
         err.code = 'PROMOTION_EXPIRED';
         throw err;
@@ -51,7 +51,7 @@ function assertPromotionWindow(promotion) {
 
 function assertUsageLimits(promotion, userId) {
     if (promotion.usageLimit != null && promotion.usedCount >= promotion.usageLimit) {
-        const err = new Error('This promotion has reached its usage limit');
+        const err = new Error('Chương trình khuyến mãi đã hết lượt sử dụng');
         err.statusCode = 400;
         err.code = 'PROMOTION_USAGE_LIMIT';
         throw err;
@@ -64,7 +64,7 @@ async function assertPerUserLimit(promotion, userId) {
         where: { promotionId: promotion.id, userId }
     });
     if (count >= promotion.maxUsesPerUser) {
-        const err = new Error('You have already used this promotion the maximum number of times');
+        const err = new Error('Bạn đã sử dụng mã khuyến mãi này tối đa số lần cho phép');
         err.statusCode = 400;
         err.code = 'PROMOTION_USER_LIMIT';
         throw err;
@@ -164,7 +164,7 @@ function applyPromotionToLines(promotion, lineItems, expandedCategoryIds = null)
     }
 
     if (eligibleLines.length === 0) {
-        const err = new Error('No items in your cart are eligible for this promotion');
+        const err = new Error('Không có sản phẩm nào trong giỏ hàng đủ điều kiện áp dụng mã này');
         err.statusCode = 400;
         err.code = 'PROMOTION_NO_ELIGIBLE_ITEMS';
         throw err;
@@ -244,7 +244,7 @@ async function resolvePromotionForCheckout(code, lineItems, userId) {
 
     const promotion = await loadPromotionByCode(normalized);
     if (!promotion) {
-        const err = new Error('Invalid or expired promotion code');
+        const err = new Error('Mã khuyến mãi không hợp lệ hoặc đã hết hạn');
         err.statusCode = 400;
         err.code = 'INVALID_PROMOTION';
         throw err;
@@ -276,7 +276,7 @@ async function previewPromotion(code, lineItems, userId) {
     try {
         const result = await resolvePromotionForCheckout(code, lineItems, userId);
         if (!result) {
-            return { valid: false, message: 'Enter a promotion code' };
+            return { valid: false, message: 'Vui lòng nhập mã khuyến mãi' };
         }
         return {
             valid: true,

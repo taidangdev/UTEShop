@@ -29,7 +29,7 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                             currentStep === 1 ? 'text-primary' : 'text-on-surface'
                         }`}
                     >
-                        Information
+                        Thông tin
                     </span>
                 </div>
 
@@ -54,7 +54,7 @@ export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                             currentStep === 2 ? 'font-bold text-primary' : 'text-outline'
                         }`}
                     >
-                        Payment
+                        Thanh toán
                     </span>
                 </div>
             </div>

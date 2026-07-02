@@ -70,27 +70,27 @@ function validateInformation(info) {
         return;
     }
     if (!info.fullName) {
-        const err = new Error('Full name is required');
+        const err = new Error('Họ và tên người nhận là bắt buộc');
         err.statusCode = 400;
         throw err;
     }
     if (!info.phone) {
-        const err = new Error('Phone number is required');
+        const err = new Error('Số điện thoại nhận hàng là bắt buộc');
         err.statusCode = 400;
         throw err;
     }
     if (!info.street) {
-        const err = new Error('Street address is required');
+        const err = new Error('Địa chỉ chi tiết là bắt buộc');
         err.statusCode = 400;
         throw err;
     }
     if (!info.city) {
-        const err = new Error('City is required');
+        const err = new Error('Tỉnh / Thành phố là bắt buộc');
         err.statusCode = 400;
         throw err;
     }
     if (!info.state) {
-        const err = new Error('State / Province is required');
+        const err = new Error('Quận / Huyện là bắt buộc');
         err.statusCode = 400;
         throw err;
     }
@@ -154,7 +154,7 @@ async function calculateCheckoutTotals(lineItems, information, userId) {
             appliedUserCouponId = coupon.id;
             userCouponCode = coupon.code;
         } else {
-            const err = new Error('Invalid or expired personal coupon');
+            const err = new Error('Phiếu giảm giá cá nhân không hợp lệ hoặc đã hết hạn');
             err.statusCode = 400;
             err.code = 'INVALID_COUPON';
             throw err;
@@ -206,7 +206,7 @@ function filterCartItems(cart, productIds) {
 
 async function buildCheckoutLines(cartItems) {
     if (!cartItems.length) {
-        const err = new Error('No items selected for checkout');
+        const err = new Error('Chưa chọn sản phẩm nào để thanh toán');
         err.statusCode = 400;
         err.code = 'EMPTY_CHECKOUT';
         throw err;
@@ -245,7 +245,7 @@ async function buildCheckoutLines(cartItems) {
 
     const unavailable = lines.filter((l) => !l.mapped.inStock);
     if (unavailable.length > 0) {
-        const err = new Error('Some items in your cart are out of stock');
+        const err = new Error('Một số sản phẩm trong giỏ hàng đã hết hàng');
         err.statusCode = 400;
         err.code = 'INSUFFICIENT_STOCK';
         throw err;
@@ -441,7 +441,7 @@ async function placeOrder(
     const paymentMethod = rawPaymentMethod || 'cash';
     const dbPaymentMethod = PAYMENT_METHOD_MAP[paymentMethod];
     if (!dbPaymentMethod) {
-        const err = new Error('Invalid payment method');
+        const err = new Error('Phương thức thanh toán không hợp lệ');
         err.statusCode = 400;
         throw err;
     }
