@@ -6,6 +6,7 @@ import { addItemToServerCart } from '../services/cartApi';
 import { addToCart, getCart } from '../utils/cartStorage';
 import ProductImageGallery from '../components/catalog/ProductImageGallery';
 import QuantitySelector from '../components/catalog/QuantitySelector';
+import ShopFooter from '../components/layout/ShopFooter';
 import SimilarProducts from '../components/catalog/SimilarProducts';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { getAccessToken } from '../services/authSession';
@@ -69,58 +70,6 @@ function buildSpecRows(product: ProductDetail): [string, string][] {
     return rows;
 }
 
-function ProductDetailFooter() {
-    return (
-        <footer className="mt-20 w-full bg-surface-container-low py-20">
-            <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-4 px-6 md:grid-cols-4 lg:px-8">
-                <div className="col-span-2">
-                    <div className="mb-4 text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="mb-6 max-w-xs text-base text-on-surface-variant">
-                        Cung cấp cho sinh viên kỹ thuật các công cụ cần thiết để đạt thành tích xuất sắc và đổi mới trong học tập.
-                    </p>
-                    <p className="font-semibold text-on-surface">© 2024 UTEShop. Chất lượng chuẩn kỹ thuật.</p>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Cửa hàng</h4>
-                    <nav className="flex flex-col gap-2">
-                        <Link to="/categories?category=study-tools" className="text-xs text-on-surface-variant hover:text-primary">
-                            Công cụ học tập
-                        </Link>
-                        <Link to="/categories?category=technology" className="text-xs text-on-surface-variant hover:text-primary">
-                            Công nghệ & Điện tử
-                        </Link>
-                        <Link to="/categories" className="text-xs text-on-surface-variant hover:text-primary">
-                            Tất cả sản phẩm
-                        </Link>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Hỗ trợ</h4>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Hỗ trợ sinh viên
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Giao hàng
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Liên hệ
-                        </a>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-on-surface">Pháp lý</h4>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Chính sách bảo mật
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Điều khoản dịch vụ
-                        </a>
-                    </nav>
-                </div>
-            </div>
-        </footer>
     );
 }
 
@@ -725,7 +674,7 @@ export default function ProductDetailPage() {
                 </section>
             </main>
 
-            <ProductDetailFooter />
+            <ShopFooter />
 
             {product && (
                 <WriteReviewModal

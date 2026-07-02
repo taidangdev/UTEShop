@@ -142,9 +142,9 @@ export default function CheckoutPaymentPage() {
     if (!cartLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-surface px-6 py-20 text-center">
-                <p className="text-lg text-on-surface-variant">No items selected for checkout.</p>
+                <p className="text-lg text-on-surface-variant">Không có sản phẩm nào được chọn để thanh toán.</p>
                 <Link to="/cart" className="mt-6 inline-block text-primary hover:underline">
-                    Back to Cart
+                    Quay lại giỏ hàng
                 </Link>
             </div>
         );
@@ -164,7 +164,7 @@ export default function CheckoutPaymentPage() {
                             to="/cart"
                             className="text-sm font-medium text-on-surface-variant transition hover:text-primary"
                         >
-                            Back to Cart
+                            Quay lại giỏ hàng
                         </Link>
                         <span className="material-symbols-outlined text-outline">lock</span>
                     </div>
@@ -183,7 +183,7 @@ export default function CheckoutPaymentPage() {
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                     <div className="space-y-10 lg:col-span-8">
                         <section>
-                            <h1 className="mb-8 text-3xl font-semibold text-on-surface">Select Payment Method</h1>
+                            <h1 className="mb-8 text-3xl font-semibold text-on-surface">Chọn phương thức thanh toán</h1>
                             <div className="space-y-4">
                                 <PaymentOption
                                     id="cash_payment"

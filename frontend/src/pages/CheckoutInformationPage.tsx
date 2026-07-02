@@ -540,9 +540,9 @@ export default function CheckoutInformationPage() {
     if (!cartLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-surface px-6 py-20 text-center">
-                <p className="text-lg text-on-surface-variant">No items selected for checkout.</p>
+                <p className="text-lg text-on-surface-variant">Không có sản phẩm nào được chọn để thanh toán.</p>
                 <Link to="/cart" className="mt-6 inline-block text-primary hover:underline">
-                    Back to Cart
+                    Quay lại giỏ hàng
                 </Link>
             </div>
         );
@@ -560,7 +560,7 @@ export default function CheckoutInformationPage() {
                             to="/cart"
                             className="text-sm font-medium text-on-surface-variant transition hover:text-primary"
                         >
-                            Back to Cart
+                            Quay lại giỏ hàng
                         </Link>
                         <span className="material-symbols-outlined text-outline">lock</span>
                     </div>
@@ -911,14 +911,14 @@ export default function CheckoutInformationPage() {
                                         className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-surface-container-high text-sm font-medium text-on-surface transition hover:bg-surface-container-highest"
                                     >
                                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                                        Back to Cart
+                                        Quay lại giỏ hàng
                                     </Link>
                                     <button
                                         type="submit"
                                         disabled={cartLoading || previewLoading}
                                         className="flex h-12 flex-[2] items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-on-primary shadow-md transition hover:bg-primary-container disabled:opacity-50"
                                     >
-                                        Continue to Payment
+                                        Tiếp tục đến trang thanh toán
                                         <span className="material-symbols-outlined text-lg">arrow_forward</span>
                                     </button>
                                 </>

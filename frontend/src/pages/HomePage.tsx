@@ -23,6 +23,7 @@ import { useAppSelector } from '../store/hooks';
 
 import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, HomePageData, PromoBanner } from '../types/catalog';
+import ShopFooter from '../components/layout/ShopFooter';
 import ProductCard from '../components/catalog/ProductCard';
 
 const PRIMARY = '#004AC6';
@@ -384,88 +385,7 @@ function PromoBanners({ banners }: { banners: PromoBanner[] }) {
     );
 }
 
-function ShopFooter() {
-    return (
-        <footer id="support" className="scroll-mt-24 w-full px-6 lg:px-8" style={{ backgroundColor: SURFACE }}>
-            <div className="mx-auto max-w-[1280px] py-20">
-                <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                        <p className="font-inter text-2xl font-semibold" style={{ color: TEXT }}>
-                            UTEShop
-                        </p>
-                        <p className="mt-4 max-w-xs font-inter text-sm leading-[22px]" style={{ color: TEXT_BODY }}>
-                            Nâng tầm trải nghiệm học tập của sinh viên thông qua các công cụ kỹ thuật chính xác và đồ dùng thiết yếu chuẩn trường học.
-                        </p>
-                    </div>
-                    <div>
-                        <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Hỗ trợ
-                        </p>
-                        <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
-                            <li>
-                                <Link to="/support" className="hover:underline">
-                                    Hỗ trợ sinh viên
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/support#contact" className="hover:underline">
-                                    Liên hệ chúng tôi
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/categories" className="hover:underline">
-                                    Duyệt danh mục
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Pháp lý
-                        </p>
-                        <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
-                            <li>
-                                <Link to="/support" className="hover:underline">
-                                    Chính sách bảo mật
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/support" className="hover:underline">
-                                    Điều khoản dịch vụ
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className="font-inter text-sm font-semibold" style={{ color: TEXT }}>
-                            Cửa hàng
-                        </p>
-                        <ul className="mt-4 flex flex-col gap-4 font-inter text-sm" style={{ color: TEXT_BODY }}>
-                            <li>
-                                <Link to="/categories?sort=popular" className="hover:underline">
-                                    Bán chạy nhất
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/categories?sort=newest" className="hover:underline">
-                                    Sản phẩm mới về
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div
-                    className="mt-12 flex flex-col gap-4 border-t pt-8 sm:flex-row sm:items-center sm:justify-between"
-                    style={{ borderColor: '#C3C6D7' }}
-                >
-                    <p className="font-inter text-sm" style={{ color: TEXT_BODY }}>
-                        © 2024 UTEShop. Chất lượng chuẩn kỹ thuật.
-                    </p>
-                </div>
-            </div>
-        </footer>
-    );
-}
+
 
 export default function HomePage() {
     const user = useAppSelector((state) => state.auth.user);

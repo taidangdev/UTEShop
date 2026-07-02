@@ -6,6 +6,7 @@ import ProductSearchBox from '../components/catalog/ProductSearchBox';
 import type { ApiEnvelope, PaginationMeta } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, Major } from '../types/catalog';
 import ProductCard from '../components/catalog/ProductCard';
+import ShopFooter from '../components/layout/ShopFooter';
 
 const SORT_OPTIONS = [
     { value: 'newest', label: 'Mới nhất' },
@@ -22,63 +23,6 @@ const HERO_IMAGE = '/PremiumLaptop.png';
 
 // Reusable ProductCard is now imported from components/catalog/ProductCard
 
-function CategoriesFooter() {
-    return (
-        <footer className="w-full bg-surface-container-low py-20">
-            <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-4 px-6 md:grid-cols-4 lg:grid-cols-5 lg:px-8">
-                <div className="col-span-2 lg:col-span-1">
-                    <div className="mb-6 text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="text-base text-on-surface-variant">
-                        Chất lượng chuẩn kỹ thuật cho ranh giới học thuật.
-                    </p>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Cửa hàng</h5>
-                    <nav className="flex flex-col gap-2">
-                        <Link to="/categories?category=study-tools" className="text-xs text-on-surface-variant hover:text-primary">
-                            Công cụ học tập
-                        </Link>
-                        <Link to="/categories?category=technology" className="text-xs text-on-surface-variant hover:text-primary">
-                            Công nghệ & Điện tử
-                        </Link>
-                        <Link to="/categories?category=merchandise" className="text-xs text-on-surface-variant hover:text-primary">
-                            Đồ lưu niệm
-                        </Link>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Tài nguyên</h5>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Hỗ trợ sinh viên
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Giao hàng
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Liên hệ
-                        </a>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Pháp lý</h5>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Chính sách bảo mật
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Điều khoản dịch vụ
-                        </a>
-                    </nav>
-                </div>
-                <div className="col-span-2 mt-8 lg:col-span-1 lg:mt-0">
-                    <p className="text-xs text-on-surface-variant opacity-80">
-                        © 2024 UTEShop. Chất lượng chuẩn kỹ thuật.
-                    </p>
-                </div>
-            </div>
-        </footer>
-    );
 }
 
 export default function CategoriesPage() {
@@ -427,7 +371,7 @@ export default function CategoriesPage() {
                 </div>
             </section>
 
-            <CategoriesFooter />
+            <ShopFooter />
 
             <div className="fixed bottom-8 right-8 z-40 md:hidden">
                 <button
