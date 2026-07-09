@@ -5,6 +5,7 @@ import { fetchOrder, cancelOrder, requestOrderReturn } from '../services/checkou
 import { fetchEligibleReviewItems } from '../services/reviewApi';
 import type { OrderDto } from '../types/checkout';
 import { useNotification } from '../context/NotificationContext';
+import { useSocket } from '../context/SocketContext';
 import { formatPrice } from '../utils/formatPrice';
 
 const REVIEWABLE_STATUSES = new Set(['delivered']);
@@ -91,9 +92,27 @@ export default function OrderTrackingPage() {
         }
     };
 
+    const { socket } = useSocket();
+
     useEffect(() => {
         loadOrderData();
     }, [orderNumber]);
+
+    // Real-time: auto-refresh order when admin updates its status
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleOrderStatusUpdate = (notification: any) => {
+            if (notification.type === 'order_status_update' && notification.relatedId === orderNumber) {
+                loadOrderData();
+            }
+        };
+
+        socket.on('new_notification', handleOrderStatusUpdate);
+        return () => {
+            socket.off('new_notification', handleOrderStatusUpdate);
+        };
+    }, [socket, orderNumber]);
 
     const handleCancelOrder = async () => {
         if (!orderNumber) return;

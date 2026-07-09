@@ -6,6 +6,7 @@ import { fetchMyOrders } from "../store/profileSlice";
 import { cancelOrder, requestOrderReturn } from "../services/checkoutApi";
 import { fetchEligibleReviewItems } from "../services/reviewApi";
 import { useNotification } from "../context/NotificationContext";
+import { useSocket } from "../context/SocketContext";
 
 const REVIEWABLE_STATUSES = new Set(["delivered"]);
 
@@ -55,10 +56,29 @@ export default function MyOrdersPage() {
     }
   }, []);
 
+  const { socket } = useSocket();
+
   useEffect(() => {
     dispatch(fetchMyOrders());
     loadReviewableOrders();
   }, [dispatch, loadReviewableOrders]);
+
+  // Real-time: auto-refresh orders when admin updates order status
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleOrderStatusUpdate = (notification: any) => {
+      if (notification.type === 'order_status_update') {
+        dispatch(fetchMyOrders());
+        loadReviewableOrders();
+      }
+    };
+
+    socket.on('new_notification', handleOrderStatusUpdate);
+    return () => {
+      socket.off('new_notification', handleOrderStatusUpdate);
+    };
+  }, [socket, dispatch, loadReviewableOrders]);
 
   const openReviewModal = (orderNumber: string) => {
     setReviewOrderNumber(orderNumber);
