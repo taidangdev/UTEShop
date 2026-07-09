@@ -51,8 +51,8 @@ const checkoutProductIdsValidation = [
     body('productIds')
         .optional()
         .isArray({ min: 1 })
-        .withMessage('productIds must be a non-empty array when provided'),
-    body('productIds.*').isInt({ min: 1 }).withMessage('Each productId must be a positive integer')
+        .withMessage('productIds phải là mảng không rỗng khi được gửi kèm'),
+    body('productIds.*').isInt({ min: 1 }).withMessage('Mỗi productId phải là số nguyên dương')
 ];
 
 const previewCheckoutValidation = [...checkoutProductIdsValidation, ...checkoutInformationValidation];
@@ -62,10 +62,10 @@ const placeOrderValidation = [
     ...checkoutInformationValidation,
     body('paymentMethod')
         .notEmpty()
-        .withMessage('paymentMethod is required')
+        .withMessage('Phương thức thanh toán là bắt buộc')
         .isIn(['cash', 'bank_transfer', 'credit_card'])
-        .withMessage('Invalid payment method'),
-    body('guestEmail').optional({ nullable: true }).isEmail().withMessage('Invalid guest email')
+        .withMessage('Phương thức thanh toán không hợp lệ'),
+    body('guestEmail').optional({ nullable: true }).isEmail().withMessage('Email khách không hợp lệ')
 ];
 
 const orderNumberValidation = [

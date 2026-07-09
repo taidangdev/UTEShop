@@ -6,10 +6,14 @@ const {
     Payment,
     Product,
     ProductVariant,
-    User
+    User,
+    Consignment
 } = require('../models');
 const { STATUS_LABELS, ORDER_STATUSES } = require('./adminDashboard.service');
 const notificationService = require('./notification.service');
+const loyaltyService = require('./loyalty.service');
+const couponService = require('./coupon.service');
+const promotionService = require('./promotion.service');
 
 const MAX_DELIVERY_ATTEMPTS = 3;
 
@@ -407,7 +411,8 @@ async function applyStatusSideEffects(
     payment,
     newStatus,
     { previousStatus, incrementFailCount },
-    transaction
+    transaction,
+    notificationsArray = []
 ) {
     const now = new Date();
     const orderUpdates = { status: newStatus };
@@ -438,6 +443,59 @@ async function applyStatusSideEffects(
         if (payment && payment.method === 'cod' && payment.status === 'pending') {
             await payment.update({ status: 'paid', paidAt: now }, { transaction });
             orderUpdates.paidAt = now;
+        }
+
+        // Auto-update Consignment status if there are consignment items in the order
+        const consignmentItems = await OrderItem.findAll({
+            where: { orderId: order.id },
+            include: [{ model: Product, as: 'product', where: { productType: 'consignment' } }],
+            transaction
+        });
+
+        for (const item of consignmentItems) {
+            const consignment = await Consignment.findOne({
+                where: { productId: item.productId, status: 'ON_SALE' },
+                include: [{ model: User, as: 'user' }],
+                transaction
+            });
+
+            if (consignment) {
+                await consignment.update({ status: 'SOLD' }, { transaction });
+
+                // Construct email and system notification payload
+                const content = `Sản phẩm ký gửi "${consignment.title}" của bạn đã bán thành công. Đang chờ đối soát thanh toán.`;
+                const emailHtml = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e9e9e9; border-radius: 10px;">
+                        <h2 style="color: #6200ee; text-align: center;">Sản phẩm ký gửi đã được bán tại UTEShop</h2>
+                        <p>Xin chào <strong>${consignment.user.fullName || consignment.user.username}</strong>,</p>
+                        <p>Chúng tôi xin vui mừng thông báo sản phẩm ký gửi của bạn đã được bán thành công:</p>
+                        <div style="background-color: #f7f7f7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0 0 10px 0;"><strong>Sản phẩm:</strong> ${consignment.title}</p>
+                            <p style="margin: 0 0 10px 0;"><strong>Mã ký gửi:</strong> #${consignment.id}</p>
+                            <p style="margin: 0 0 10px 0;"><strong>Trạng thái mới:</strong> <span style="background-color: #2e7d32; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">ĐÃ BÁN (SOLD)</span></p>
+                            <p style="margin: 0;"><strong>Nội dung:</strong> ${content}</p>
+                        </div>
+                        <p>Vui lòng chờ Ban quản trị tiến hành đối soát thanh toán và tất toán số tiền thực nhận vào ví điểm thưởng của bạn.</p>
+                        <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+                            Đây là email tự động từ hệ thống UTEShop. Vui lòng không phản hồi lại email này.
+                        </p>
+                    </div>
+                `;
+
+                notificationsArray.push({
+                    userId: consignment.userId,
+                    title: `🎉 Sản phẩm ký gửi #${consignment.id} đã được bán!`,
+                    content,
+                    type: 'consignment_status_update',
+                    relatedId: String(consignment.id),
+                    emailOptions: {
+                        email: consignment.user.email,
+                        subject: `[UTEShop] Sản phẩm ký gửi #${consignment.id} đã bán thành công`,
+                        message: content,
+                        html: emailHtml
+                    }
+                });
+            }
         }
     }
 
@@ -534,6 +592,28 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
                     transaction
                 );
             }
+
+            // Refund loyalty points if user is logged in and points were redeemed
+            const pointsToRefund = order.shippingSnapshot?.pointsRedeemed;
+            if (order.userId && pointsToRefund > 0) {
+                await loyaltyService.addPoints(
+                    order.userId,
+                    pointsToRefund,
+                    {
+                        type: 'cancel_refund_return',
+                        referenceType: 'order',
+                        referenceId: order.id,
+                        note: `Hoàn điểm do thay đổi trạng thái đơn hàng ${order.orderNumber} sang ${resolvedStatus}`
+                    },
+                    transaction
+                );
+            }
+
+            // Rollback personal coupon usage if applied
+            await couponService.rollbackCouponUsage(order.id, transaction);
+
+            // Rollback store promotion redemptions if applied
+            await promotionService.rollbackPromotionRedemption(order.id, transaction);
         }
 
         if (adminNote !== undefined) {
@@ -542,12 +622,26 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
 
         const originalStatusBeforeEffects = order.status;
 
+        const consignmentNotifications = [];
         await applyStatusSideEffects(order, order.payment, resolvedStatus, {
             previousStatus: order.status,
             incrementFailCount
-        }, transaction);
+        }, transaction, consignmentNotifications);
 
         await transaction.commit();
+
+        // Dispatch consignment sold notifications asynchronously after successful commit
+        if (consignmentNotifications.length > 0) {
+            (async () => {
+                for (const notif of consignmentNotifications) {
+                    try {
+                        await notificationService.createNotification(notif);
+                    } catch (err) {
+                        console.error('❌ Failed to trigger notification for auto consignment sold:', err);
+                    }
+                }
+            })();
+        }
 
         const updated = await Order.findOne({
             where: { orderNumber },
@@ -570,9 +664,10 @@ async function updateOrderStatus(orderNumber, { status: newStatus, adminNote }) 
                 content: (orderNumber) => `Yêu cầu trả hàng cho đơn hàng ${orderNumber} đã bị shop từ chối.`
             };
         } else if (originalStatusBeforeEffects === 'cancel_requested' && resolvedStatus === 'processing') {
+            const reasonSuffix = adminNote ? ` Lý do: ${adminNote}` : '';
             notification = {
                 title: '❌ Yêu cầu hủy đơn bị từ chối',
-                content: (orderNumber) => `Yêu cầu hủy đơn hàng ${orderNumber} đã bị shop từ chối. Shop tiếp tục chuẩn bị hàng.`
+                content: (orderNumber) => `Yêu cầu hủy đơn hàng ${orderNumber} đã bị shop từ chối. Shop tiếp tục chuẩn bị hàng.${reasonSuffix}`
             };
         }
         if (notification && order.userId) {

@@ -1,17 +1,17 @@
 [
   {
-    "title": "Back to School: 20% Off All Merchandise.",
-    "subtitle": "Seasonal Sale",
-    "badgeText": "Seasonal Sale",
+    "title": "Tựu Trường Rực Rỡ: Giảm 20% Cho Tất Cả Đồ Lưu Niệm.",
+    "subtitle": "Khuyến Mãi Theo Mùa",
+    "badgeText": "Mùa Ưu Đãi",
     "linkUrl": "/categories?category=merchandise",
     "placement": "promo_left",
     "sortOrder": 1,
     "isActive": true
   },
   {
-    "title": "Starter Kits for Freshmen: Everything you need for Circuit Design 101.",
-    "subtitle": "New Arrivals",
-    "badgeText": "New Arrivals",
+    "title": "Bộ Kit Thực Hành Cho Tân Sinh Viên: Đầy đủ dụng cụ nhập môn Thiết Kế Mạch.",
+    "subtitle": "Sản Phẩm Mới",
+    "badgeText": "Mới Về",
     "linkUrl": "/categories?sort=newest",
     "placement": "promo_right",
     "sortOrder": 2,

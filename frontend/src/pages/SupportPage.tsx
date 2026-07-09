@@ -16,6 +16,7 @@ import {
     FiCheckCircle,
     FiMessageSquare
 } from 'react-icons/fi';
+import ShopFooter from '../components/layout/ShopFooter';
 
 const PRIMARY = '#004AC6';
 const TEXT = '#191B23';
@@ -441,6 +442,8 @@ export default function SupportPage() {
                     </div>
                 </div>
             </section>
+            
+            <ShopFooter />
         </div>
     );
 }

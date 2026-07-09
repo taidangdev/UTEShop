@@ -6,12 +6,13 @@ import ProductSearchBox from '../components/catalog/ProductSearchBox';
 import type { ApiEnvelope, PaginationMeta } from '../types/api';
 import type { CatalogProduct, CategoryWithCount, Major } from '../types/catalog';
 import ProductCard from '../components/catalog/ProductCard';
+import ShopFooter from '../components/layout/ShopFooter';
 
 const SORT_OPTIONS = [
-    { value: 'newest', label: 'Newest Arrival' },
-    { value: 'price_asc', label: 'Price: Low to High' },
-    { value: 'price_desc', label: 'Price: High to Low' },
-    { value: 'popular', label: 'Most Popular' }
+    { value: 'newest', label: 'Mới nhất' },
+    { value: 'price_asc', label: 'Giá: Thấp đến Cao' },
+    { value: 'price_desc', label: 'Giá: Cao đến Thấp' },
+    { value: 'popular', label: 'Bán chạy nhất' }
 ];
 
 const HERO_IMAGE = '/PremiumLaptop.png';
@@ -20,66 +21,6 @@ const HERO_IMAGE = '/PremiumLaptop.png';
 
 
 
-// Reusable ProductCard is now imported from components/catalog/ProductCard
-
-function CategoriesFooter() {
-    return (
-        <footer className="w-full bg-surface-container-low py-20">
-            <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-4 px-6 md:grid-cols-4 lg:grid-cols-5 lg:px-8">
-                <div className="col-span-2 lg:col-span-1">
-                    <div className="mb-6 text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="text-base text-on-surface-variant">
-                        Engineering-Grade Quality for the academic frontier.
-                    </p>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Shopping</h5>
-                    <nav className="flex flex-col gap-2">
-                        <Link to="/categories?category=study-tools" className="text-xs text-on-surface-variant hover:text-primary">
-                            Study Tools
-                        </Link>
-                        <Link to="/categories?category=technology" className="text-xs text-on-surface-variant hover:text-primary">
-                            Technology
-                        </Link>
-                        <Link to="/categories?category=merchandise" className="text-xs text-on-surface-variant hover:text-primary">
-                            Merchandise
-                        </Link>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Resources</h5>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Student Support
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Shipping
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Contact
-                        </a>
-                    </nav>
-                </div>
-                <div className="space-y-4">
-                    <h5 className="text-sm font-bold text-primary">Legal</h5>
-                    <nav className="flex flex-col gap-2">
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Privacy Policy
-                        </a>
-                        <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                            Terms of Service
-                        </a>
-                    </nav>
-                </div>
-                <div className="col-span-2 mt-8 lg:col-span-1 lg:mt-0">
-                    <p className="text-xs text-on-surface-variant opacity-80">
-                        © 2024 UTEShop. Engineering-Grade Quality.
-                    </p>
-                </div>
-            </div>
-        </footer>
-    );
-}
 
 export default function CategoriesPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -163,7 +104,7 @@ export default function CategoriesPage() {
                     const msg =
                         typeof err === 'string'
                             ? err
-                            : (err as { message?: string })?.message || 'Failed to load catalog';
+                            : (err as { message?: string })?.message || 'Không thể tải danh mục sản phẩm';
                     setError(msg);
                 }
             } finally {
@@ -189,18 +130,17 @@ export default function CategoriesPage() {
                     <div className="absolute inset-0 flex items-center bg-gradient-to-r from-on-surface/60 to-transparent p-8 md:p-12">
                         <div className="max-w-xl">
                             <h1 className="mb-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
-                                Precision Tools for Modern Minds
+                                Công cụ chính xác cho tư duy hiện đại
                             </h1>
                             <p className="mb-8 text-lg text-white/90">
-                                Curated technology and merchandise engineered for the next generation of
-                                innovators.
+                                Công nghệ và đồ dùng được tuyển chọn dành riêng cho thế hệ nhà đổi mới tiếp theo.
                             </p>
                             <button
                                 type="button"
                                 onClick={() => updateParams({ category: 'all', q: '', majorId: '', page: 1 })}
                                 className="h-14 rounded-[24px] bg-primary px-8 text-sm font-medium text-on-primary transition active:scale-95 hover:shadow-lg"
                             >
-                                Explore Full Collection
+                                Khám phá toàn bộ bộ sưu tập
                             </button>
                         </div>
                     </div>
@@ -225,7 +165,7 @@ export default function CategoriesPage() {
                             }}
                             className="h-12 shrink-0 rounded-full border border-outline-variant px-4 text-sm text-on-surface-variant hover:bg-surface-container"
                         >
-                            Clear
+                            Xóa bộ lọc
                         </button>
                     )}
                 </div>
@@ -235,7 +175,7 @@ export default function CategoriesPage() {
                 {/* Sidebar */}
                 <aside className="space-y-10 md:col-span-3">
                     <div>
-                        <h3 className="mb-6 text-2xl font-semibold text-on-surface">Categories</h3>
+                        <h3 className="mb-6 text-2xl font-semibold text-on-surface">Danh mục</h3>
                         <div className="flex flex-col gap-3">
                             {categories.map((cat) => {
                                 const active =
@@ -258,7 +198,7 @@ export default function CategoriesPage() {
                                         }`}
                                     >
                                         <span className="text-sm font-medium">
-                                            {cat.name}
+                                            {cat.slug === 'all' ? 'Tất cả sản phẩm' : cat.name}
                                         </span>
                                         <span className="text-xs opacity-60">{cat.productCount}</span>
                                     </button>
@@ -268,7 +208,7 @@ export default function CategoriesPage() {
                     </div>
 
                     <div>
-                        <h3 className="mb-6 text-2xl font-semibold text-on-surface">Filter by Major</h3>
+                        <h3 className="mb-6 text-2xl font-semibold text-on-surface">Lọc theo ngành học</h3>
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"
@@ -279,7 +219,7 @@ export default function CategoriesPage() {
                                         : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
                                 }`}
                             >
-                                All majors
+                                Tất cả ngành học
                             </button>
                             {majors.map((m) => (
                                 <button
@@ -303,19 +243,6 @@ export default function CategoriesPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-[24px] bg-surface-container-low p-6">
-                        <h4 className="mb-2 text-sm font-bold text-on-surface">Student Verification</h4>
-                        <p className="mb-4 text-xs text-on-surface-variant">
-                            Connect your .edu email to unlock exclusive engineering discounts up to 30%
-                            off.
-                        </p>
-                        <Link
-                            to="/register"
-                            className="flex h-12 w-full items-center justify-center rounded-full bg-on-surface text-sm font-semibold text-surface"
-                        >
-                            Verify Status
-                        </Link>
-                    </div>
                 </aside>
 
                 {/* Grid */}
@@ -323,19 +250,19 @@ export default function CategoriesPage() {
                     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-base text-on-surface-variant">
                             {loading
-                                ? 'Loading…'
+                                ? 'Đang tải…'
                                 : total === 0
-                                  ? 'No results'
-                                  : `Showing ${showingFrom}–${showingTo} of ${total} results`}
+                                  ? 'Không tìm thấy kết quả'
+                                  : `Hiển thị ${showingFrom}–${showingTo} trên tổng số ${total} kết quả`}
                             {q ? (
                                 <span>
                                     {' '}
-                                    for &quot;<strong className="text-on-surface">{q}</strong>&quot;
+                                    cho &quot;<strong className="text-on-surface">{q}</strong>&quot;
                                 </span>
                             ) : null}
                         </p>
                         <div className="flex items-center gap-4">
-                            <span className="text-sm text-on-surface-variant">Sort by:</span>
+                            <span className="text-sm text-on-surface-variant">Sắp xếp theo:</span>
                             <select
                                 value={sort}
                                 onChange={(e) => updateParams({ sort: e.target.value, page: 1 })}
@@ -365,7 +292,7 @@ export default function CategoriesPage() {
                             <span className="material-symbols-outlined mb-4 text-5xl text-outline">
                                 inventory_2
                             </span>
-                            <p className="text-on-surface-variant">No products match your filters.</p>
+                            <p className="text-on-surface-variant">Không có sản phẩm nào khớp với bộ lọc của bạn.</p>
                             <button
                                 type="button"
                                 onClick={() => {
@@ -374,7 +301,7 @@ export default function CategoriesPage() {
                                 }}
                                 className="mt-4 text-sm font-semibold text-primary hover:underline"
                             >
-                                Reset filters
+                                Đặt lại bộ lọc
                             </button>
                         </div>
                     ) : (
@@ -392,7 +319,7 @@ export default function CategoriesPage() {
                                 disabled={page <= 1}
                                 onClick={() => updateParams({ page: page - 1 })}
                                 className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-highest text-primary disabled:opacity-40"
-                                aria-label="Previous page"
+                                aria-label="Trang trước"
                             >
                                 <span className="material-symbols-outlined">chevron_left</span>
                             </button>
@@ -432,7 +359,7 @@ export default function CategoriesPage() {
                                 disabled={page >= pagination.totalPages}
                                 onClick={() => updateParams({ page: page + 1 })}
                                 className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-highest text-primary disabled:opacity-40"
-                                aria-label="Next page"
+                                aria-label="Trang sau"
                             >
                                 <span className="material-symbols-outlined">chevron_right</span>
                             </button>
@@ -441,13 +368,13 @@ export default function CategoriesPage() {
                 </div>
             </section>
 
-            <CategoriesFooter />
+            <ShopFooter />
 
             <div className="fixed bottom-8 right-8 z-40 md:hidden">
                 <button
                     type="button"
                     className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-on-primary shadow-xl transition active:scale-90"
-                    aria-label="Cart"
+                    aria-label="Giỏ hàng"
                 >
                     <span className="material-symbols-outlined">shopping_bag</span>
                 </button>

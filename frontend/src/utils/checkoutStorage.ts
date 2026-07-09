@@ -81,3 +81,27 @@ export function clearCheckoutSession() {
 export function hasCheckoutSelection(): boolean {
     return readSession().productIds.length > 0;
 }
+
+/** Chỉ gửi mã khuyến mãi đã xác nhận áp dụng lên API — không gửi discountCode đang thử */
+export function sanitizeCheckoutInformationForApi(
+    information: CheckoutInformation
+): CheckoutInformation {
+    return {
+        ...information,
+        discountCode: '',
+        appliedDiscountCode: information.appliedDiscountCode?.trim() || '',
+        userCouponCode: information.userCouponCode?.trim() || '',
+        pointsToRedeem: Math.max(0, Number(information.pointsToRedeem) || 0)
+    };
+}
+
+/** Xóa mã giảm giá / điểm khi preview hoặc đặt hàng thất bại do khuyến mãi không hợp lệ */
+export function clearCheckoutDiscounts(information: CheckoutInformation): CheckoutInformation {
+    return {
+        ...information,
+        appliedDiscountCode: '',
+        discountCode: '',
+        userCouponCode: '',
+        pointsToRedeem: 0
+    };
+}

@@ -11,6 +11,7 @@ import {
     promotionScopeLabel
 } from '../utils/promotionDisplay';
 import { formatPrice } from '../utils/formatPrice';
+import ShopFooter from '../components/layout/ShopFooter';
 
 const HERO_IMAGE = '/PremiumLaptop.png';
 
@@ -23,28 +24,6 @@ const SCOPE_FILTERS: { value: ScopeFilter; label: string }[] = [
     { value: 'product', label: 'Sản phẩm' }
 ];
 
-function CouponsFooter() {
-    return (
-        <footer className="w-full bg-surface-container-low py-20">
-            <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
-                <div className="flex flex-col items-center justify-between gap-6 border-t border-outline-variant/30 pt-10 md:flex-row">
-                    <div className="text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="text-sm text-on-surface-variant">
-                        © 2024 UTEShop. Engineering-Grade Quality.
-                    </p>
-                    <div className="flex gap-6">
-                        <Link to="/categories" className="text-sm text-on-surface-variant hover:text-primary">
-                            Sản phẩm
-                        </Link>
-                        <Link to="/cart" className="text-sm text-on-surface-variant hover:text-primary">
-                            Giỏ hàng
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    );
-}
 
 function CopyCodeButton({ code }: { code: string }) {
     const [copied, setCopied] = useState(false);
@@ -107,6 +86,20 @@ function ShopPromotionCard({ promo }: { promo: ShopPromotion }) {
                         </span>
                     </div>
                 )}
+                <div className="mt-4 space-y-1.5 border-t border-outline-variant/20 pt-3 text-xs text-on-surface-variant">
+                    {promo.maxUsesPerUser !== undefined && promo.maxUsesPerUser !== null && (
+                        <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-primary/70">person</span>
+                            <span>Mỗi khách hàng: Tối đa <strong>{promo.maxUsesPerUser} lần</strong></span>
+                        </div>
+                    )}
+                    {promo.usageLimit !== undefined && promo.usageLimit !== null && promo.usedCount !== undefined && (
+                        <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-primary/70">query_stats</span>
+                            <span>Còn lại: <strong>{Math.max(0, promo.usageLimit - promo.usedCount)} / {promo.usageLimit}</strong> lượt dùng</span>
+                        </div>
+                    )}
+                </div>
             </div>
             <div className="flex flex-1 flex-col p-6 pt-2">
                 <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-3">
@@ -358,7 +351,7 @@ export default function CouponsPage() {
                 )}
             </section>
 
-            <CouponsFooter />
+            <ShopFooter />
         </div>
     );
 }

@@ -129,6 +129,23 @@ async function createConsignment(userId, payload) {
         }
 
         await transaction.commit();
+
+        // Trigger system notification for admin asynchronously after successful commit
+        (async () => {
+            try {
+                const notificationService = require('./notification.service');
+                await notificationService.createNotification({
+                    userId: null,
+                    title: `🆕 Yêu cầu ký gửi mới: #${consignment.id}`,
+                    content: `Khách hàng đã gửi yêu cầu ký gửi mới cho sản phẩm "${consignment.title}".`,
+                    type: 'consignment_new',
+                    relatedId: String(consignment.id)
+                });
+            } catch (err) {
+                console.error('❌ Failed to trigger notification for new consignment request:', err);
+            }
+        })();
+
         return consignment;
     } catch (error) {
         await transaction.rollback();

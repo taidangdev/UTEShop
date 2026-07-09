@@ -62,7 +62,7 @@ export function useCheckoutPreview(
             const msg =
                 typeof err === 'string'
                     ? err
-                    : (err as { message?: string })?.message || 'Could not refresh checkout preview';
+                    : (err as { message?: string })?.message || 'Không thể cập nhật xem trước đơn hàng';
             setError(msg);
         } finally {
             setLoading(false);

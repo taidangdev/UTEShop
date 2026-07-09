@@ -1,22 +1,23 @@
 [
   {
     "code": "BACK2SCHOOL20",
-    "name": "Back to School — Merchandise 20%",
-    "description": "20% off merchandise category items in cart",
+    "name": "Tựu Trường — Đồ Lưu Niệm Giảm 20%",
+    "description": "Giảm 20% cho các sản phẩm trong danh mục lưu niệm khi thanh toán",
     "scope": "category",
     "type": "percentage",
     "value": 20,
-    "minOrderAmount": 30000,
+    "minOrderAmount": 300000,
     "categorySlugs": [
       "merchandise"
     ],
-    "maxUsesPerUser": 3,
+    "maxUsesPerUser": 1,
+    "usageLimit": 1000,
     "isActive": true
   },
   {
     "code": "KIT15",
-    "name": "Engineering Kit 15% Off",
-    "description": "15% off selected engineering starter kit",
+    "name": "Bộ Thiết Bị Thực Hành Giảm 15%",
+    "description": "Giảm 15% cho Bộ Kit thực hành kỹ thuật được chọn",
     "scope": "product",
     "type": "percentage",
     "value": 15,
@@ -25,30 +26,35 @@
       "engineering-starter-kit"
     ],
     "maxUsesPerUser": 1,
+    "usageLimit": 1000,
     "isActive": true
   },
   {
     "code": "TECH10",
-    "name": "Tech accessories 10%",
-    "description": "10% off gaming mouse and mechanical keyboard",
+    "name": "Phụ Kiện Công Nghệ Giảm 10%",
+    "description": "Giảm 10% cho chuột gaming và bàn phím cơ",
     "scope": "product",
     "type": "percentage",
     "value": 10,
-    "minOrderAmount": 50000,
+    "minOrderAmount": 500000,
     "productSlugs": [
       "chuot-gaming-rgb",
       "ban-phim-co-bluetooth"
     ],
+    "maxUsesPerUser": 1,
+    "usageLimit": 1000,
     "isActive": true
   },
   {
     "code": "FREESHIPUTE",
-    "name": "Free shipping campus",
-    "description": "Free shipping on entire order (shop-wide)",
+    "name": "Miễn Phí Vận Chuyển Nội Khu",
+    "description": "Miễn phí vận chuyển cho toàn bộ đơn hàng trong phạm vi campus",
     "scope": "shop",
     "type": "free_shipping",
     "value": 0,
-    "minOrderAmount": 25000,
+    "minOrderAmount": 250000,
+    "maxUsesPerUser": 1,
+    "usageLimit": 1000,
     "isActive": true
   }
 ]

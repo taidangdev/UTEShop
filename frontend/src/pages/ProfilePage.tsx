@@ -7,6 +7,7 @@ import ProfileEditModal from '../components/profile/ProfileEditModal';
 import ChangePasswordModal from '../components/profile/ChangePasswordModal';
 import ProfileRewardsPanel from '../components/profile/ProfileRewardsPanel';
 import ProfileAddressesTab from '../components/profile/ProfileAddressesTab';
+import ShopFooter from '../components/layout/ShopFooter';
 import WriteReviewModal from '../components/reviews/WriteReviewModal';
 import { fetchMyCoupons, fetchMyPoints } from '../services/reviewApi';
 import type { UserCoupon } from '../types/review';
@@ -22,12 +23,12 @@ const DEFAULT_AVATAR =
 const PROFILE_SECTIONS = ['overview', 'rewards', 'orders', 'reviews', 'wishlist', 'addresses', 'settings'] as const;
 
 const SIDEBAR_ITEMS = [
-    { id: 'overview', label: 'Overview', icon: 'dashboard', filled: true },
-    { id: 'orders', label: 'Order History', icon: 'shopping_bag' },
-    { id: 'reviews', label: 'My Reviews', icon: 'reviews' },
+    { id: 'overview', label: 'Tổng quan', icon: 'dashboard', filled: true },
+    { id: 'orders', label: 'Lịch sử đơn hàng', icon: 'shopping_bag' },
+    { id: 'reviews', label: 'Đánh giá của tôi', icon: 'reviews' },
     { id: 'wishlist', label: 'Sản phẩm yêu thích', icon: 'favorite' },
     { id: 'addresses', label: 'Sổ địa chỉ', icon: 'location_on' },
-    { id: 'settings', label: 'Account Settings', icon: 'settings' }
+    { id: 'settings', label: 'Cài đặt tài khoản', icon: 'settings' }
 ];
 
 function displayName(user: ProfileUser | null, authUser: AuthUser | null) {
@@ -58,58 +59,7 @@ function OrderProgress({ filled }: { filled: number }) {
     );
 }
 
-function ProfileFooter() {
-    return (
-        <footer className="w-full bg-surface-container-low py-20">
-            <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-4 px-6 md:grid-cols-4 lg:grid-cols-5 lg:px-8">
-                <div className="col-span-2 lg:col-span-1">
-                    <div className="mb-4 text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="text-xs text-on-surface-variant opacity-80">
-                        Engineering-Grade Quality since 2018.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-4">
-                    <h5 className="text-sm font-semibold text-primary">Shop</h5>
-                    <a href="/#featured" className="text-xs text-on-surface-variant hover:text-primary">
-                        Technology
-                    </a>
-                    <a href="/#featured" className="text-xs text-on-surface-variant hover:text-primary">
-                        Textbooks
-                    </a>
-                    <a href="/#featured" className="text-xs text-on-surface-variant hover:text-primary">
-                        Lab Gear
-                    </a>
-                </div>
-                <div className="flex flex-col gap-4">
-                    <h5 className="text-sm font-semibold text-primary">Support</h5>
-                    <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                        Student Support
-                    </a>
-                    <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                        Shipping
-                    </a>
-                    <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                        Contact
-                    </a>
-                </div>
-                <div className="flex flex-col gap-4">
-                    <h5 className="text-sm font-semibold text-primary">Legal</h5>
-                    <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                        Privacy Policy
-                    </a>
-                    <a href="#support" className="text-xs text-on-surface-variant hover:text-primary">
-                        Terms of Service
-                    </a>
-                </div>
-                <div className="col-span-2 mt-10 border-t border-outline-variant pt-10 md:col-span-4 lg:col-span-1 lg:mt-0 lg:border-none lg:pt-0">
-                    <p className="text-xs text-on-surface-variant">
-                        © 2024 UTEShop. Engineering-Grade Quality.
-                    </p>
-                </div>
-            </div>
-        </footer>
-    );
-}
+
 
 const ProfilePage = () => {
     const dispatch = useAppDispatch();
@@ -256,7 +206,7 @@ const ProfilePage = () => {
                             onClick={() => dispatch(fetchUserProfile())}
                             className="mt-4 rounded-full bg-primary px-6 py-2 text-sm font-semibold text-on-primary"
                         >
-                            Retry
+                            Thử lại
                         </button>
                     </div>
                 ) : (
@@ -281,9 +231,7 @@ const ProfilePage = () => {
                                     </div>
                                     <div>
                                         <h1 className="text-3xl font-semibold text-on-surface">{name}</h1>
-                                        <p className="mt-1 text-base text-on-surface-variant">
-                                            {profileSubtitle(user)}
-                                        </p>
+
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             {user?.major?.name && (
                                                 <span className="rounded-full bg-surface-container-high px-3 py-1 text-xs font-semibold text-on-surface-variant">
@@ -334,7 +282,7 @@ const ProfilePage = () => {
                                         className="flex items-center gap-3 rounded-xl p-4 text-left text-error transition-all hover:bg-error/10"
                                     >
                                         <span className="material-symbols-outlined">logout</span>
-                                        <span className="text-sm font-medium">Sign Out</span>
+                                        <span className="text-sm font-medium">Đăng xuất</span>
                                     </button>
                                 </nav>
                             </aside>
@@ -362,16 +310,16 @@ const ProfilePage = () => {
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                             <div className="rounded-[24px] bg-surface-container-low p-6">
                                                 <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                    Account
+                                                    Tài khoản
                                                 </p>
                                                 <p className="mt-2 text-sm text-on-surface">{user?.email}</p>
                                                 <p className="mt-1 text-sm text-on-surface-variant">
-                                                    {user?.phone || 'No phone on file'}
+                                                    {user?.phone || 'Chưa cập nhật số điện thoại'}
                                                 </p>
                                             </div>
                                             <div className="rounded-[24px] bg-surface-container-low p-6">
                                                 <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                    Orders
+                                                    Đơn hàng
                                                 </p>
                                                 <p className="mt-2 text-3xl font-semibold text-primary">
                                                     {stats?.orderCount ?? 0}
@@ -379,7 +327,7 @@ const ProfilePage = () => {
                                             </div>
                                             <div className="rounded-[24px] bg-surface-container-low p-6">
                                                 <p className="text-xs font-semibold uppercase text-on-surface-variant">
-                                                    Reviews
+                                                    Đánh giá
                                                 </p>
                                                 <p className="mt-2 text-3xl font-semibold text-primary">
                                                     {stats?.reviewCount ?? 0}
@@ -387,13 +335,13 @@ const ProfilePage = () => {
                                             </div>
                                             <div className="rounded-[24px] bg-primary/10 p-6">
                                                 <p className="text-xs font-semibold uppercase text-primary">
-                                                    Loyalty points
+                                                    Điểm thưởng
                                                 </p>
                                                 <p className="mt-2 text-3xl font-semibold text-primary">
                                                     {pointsBalance ?? stats?.loyaltyPoints ?? 0}
                                                 </p>
                                                 <p className="mt-1 text-xs text-on-surface-variant">
-                                                    Redeem at checkout
+                                                    Sử dụng khi thanh toán
                                                 </p>
                                             </div>
                                         </div>
@@ -406,19 +354,19 @@ const ProfilePage = () => {
                                                 <span className="material-symbols-outlined text-[20px]">
                                                     rate_review
                                                 </span>
-                                                Write a Review
+                                                Viết đánh giá
                                             </button>
                                             <Link
                                                 to="/profile/orders"
                                                 className="inline-flex items-center gap-2 rounded-full bg-surface-container-high px-6 py-3 text-sm font-medium text-on-surface transition hover:bg-surface-container-highest"
                                             >
-                                                View orders
+                                                Xem đơn hàng
                                             </Link>
                                         </div>
                                         {coupons.length > 0 && (
                                             <div className="rounded-[24px] bg-surface-container-lowest p-6">
                                                 <h3 className="mb-4 text-lg font-semibold text-on-surface">
-                                                    My reward coupons
+                                                    Mã giảm giá thưởng của tôi
                                                 </h3>
                                                 <ul className="flex flex-col gap-2">
                                                     {coupons.slice(0, 5).map((c) => (
@@ -430,7 +378,7 @@ const ProfilePage = () => {
                                                                 {c.code}
                                                             </span>
                                                             <span className="text-on-surface-variant">
-                                                                {c.discountValue}% off · exp.{' '}
+                                                                {c.discountValue}% giảm · HSD:{' '}
                                                                 {new Date(c.expiresAt).toLocaleDateString()}
                                                             </span>
                                                         </li>
@@ -440,7 +388,7 @@ const ProfilePage = () => {
                                         )}
                                         {user?.address && (
                                             <p className="mt-4 text-sm text-on-surface-variant">
-                                                <span className="font-semibold text-on-surface">Address:</span>{' '}
+                                                <span className="font-semibold text-on-surface">Địa chỉ:</span>{' '}
                                                 {user.address}
                                             </p>
                                         )}
@@ -780,7 +728,7 @@ const ProfilePage = () => {
                                             className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-error/20 py-4 text-error transition hover:bg-error/10 lg:hidden"
                                         >
                                             <span className="material-symbols-outlined">logout</span>
-                                            Sign Out
+                                            Đăng xuất
                                         </button>
                                     </section>
                                 )}
@@ -790,7 +738,7 @@ const ProfilePage = () => {
                 )}
             </main>
 
-            <ProfileFooter />
+            <ShopFooter />
             <ProfileEditModal open={editOpen} onClose={() => setEditOpen(false)} />
             <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
             <WriteReviewModal

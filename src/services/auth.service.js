@@ -66,7 +66,7 @@ const registerUser = async ({ username, email, password, fullName, studentId, ma
         throw err;
     }
 
-    const nameTaken = await User.findOne({ where: { username: username.trim() } });
+    const nameTaken = await User.findOne({ where: { username: username.trim().toLowerCase() } });
     if (nameTaken) {
         const err = new Error('Username already taken');
         err.statusCode = 409;
@@ -85,7 +85,7 @@ const registerUser = async ({ username, email, password, fullName, studentId, ma
     const passwordHash = await hashPassword(password);
 
     const user = await User.create({
-        username: username.trim(),
+        username: username.trim().toLowerCase(),
         email: normalizedEmail,
         password: passwordHash,
         fullName: fullName?.trim() || null,

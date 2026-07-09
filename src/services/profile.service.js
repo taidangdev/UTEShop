@@ -53,6 +53,16 @@ const STATUS_UI = {
         statusClass: 'bg-error-container text-on-error-container',
         progress: 0
     },
+    return_requested: {
+        label: 'Chờ duyệt trả hàng',
+        statusClass: 'bg-amber-500/10 text-amber-500',
+        progress: 0
+    },
+    return_approved: {
+        label: 'Chờ thu hồi hàng',
+        statusClass: 'bg-indigo-500/10 text-indigo-500',
+        progress: 0
+    },
     cancel_requested: {
         label: 'Yêu cầu hủy đơn',
         statusClass: 'bg-amber-500/10 text-amber-500',
@@ -98,6 +108,12 @@ function orderDetailText(order) {
         return order.returnedAt
             ? `Hoàn trả ngày ${formatDate(order.returnedAt)}`
             : 'Đơn hàng đã hoàn trả';
+    }
+    if (order.status === 'return_requested') {
+        return 'Yêu cầu trả hàng đang chờ duyệt';
+    }
+    if (order.status === 'return_approved') {
+        return 'Yêu cầu trả hàng đã được duyệt, đang chờ thu hồi hàng';
     }
     if (order.status === 'cancelled') {
         return order.cancelledAt

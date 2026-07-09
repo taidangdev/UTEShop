@@ -17,10 +17,10 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-    { label: 'Home', to: '/' },
-    { label: 'Product', to: '/categories', matchPath: true },
-    { label: 'Coupons', to: '/coupons' },
-    { label: 'Support & Contact', to: '/support' }
+    { label: 'Trang chủ', to: '/' },
+    { label: 'Sản phẩm', to: '/categories', matchPath: true },
+    { label: 'Mã giảm giá', to: '/coupons' },
+    { label: 'Hỗ trợ & Liên hệ', to: '/support' }
 ];
 
 function isNavActive(location: Location, link: NavLink): boolean {

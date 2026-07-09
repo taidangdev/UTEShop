@@ -51,7 +51,7 @@ const Promotion = sequelize.define(
         },
         maxUsesPerUser: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: false
         },
         startsAt: {
             type: DataTypes.DATE,
@@ -63,7 +63,7 @@ const Promotion = sequelize.define(
         },
         usageLimit: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: false
         },
         usedCount: {
             type: DataTypes.INTEGER,

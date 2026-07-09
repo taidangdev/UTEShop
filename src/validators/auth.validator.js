@@ -1,12 +1,17 @@
 const { body } = require('express-validator');
 
+const USERNAME_PATTERN = /^[a-zA-Z0-9]+$/;
+
 const registerValidation = [
     body('username')
         .trim()
+        .customSanitizer((v) => String(v ?? '').trim().toLowerCase())
         .notEmpty()
-        .withMessage('Username là bắt buộc')
+        .withMessage('Tên tài khoản là bắt buộc')
         .isLength({ min: 3, max: 50 })
-        .withMessage('Username từ 3 đến 50 ký tự'),
+        .withMessage('Tên tài khoản từ 3 đến 50 ký tự')
+        .matches(USERNAME_PATTERN)
+        .withMessage('Tên tài khoản chỉ gồm chữ cái không dấu và số, không có khoảng trắng'),
     body('email')
         .trim()
         .notEmpty()

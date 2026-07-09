@@ -17,10 +17,12 @@ import {
     getCheckoutInformation,
     getCheckoutProductIds,
     hasCheckoutSelection,
-    saveCheckoutInformation
+    saveCheckoutInformation,
+    clearCheckoutDiscounts
 } from '../utils/checkoutStorage';
 import { fetchMyAddresses, updateUserAddress, createUserAddress } from '../services/addressApi';
 import type { UserAddress } from '../types/address';
+import { formatPrice } from '../utils/formatPrice';
 
 interface ProfileUser {
     fullName?: string | null;
@@ -44,6 +46,7 @@ export default function CheckoutInformationPage() {
     const [userCoupons, setUserCoupons] = useState<UserCoupon[]>([]);
     const [pointsBalance, setPointsBalance] = useState(0);
     const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
+    const [promotionRejections, setPromotionRejections] = useState<Record<string, string>>({});
     const [shopPromotions, setShopPromotions] = useState<ShopPromotion[]>([]);
     const [promotionsLoading, setPromotionsLoading] = useState(true);
     const [promotionApplying, setPromotionApplying] = useState(false);
@@ -388,16 +391,40 @@ export default function CheckoutInformationPage() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!previewError) return;
+        setPromotionMessage(previewError);
+        setInformation((prev) => {
+            if (!prev.appliedDiscountCode && !prev.userCouponCode && !prev.pointsToRedeem) {
+                return prev;
+            }
+            const next = clearCheckoutDiscounts(prev);
+            saveCheckoutInformation(next);
+            return next;
+        });
+    }, [previewError]);
+
     const updateField = <K extends keyof CheckoutInformation>(key: K, value: CheckoutInformation[K]) => {
         setInformation((prev) => ({ ...prev, [key]: value }));
     };
 
     const clearPromotion = () => {
-        setInformation((prev) => ({
-            ...prev,
-            appliedDiscountCode: '',
-            discountCode: ''
-        }));
+        setInformation((prev) => {
+            const next = {
+                ...prev,
+                appliedDiscountCode: '',
+                discountCode: ''
+            };
+            saveCheckoutInformation(next);
+            if (prev.appliedDiscountCode) {
+                setPromotionRejections((r) => {
+                    const cleared = { ...r };
+                    delete cleared[prev.appliedDiscountCode];
+                    return cleared;
+                });
+            }
+            return next;
+        });
         setPromotionMessage(null);
     };
 
@@ -407,19 +434,39 @@ export default function CheckoutInformationPage() {
         try {
             const result = await validatePromotionCode(code, productIds);
             if (!result.valid) {
-                setPromotionMessage(result.message || 'Mã không hợp lệ với giỏ hàng hiện tại');
+                const msg = result.message || 'Mã không hợp lệ với giỏ hàng hiện tại';
+                setPromotionMessage(msg);
+                setPromotionRejections((prev) => ({ ...prev, [code]: msg }));
+                setInformation((prev) => {
+                    const next = {
+                        ...prev,
+                        appliedDiscountCode: '',
+                        discountCode: ''
+                    };
+                    saveCheckoutInformation(next);
+                    return next;
+                });
                 return false;
             }
             setPromotionMessage(
-                `✓ ${result.promotion?.name || code} — giảm $${result.promotionDiscount?.toFixed(2) ?? '0'}${
+                `✓ ${result.promotion?.name || code} — giảm ${formatPrice(result.promotionDiscount ?? 0)}${
                     result.freeShipping ? ', miễn phí ship' : ''
                 }`
             );
-            setInformation((prev) => ({
-                ...prev,
-                appliedDiscountCode: code,
-                discountCode: code
-            }));
+            setPromotionRejections((prev) => {
+                const next = { ...prev };
+                delete next[code];
+                return next;
+            });
+            setInformation((prev) => {
+                const next = {
+                    ...prev,
+                    appliedDiscountCode: code,
+                    discountCode: code
+                };
+                saveCheckoutInformation(next);
+                return next;
+            });
             return true;
         } catch (err) {
             const msg =
@@ -427,6 +474,12 @@ export default function CheckoutInformationPage() {
                     ? err
                     : (err as { message?: string })?.message || 'Không thể áp dụng mã';
             setPromotionMessage(msg);
+            setPromotionRejections((prev) => ({ ...prev, [code]: msg }));
+            setInformation((prev) => {
+                const next = clearCheckoutDiscounts(prev);
+                saveCheckoutInformation(next);
+                return next;
+            });
             return false;
         } finally {
             setPromotionApplying(false);
@@ -439,7 +492,6 @@ export default function CheckoutInformationPage() {
             return;
         }
         if (code === information.appliedDiscountCode) return;
-        setInformation((prev) => ({ ...prev, discountCode: code }));
         await applyPromotionByCode(code);
     };
 
@@ -533,16 +585,16 @@ export default function CheckoutInformationPage() {
             return;
         }
 
-        saveCheckoutInformation(information);
+        saveCheckoutInformation(previewError ? clearCheckoutDiscounts(information) : information);
         navigate('/checkout/payment');
     };
 
     if (!cartLoading && cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-surface px-6 py-20 text-center">
-                <p className="text-lg text-on-surface-variant">No items selected for checkout.</p>
+                <p className="text-lg text-on-surface-variant">Không có sản phẩm nào được chọn để thanh toán.</p>
                 <Link to="/cart" className="mt-6 inline-block text-primary hover:underline">
-                    Back to Cart
+                    Quay lại giỏ hàng
                 </Link>
             </div>
         );
@@ -560,7 +612,7 @@ export default function CheckoutInformationPage() {
                             to="/cart"
                             className="text-sm font-medium text-on-surface-variant transition hover:text-primary"
                         >
-                            Back to Cart
+                            Quay lại giỏ hàng
                         </Link>
                         <span className="material-symbols-outlined text-outline">lock</span>
                     </div>
@@ -573,12 +625,6 @@ export default function CheckoutInformationPage() {
                 {formError && (
                     <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
                         {formError}
-                    </p>
-                )}
-
-                {previewError && (
-                    <p className="mb-6 rounded-xl border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
-                        {previewError}
                     </p>
                 )}
 
@@ -911,14 +957,14 @@ export default function CheckoutInformationPage() {
                                         className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-surface-container-high text-sm font-medium text-on-surface transition hover:bg-surface-container-highest"
                                     >
                                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                                        Back to Cart
+                                        Quay lại giỏ hàng
                                     </Link>
                                     <button
                                         type="submit"
                                         disabled={cartLoading || previewLoading}
                                         className="flex h-12 flex-[2] items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-on-primary shadow-md transition hover:bg-primary-container disabled:opacity-50"
                                     >
-                                        Continue to Payment
+                                        Tiếp tục đến trang thanh toán
                                         <span className="material-symbols-outlined text-lg">arrow_forward</span>
                                     </button>
                                 </>
@@ -942,6 +988,7 @@ export default function CheckoutInformationPage() {
                                 promotionApplying={promotionApplying}
                                 onPromotionSelect={handlePromotionSelect}
                                 promotionMessage={promotionMessage}
+                                rejectedPromotions={promotionRejections}
                                 userCoupons={userCoupons}
                                 pointsBalance={pointsBalance}
                                 maxPointsRedeemable={maxPointsRedeemable}

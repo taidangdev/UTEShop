@@ -1,7 +1,7 @@
 import type { CartLine } from './cartStorage';
 import type { CheckoutInformation, CheckoutTotals } from '../types/checkout';
 
-const HOME_SHIPPING_FEE = 12;
+const HOME_SHIPPING_FEE = 12000;
 
 /** Client-side estimate when API preview is unavailable */
 export function calculateCheckoutTotals(

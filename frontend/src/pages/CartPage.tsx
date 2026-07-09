@@ -9,6 +9,7 @@ import {
     removeServerCartItem,
     updateServerCartItem
 } from '../services/cartApi';
+import ShopFooter from '../components/layout/ShopFooter';
 import { useAppSelector } from '../store/hooks';
 import { formatPrice } from '../utils/formatPrice';
 import {
@@ -24,64 +25,6 @@ import type { ApiEnvelope } from '../types/api';
 import type { CatalogProduct, HomePageData } from '../types/catalog';
 import { saveCheckoutSelection } from '../utils/checkoutStorage';
 
-function CartFooter() {
-    return (
-        <footer className="mt-20 w-full border-t border-outline-variant/30 bg-surface-container-low">
-            <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 py-20 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
-                <div>
-                    <div className="mb-4 text-2xl font-bold text-on-surface">UTEShop</div>
-                    <p className="mb-4 max-w-xs text-base text-on-surface-variant">
-                        Engineering Excellence. Delivered daily to the innovators of tomorrow.
-                    </p>
-                </div>
-                <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Resources</h4>
-                    <nav className="flex flex-col gap-3">
-                        <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Academic Support
-                        </a>
-                        <Link to="/categories" className="text-sm text-on-surface-variant hover:text-primary">
-                            Student Discounts
-                        </Link>
-                        <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Warranty &amp; Repairs
-                        </a>
-                    </nav>
-                </div>
-                <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Company</h4>
-                    <nav className="flex flex-col gap-3">
-                        <a href="/#support" className="text-sm text-on-surface-variant hover:text-primary">
-                            Privacy Policy
-                        </a>
-                        <Link to="/profile" className="text-sm text-on-surface-variant hover:text-primary">
-                            Faculty Portal
-                        </Link>
-                    </nav>
-                </div>
-                <div>
-                    <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">Newsletter</h4>
-                    <p className="mb-4 text-sm text-on-surface-variant">Get hardware updates and lab guides.</p>
-                    <div className="flex overflow-hidden rounded-full border border-outline-variant">
-                        <input
-                            type="email"
-                            placeholder="edu-email"
-                            className="w-full border-none bg-transparent px-4 py-2 text-sm focus:ring-0"
-                        />
-                        <button type="button" className="bg-primary px-4 text-sm font-medium text-on-primary">
-                            Join
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div className="border-t border-outline-variant/30 px-6 py-8 text-center lg:text-left">
-                <p className="mx-auto max-w-[1280px] text-sm text-outline lg:px-8">
-                    © 2024 UTEShop Technology. Engineering Excellence.
-                </p>
-            </div>
-        </footer>
-    );
-}
 
 function CartQuantityControl({
     value,
@@ -105,7 +48,7 @@ function CartQuantityControl({
                 onClick={onDecrease}
                 disabled={disabled || value <= 1}
                 className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label="Decrease quantity"
+                aria-label="Giảm số lượng"
             >
                 remove
             </button>
@@ -139,7 +82,7 @@ function CartQuantityControl({
                 onClick={onIncrease}
                 disabled={disabled || (max != null && value >= max)}
                 className="material-symbols-outlined text-lg text-on-surface transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label="Increase quantity"
+                aria-label="Tăng số lượng"
             >
                 add
             </button>
@@ -172,7 +115,7 @@ function CartItemRow({
                     disabled={isOutOfStock}
                     onChange={onToggleSelect}
                     className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label={`Select ${item.name}`}
+                    aria-label={`Chọn ${item.name}`}
                 />
             </div>
             <Link
@@ -192,24 +135,24 @@ function CartItemRow({
                     </h3>
                 </Link>
                 <p className="mb-4 text-base text-on-surface-variant">
-                    {formatPrice(item.price)} each
+                    {formatPrice(item.price)} / sản phẩm
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-start">
                     <span
                         className={`text-sm font-medium ${isOutOfStock ? 'text-error' : 'text-outline'}`}
                     >
-                        {isOutOfStock ? 'Out of Stock' : 'In Stock'}
+                        {isOutOfStock ? 'Hết hàng' : 'Còn hàng'}
                     </span>
                     {item.priceChanged && (
                         <>
                             <span className="h-1.5 w-1.5 rounded-full bg-primary/20" aria-hidden />
-                            <span className="text-sm font-medium text-tertiary">Price updated</span>
+                            <span className="text-sm font-medium text-tertiary">Giá đã cập nhật</span>
                         </>
                     )}
                     {!isOutOfStock && (
                         <>
                             <span className="h-1.5 w-1.5 rounded-full bg-primary/20" aria-hidden />
-                            <span className="text-sm font-medium text-primary">Student Discount Eligible</span>
+                            <span className="text-sm font-medium text-primary">Đủ điều kiện giảm giá sinh viên</span>
                         </>
                     )}
                 </div>
@@ -229,7 +172,7 @@ function CartItemRow({
                     onClick={onRemove}
                     className="text-sm font-medium text-error hover:underline"
                 >
-                    Remove
+                    Xóa
                 </button>
             </div>
         </article>
@@ -238,7 +181,7 @@ function CartItemRow({
 
 function categoryLabel(product: CatalogProduct) {
     const c = product.category;
-    if (!c) return 'General';
+    if (!c) return 'Chung';
     if (c.parentName) return c.parentName;
     return c.name;
 }
@@ -410,7 +353,7 @@ export default function CartPage() {
             const msg =
                 typeof err === 'string'
                     ? err
-                    : (err as { message?: string })?.message || 'Could not update quantity';
+                    : (err as { message?: string })?.message || 'Không thể cập nhật số lượng';
             setActionError(msg);
         }
     };
@@ -436,7 +379,7 @@ export default function CartPage() {
             const msg =
                 typeof err === 'string'
                     ? err
-                    : (err as { message?: string })?.message || 'Could not remove item';
+                    : (err as { message?: string })?.message || 'Không thể xóa sản phẩm';
             setActionError(msg);
         }
     };
@@ -446,20 +389,20 @@ export default function CartPage() {
             <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
                 <div className="mb-12 flex flex-wrap items-baseline gap-3">
                     <h1 className="text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
-                        Your Cart
+                        Giỏ hàng
                     </h1>
                     {!loading && totalQuantity > 0 && (
                         <span className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
-                            {totalQuantity} {totalQuantity === 1 ? 'item' : 'items'}
+                            {totalQuantity} sản phẩm
                         </span>
                     )}
                 </div>
 
                 {orderConfirmed && (
                     <p className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-on-surface">
-                        Order confirmed! Your technical gear is on its way.
-                        {orderNumber && ` Order #${orderNumber}.`}
-                        {orderTotal != null && ` Total: ${formatPrice(orderTotal)}`}
+                        Đặt hàng thành công! Đơn hàng của bạn đang được xử lý.
+                        {orderNumber && ` Mã đơn: ${orderNumber}.`}
+                        {orderTotal != null && ` Tổng: ${formatPrice(orderTotal)}`}
                     </p>
                 )}
 
@@ -481,15 +424,15 @@ export default function CartPage() {
                         >
                             shopping_cart
                         </span>
-                        <p className="text-xl font-semibold text-on-surface">Your cart is empty</p>
+                        <p className="text-xl font-semibold text-on-surface">Giỏ hàng của bạn đang trống</p>
                         <p className="mt-2 text-on-surface-variant">
-                            Browse the catalog and add items to get started.
+                            Hãy khám phá danh mục và thêm sản phẩm để bắt đầu mua sắm.
                         </p>
                         <Link
                             to="/categories"
                             className="mt-8 inline-block rounded-full bg-primary px-8 py-4 text-sm font-medium uppercase tracking-widest text-on-primary transition hover:bg-primary-container"
                         >
-                            Browse Products
+                            Xem sản phẩm
                         </Link>
                     </div>
                 ) : (
@@ -502,11 +445,10 @@ export default function CartPage() {
                                     disabled={inStockItems.length === 0}
                                     onChange={toggleAll}
                                     className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-40"
-                                    aria-label="Select all items"
+                                    aria-label="Chọn tất cả sản phẩm"
                                 />
                                 <span className="text-sm font-medium text-on-surface-variant">
-                                    Select all ({inStockItems.length}{' '}
-                                    {inStockItems.length === 1 ? 'product' : 'products'} available)
+                                    Chọn tất cả ({inStockItems.length} sản phẩm còn hàng)
                                 </span>
                             </div>
                             {items.map((item) => (
@@ -523,16 +465,16 @@ export default function CartPage() {
 
                         <div className="lg:col-span-4">
                             <div className="sticky top-28 rounded-xl bg-surface-container-high p-8">
-                                <h2 className="mb-8 text-3xl font-semibold text-on-surface">Order Summary</h2>
+                                <h2 className="mb-8 text-3xl font-semibold text-on-surface">Tóm tắt đơn hàng</h2>
                                 <div className="mb-8 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <span className="text-base text-on-surface-variant">
-                                            Subtotal ({selectedItems.length} items)
+                                            Tạm tính ({selectedItems.length} sản phẩm)
                                         </span>
                                         <span className="text-base text-on-surface">{formatPrice(subtotal)}</span>
                                     </div>
                                     <div className="flex items-center justify-between border-t border-outline-variant pt-4">
-                                        <span className="text-2xl font-semibold text-on-surface">Total</span>
+                                        <span className="text-2xl font-semibold text-on-surface">Tổng cộng</span>
                                         <span className="text-2xl font-semibold text-on-surface">
                                             {formatPrice(subtotal)}
                                         </span>
@@ -544,7 +486,7 @@ export default function CartPage() {
                                     onClick={handleProceedToCheckout}
                                     className="w-full rounded-full bg-primary py-5 text-sm font-medium uppercase tracking-widest text-on-primary shadow-lg shadow-primary/10 transition hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Proceed to Checkout
+                                    Tiến hành thanh toán
                                 </button>
                                 <div className="mt-8 flex items-center justify-center gap-2 text-outline">
                                     <span
@@ -553,7 +495,7 @@ export default function CartPage() {
                                     >
                                         verified_user
                                     </span>
-                                    <span className="text-xs font-semibold">Secure University Checkout</span>
+                                    <span className="text-xs font-semibold">Thanh toán an toàn UTEShop</span>
                                 </div>
                             </div>
                         </div>
@@ -563,7 +505,7 @@ export default function CartPage() {
                 {recommended.length > 0 && (
                     <section className="mt-20">
                         <h2 className="mb-8 text-3xl font-semibold text-on-surface">
-                            Recommended for Your Major
+                            Đề xuất theo chuyên ngành của bạn
                         </h2>
                         <div className="-mx-4 flex gap-6 overflow-x-auto px-4 pb-8 hide-scrollbar scroll-smooth sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                             {recommended.map((product) => (
@@ -592,7 +534,7 @@ export default function CartPage() {
                     </section>
                 )}
             </main>
-            <CartFooter />
+            <ShopFooter />
         </div>
     );
 }

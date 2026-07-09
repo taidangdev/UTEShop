@@ -4,7 +4,7 @@ const { successResponse } = require('../utils/responseHandler');
 
 const listActive = async (req, res, next) => {
     try {
-        const promotions = await promotionService.listActivePromotions();
+        const promotions = await promotionService.listActivePromotions(req.user?.id || null);
         return successResponse(res, 200, 'OK', { promotions });
     } catch (error) {
         next(error);

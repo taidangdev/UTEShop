@@ -1,9 +1,9 @@
 [
-  { "code": "GENERAL", "name": "General", "sortOrder": 0 },
-  { "code": "IT", "name": "IT & Computer Science", "sortOrder": 1 },
-  { "code": "MECH", "name": "Mechanical Engineering", "sortOrder": 2 },
-  { "code": "EE", "name": "Electrical Engineering", "sortOrder": 3 },
-  { "code": "ARCH", "name": "Architecture", "sortOrder": 4 },
-  { "code": "BIOTECH", "name": "Biotechnology", "sortOrder": 5 },
-  { "code": "CIVIL", "name": "Civil Engineering", "sortOrder": 6 }
+  { "code": "GENERAL", "name": "Đại Cương", "sortOrder": 0 },
+  { "code": "IT", "name": "Công Nghệ Thông Tin", "sortOrder": 1 },
+  { "code": "MECH", "name": "Kỹ Thuật Cơ Khí", "sortOrder": 2 },
+  { "code": "EE", "name": "Kỹ Thuật Điện - Điện Tử", "sortOrder": 3 },
+  { "code": "ARCH", "name": "Kiến Trúc", "sortOrder": 4 },
+  { "code": "BIOTECH", "name": "Công Nghệ Sinh Học", "sortOrder": 5 },
+  { "code": "CIVIL", "name": "Kỹ Thuật Xây Dựng", "sortOrder": 6 }
 ]

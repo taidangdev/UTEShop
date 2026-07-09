@@ -9,6 +9,7 @@ import {
 import type { Consignment } from '../types/consignment';
 import { useNotification } from '../context/NotificationContext';
 import ConsignmentModal from '../components/profile/ConsignmentModal';
+import { useSocket } from '../context/SocketContext';
 
 const STATUS_STYLES: Record<string, string> = {
     PENDING: 'bg-amber-100 text-amber-800',
@@ -82,6 +83,7 @@ export default function AdminConsignmentsPage() {
     const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const { toast, showConfirm } = useNotification();
+    const { socket } = useSocket();
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [search, setSearch] = useState('');
@@ -142,6 +144,21 @@ export default function AdminConsignmentsPage() {
     useEffect(() => {
         loadConsignments(1);
     }, [statusFilter, search]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewNotification = (notification: any) => {
+            if (notification.type === 'consignment_new') {
+                loadConsignments(1);
+            }
+        };
+
+        socket.on('new_notification', handleNewNotification);
+        return () => {
+            socket.off('new_notification', handleNewNotification);
+        };
+    }, [socket, loadConsignments]);
 
     const openDetail = (item: Consignment) => {
         setSelectedConsignment(item);

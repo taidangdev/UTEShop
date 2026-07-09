@@ -4,6 +4,7 @@ import { fetchMyConsignments, deleteConsignment } from '../services/consignmentA
 import type { Consignment } from '../types/consignment';
 import ConsignmentModal from '../components/profile/ConsignmentModal';
 import { useNotification } from '../context/NotificationContext';
+import { useSocket } from '../context/SocketContext';
 
 const TABS = [
     { id: 'all', label: 'Tất cả' },
@@ -94,6 +95,7 @@ export default function ConsignmentPage() {
     const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
 
     const { toast, showConfirm } = useNotification();
+    const { socket } = useSocket();
 
     const loadConsignments = async () => {
         setIsLoading(true);
@@ -111,6 +113,21 @@ export default function ConsignmentPage() {
     useEffect(() => {
         loadConsignments();
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewNotification = (notification: any) => {
+            if (notification.type === 'consignment_status_update') {
+                loadConsignments();
+            }
+        };
+
+        socket.on('new_notification', handleNewNotification);
+        return () => {
+            socket.off('new_notification', handleNewNotification);
+        };
+    }, [socket]);
 
     const handleDelete = async (id: number) => {
         const confirmDelete = await showConfirm({

@@ -82,9 +82,9 @@ const LoginPage = () => {
             <div className="p-8 md:p-10">
                 <div className="space-y-6">
                     <div className="mb-4 text-center">
-                        <h2 className="text-2xl font-semibold text-on-surface">Welcome back</h2>
+                        <h2 className="text-2xl font-semibold text-on-surface">Chào mừng quay trở lại</h2>
                         <p className="mt-1 text-base text-on-surface-variant">
-                            Access your academic hardware portal
+                            Đăng nhập cổng thiết bị học tập của bạn
                         </p>
                     </div>
 
@@ -93,7 +93,7 @@ const LoginPage = () => {
                             className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-on-surface"
                             role="status"
                         >
-                            Account activated. You can sign in now.
+                            Tài khoản đã kích hoạt thành công. Bạn có thể đăng nhập ngay.
                         </div>
                     )}
 
@@ -112,7 +112,7 @@ const LoginPage = () => {
                                 htmlFor="login-email"
                                 className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant"
                             >
-                                Student Email
+                                Email sinh viên
                             </label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
@@ -128,7 +128,7 @@ const LoginPage = () => {
                                         setEmail(e.target.value);
                                         clearErrorOnChange();
                                     }}
-                                    placeholder="student@university.edu"
+                                    placeholder="sv@student.hcmute.edu.vn"
                                     className={`h-14 w-full rounded-xl border-none bg-surface-container pl-12 pr-4 text-base text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 ${
                                         emailError ? 'ring-2 ring-error/30' : ''
                                     }`}
@@ -144,7 +144,7 @@ const LoginPage = () => {
                                 htmlFor="login-password"
                                 className="mb-2 ml-1 block text-xs font-semibold text-on-surface-variant"
                             >
-                                Password
+                                Mật khẩu
                             </label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
@@ -169,7 +169,7 @@ const LoginPage = () => {
                                     type="button"
                                     onClick={() => setShowPassword((v) => !v)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-primary"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                                 >
                                     <span className="material-symbols-outlined">
                                         {showPassword ? 'visibility_off' : 'visibility'}
@@ -190,14 +190,14 @@ const LoginPage = () => {
                                     className="h-5 w-5 rounded border-outline-variant text-primary transition-all focus:ring-primary/20"
                                 />
                                 <span className="text-sm font-medium text-on-surface-variant transition-colors group-hover:text-on-surface">
-                                    Remember me
+                                    Ghi nhớ đăng nhập
                                 </span>
                             </label>
                             <Link
                                 to="/forgot-password"
                                 className="text-sm font-medium text-primary hover:underline"
                             >
-                                Forgot password?
+                                Quên mật khẩu?
                             </Link>
                         </div>
 
@@ -206,45 +206,13 @@ const LoginPage = () => {
                             disabled={loginLoading}
                             className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-on-primary transition-all hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                            <span>{loginLoading ? 'Signing in…' : 'Continue'}</span>
+                            <span>{loginLoading ? 'Đang đăng nhập…' : 'Tiếp tục'}</span>
                             {!loginLoading && (
                                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                             )}
                         </button>
                     </form>
 
-                    <div className="relative flex items-center py-4">
-                        <div className="flex-grow border-t border-outline-variant/30" />
-                        <span className="mx-4 shrink-0 text-xs font-semibold uppercase tracking-widest text-outline">
-                            Or Secure SSO
-                        </span>
-                        <div className="flex-grow border-t border-outline-variant/30" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            type="button"
-                            disabled
-                            title="Coming soon"
-                            className="group flex h-12 items-center justify-center rounded-xl border border-outline-variant/40 transition-all hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span className="material-symbols-outlined mr-2 text-on-surface-variant group-hover:text-primary">
-                                school
-                            </span>
-                            <span className="text-xs text-on-surface">EDU Login</span>
-                        </button>
-                        <button
-                            type="button"
-                            disabled
-                            title="Coming soon"
-                            className="group flex h-12 items-center justify-center rounded-xl border border-outline-variant/40 transition-all hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span className="material-symbols-outlined mr-2 text-on-surface-variant group-hover:text-primary">
-                                token
-                            </span>
-                            <span className="text-xs text-on-surface">SAML 2.0</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         </AuthShell>

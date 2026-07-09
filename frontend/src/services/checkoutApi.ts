@@ -7,6 +7,7 @@ import type {
     PlaceOrderResponseData
 } from '../types/checkout';
 import { notifyCartUpdated } from '../utils/cartStorage';
+import { sanitizeCheckoutInformationForApi } from '../utils/checkoutStorage';
 
 export interface CheckoutPayload {
     productIds: number[];
@@ -14,7 +15,10 @@ export interface CheckoutPayload {
 }
 
 export async function previewCheckout(payload: CheckoutPayload): Promise<CheckoutPreviewData> {
-    const res = await axiosInstance.post<ApiEnvelope<CheckoutPreviewData>>('/checkout/preview', payload);
+    const res = await axiosInstance.post<ApiEnvelope<CheckoutPreviewData>>('/checkout/preview', {
+        ...payload,
+        information: sanitizeCheckoutInformationForApi(payload.information)
+    });
     return res.data;
 }
 
@@ -23,7 +27,10 @@ export async function placeOrder(
 ): Promise<PlaceOrderResponseData> {
     const res = await axiosInstance.post<ApiEnvelope<PlaceOrderResponseData>>(
         '/checkout/place-order',
-        payload
+        {
+            ...payload,
+            information: sanitizeCheckoutInformationForApi(payload.information)
+        }
     );
     notifyCartUpdated();
     return res.data;

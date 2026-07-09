@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const sequelize = require('../config/db');
 const {
     Promotion,
     PromotionRedemption,
@@ -26,20 +27,23 @@ function mapPromotionPublic(promotion) {
         type: promotion.type,
         value: Number(promotion.value),
         minOrderAmount: promotion.minOrderAmount != null ? Number(promotion.minOrderAmount) : 0,
-        maxDiscountAmount: promotion.maxDiscountAmount != null ? Number(promotion.maxDiscountAmount) : null
+        maxDiscountAmount: promotion.maxDiscountAmount != null ? Number(promotion.maxDiscountAmount) : null,
+        maxUsesPerUser: promotion.maxUsesPerUser,
+        usageLimit: promotion.usageLimit,
+        usedCount: promotion.usedCount
     };
 }
 
 function assertPromotionWindow(promotion) {
     const now = new Date();
     if (promotion.startsAt && now < new Date(promotion.startsAt)) {
-        const err = new Error('This promotion is not active yet');
+        const err = new Error('Chương trình khuyến mãi chưa bắt đầu');
         err.statusCode = 400;
         err.code = 'PROMOTION_NOT_STARTED';
         throw err;
     }
     if (promotion.endsAt && now > new Date(promotion.endsAt)) {
-        const err = new Error('This promotion has expired');
+        const err = new Error('Chương trình khuyến mãi đã hết hạn');
         err.statusCode = 400;
         err.code = 'PROMOTION_EXPIRED';
         throw err;
@@ -48,7 +52,7 @@ function assertPromotionWindow(promotion) {
 
 function assertUsageLimits(promotion, userId) {
     if (promotion.usageLimit != null && promotion.usedCount >= promotion.usageLimit) {
-        const err = new Error('This promotion has reached its usage limit');
+        const err = new Error('Chương trình khuyến mãi đã hết lượt sử dụng');
         err.statusCode = 400;
         err.code = 'PROMOTION_USAGE_LIMIT';
         throw err;
@@ -61,7 +65,7 @@ async function assertPerUserLimit(promotion, userId) {
         where: { promotionId: promotion.id, userId }
     });
     if (count >= promotion.maxUsesPerUser) {
-        const err = new Error('You have already used this promotion the maximum number of times');
+        const err = new Error('Bạn đã sử dụng mã khuyến mãi này tối đa số lần cho phép');
         err.statusCode = 400;
         err.code = 'PROMOTION_USER_LIMIT';
         throw err;
@@ -142,8 +146,11 @@ function discountFromPromotionType(promotion, amount) {
 /**
  * Apply shop promotion to cart lines. Returns adjusted lines + summary.
  */
-function applyPromotionToLines(promotion, lineItems) {
+function applyPromotionToLines(promotion, lineItems, expandedCategoryIds = null) {
     const scopeSets = getScopeSets(promotion);
+    if (expandedCategoryIds) {
+        scopeSets.categoryIds = expandedCategoryIds;
+    }
     const eligibleLines = lineItems.filter((line) => isLineEligible(line, promotion, scopeSets));
     const eligibleSubtotal = eligibleLines.reduce((sum, line) => sum + line.lineTotal, 0);
 
@@ -158,7 +165,7 @@ function applyPromotionToLines(promotion, lineItems) {
     }
 
     if (eligibleLines.length === 0) {
-        const err = new Error('No items in your cart are eligible for this promotion');
+        const err = new Error('Không có sản phẩm nào trong giỏ hàng đủ điều kiện áp dụng mã này');
         err.statusCode = 400;
         err.code = 'PROMOTION_NO_ELIGIBLE_ITEMS';
         throw err;
@@ -215,13 +222,30 @@ function applyPromotionToLines(promotion, lineItems) {
     };
 }
 
+function getAllDescendantCategoryIds(parentIds, allCategories) {
+    const descendantIds = new Set(parentIds);
+    let added = true;
+
+    while (added) {
+        added = false;
+        for (const cat of allCategories) {
+            if (cat.parentId && descendantIds.has(cat.parentId) && !descendantIds.has(cat.id)) {
+                descendantIds.add(cat.id);
+                added = true;
+            }
+        }
+    }
+
+    return descendantIds;
+}
+
 async function resolvePromotionForCheckout(code, lineItems, userId) {
     const normalized = normalizeCode(code);
     if (!normalized) return null;
 
     const promotion = await loadPromotionByCode(normalized);
     if (!promotion) {
-        const err = new Error('Invalid or expired promotion code');
+        const err = new Error('Mã khuyến mãi không hợp lệ hoặc đã hết hạn');
         err.statusCode = 400;
         err.code = 'INVALID_PROMOTION';
         throw err;
@@ -231,14 +255,29 @@ async function resolvePromotionForCheckout(code, lineItems, userId) {
     assertUsageLimits(promotion);
     await assertPerUserLimit(promotion, userId);
 
-    return applyPromotionToLines(promotion, lineItems);
+    let expandedCategoryIds = null;
+    if (promotion.scope === 'category') {
+        const directCategoryIds = new Set();
+        (promotion.categories || []).forEach((c) => directCategoryIds.add(c.id));
+        if (promotion.categoryId) directCategoryIds.add(promotion.categoryId);
+
+        if (directCategoryIds.size > 0) {
+            const allDbCategories = await Category.findAll({
+                attributes: ['id', 'parentId'],
+                raw: true
+            });
+            expandedCategoryIds = getAllDescendantCategoryIds(directCategoryIds, allDbCategories);
+        }
+    }
+
+    return applyPromotionToLines(promotion, lineItems, expandedCategoryIds);
 }
 
 async function previewPromotion(code, lineItems, userId) {
     try {
         const result = await resolvePromotionForCheckout(code, lineItems, userId);
         if (!result) {
-            return { valid: false, message: 'Enter a promotion code' };
+            return { valid: false, message: 'Vui lòng nhập mã khuyến mãi' };
         }
         return {
             valid: true,
@@ -313,7 +352,25 @@ async function recordRedemption(promotionId, userId, orderId, discountAmount, tr
     });
 }
 
-async function listActivePromotions() {
+async function rollbackPromotionRedemption(orderId, transaction) {
+    const redemptions = await PromotionRedemption.findAll({
+        where: { orderId },
+        transaction
+    });
+
+    for (const redemption of redemptions) {
+        const promotion = await Promotion.findByPk(redemption.promotionId, { transaction });
+        if (promotion) {
+            await promotion.decrement('usedCount', {
+                by: 1,
+                transaction
+            });
+        }
+        await redemption.destroy({ transaction });
+    }
+}
+
+async function listActivePromotions(userId = null) {
     const now = new Date();
     const rows = await Promotion.findAll({
         where: {
@@ -327,7 +384,7 @@ async function listActivePromotions() {
             {
                 model: Category,
                 as: 'categories',
-                attributes: ['id', 'name'],
+                attributes: ['id', 'name', 'parentId'],
                 through: { attributes: [] }
             },
             {
@@ -341,16 +398,51 @@ async function listActivePromotions() {
         limit: 20
     });
 
-    return rows
-        .filter((p) => p.usageLimit == null || p.usedCount < p.usageLimit)
-        .map((p) => {
+    const allDbCategories = await Category.findAll({
+        attributes: ['id', 'parentId'],
+        raw: true
+    });
+
+    const filtered = rows.filter((p) => p.usageLimit == null || p.usedCount < p.usageLimit);
+
+    let userUsedByPromoId = new Map();
+    if (userId && filtered.length > 0) {
+        const promoIds = filtered.map((p) => p.id);
+        const usageRows = await PromotionRedemption.findAll({
+            attributes: ['promotionId', [sequelize.fn('COUNT', sequelize.col('id')), 'usedCount']],
+            where: { userId, promotionId: { [Op.in]: promoIds } },
+            group: ['promotionId'],
+            raw: true
+        });
+        for (const row of usageRows) {
+            userUsedByPromoId.set(row.promotionId, Number(row.usedCount));
+        }
+    }
+
+    return filtered.map((p) => {
             const mapped = mapPromotionPublic(p);
+
+            let finalCategoryIds = [];
+            if (p.scope === 'category') {
+                const directCategoryIds = new Set();
+                (p.categories || []).forEach((c) => directCategoryIds.add(c.id));
+                if (p.categoryId) directCategoryIds.add(p.categoryId);
+                
+                if (directCategoryIds.size > 0) {
+                    const expanded = getAllDescendantCategoryIds(directCategoryIds, allDbCategories);
+                    finalCategoryIds = Array.from(expanded);
+                }
+            } else {
+                finalCategoryIds = (p.categories || []).map((c) => c.id);
+            }
+
             return {
                 ...mapped,
-                categoryIds: (p.categories || []).map((c) => c.id),
+                categoryIds: finalCategoryIds,
                 productIds: (p.products || []).map((prod) => prod.id),
                 categories: (p.categories || []).map((c) => ({ id: c.id, name: c.name })),
-                products: (p.products || []).map((prod) => ({ id: prod.id, name: prod.name }))
+                products: (p.products || []).map((prod) => ({ id: prod.id, name: prod.name })),
+                userUsedCount: userId ? userUsedByPromoId.get(p.id) || 0 : undefined
             };
         });
 }
@@ -362,6 +454,7 @@ module.exports = {
     previewPromotion,
     applyPromotionToLines,
     recordRedemption,
+    rollbackPromotionRedemption,
     listActivePromotions,
     mapPromotionPublic,
     discountFromPromotionType

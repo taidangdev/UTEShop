@@ -762,6 +762,16 @@ const createPromotion = async (req, res, next) => {
             return errorResponse(res, 400, 'Tên khuyến mãi là bắt buộc');
         }
 
+        if (maxUsesPerUser === undefined || maxUsesPerUser === null || isNaN(parseInt(maxUsesPerUser, 10)) || parseInt(maxUsesPerUser, 10) <= 0) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Giới hạn số lần dùng mỗi user (maxUsesPerUser) phải là số nguyên dương bắt buộc');
+        }
+
+        if (usageLimit === undefined || usageLimit === null || isNaN(parseInt(usageLimit, 10)) || parseInt(usageLimit, 10) <= 0) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Tổng số lượt dùng (usageLimit) phải là số nguyên dương bắt buộc');
+        }
+
         if (!scope || !['shop', 'category', 'product'].includes(scope)) {
             await transaction.rollback();
             return errorResponse(res, 400, 'Phạm vi áp dụng (scope) không hợp lệ');
@@ -979,6 +989,16 @@ const updatePromotion = async (req, res, next) => {
         if (finalStartsAt && finalEndsAt && finalEndsAt <= finalStartsAt) {
             await transaction.rollback();
             return errorResponse(res, 400, 'Thời gian kết thúc phải diễn ra sau thời gian bắt đầu');
+        }
+
+        if (maxUsesPerUser !== undefined && (maxUsesPerUser === null || isNaN(parseInt(maxUsesPerUser, 10)) || parseInt(maxUsesPerUser, 10) <= 0)) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Giới hạn số lần dùng mỗi user (maxUsesPerUser) phải là số nguyên dương bắt buộc');
+        }
+
+        if (usageLimit !== undefined && (usageLimit === null || isNaN(parseInt(usageLimit, 10)) || parseInt(usageLimit, 10) <= 0)) {
+            await transaction.rollback();
+            return errorResponse(res, 400, 'Tổng số lượt dùng (usageLimit) phải là số nguyên dương bắt buộc');
         }
 
         const updates = {};
